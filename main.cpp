@@ -6,12 +6,14 @@
 /*   By: samusanc <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/11 08:36:52 by samusanc          #+#    #+#             */
-/*   Updated: 2024/06/04 21:23:30 by samusanc         ###   ########.fr       */
+/*   Updated: 2024/09/18 22:07:56 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <string>
 #include <iostream>
+#include <fstream>
+#include <sstream> 
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -143,46 +145,152 @@ Last-Modified: Tue, 17 Sep 2024 13:33:58 GMT
 */
 
 class   response{
-  public:
-    std::string server;
-    std::string date;
-    std::string content_type;
-    size_t      content_length;
-    std::string last_modified;
-    response();
-    std::string set_actual_date();
+	public:
+		// constructors
+		response();
+
+		std::string	content;
+		std::string	http_version;
+		std::string	http_status_code;
+		std::string	server;
+		std::string	date;
+		std::string	content_type;
+		std::string	content_length;
+		std::string	last_modified;
+
+		// funtions
+		std::string	print_str();
+		void		get_content(const std::string& path);
+};
+
+response::response()
+{
+	this->content= "default text";
+	this->http_version= "HTTP/1.0";
+	this->http_status_code= "200";
+	this->server= "default text";
+	this->date= "default text";
+	this->content_type= "default text";
+	this->content_length= "1";
+	this->last_modified= "default text";
 }
 
-std::string response::set_actual_date()
+std::string	response::print_str()
 {
-  time_t        now;
-  time_t        *lock;
-  std::string   result;
+	std::string		result;
+	std::stringstream	buff;
 
-  lock = &now;
-  now = time(lock);
-  if (lock)
-    result = std::string(ctime(lock));
-  else
-    result = std::string("error in getting time!!!");
+	buff <<this->http_version << " " << this->http_status_code << " OK" << std::endl;
+	buff << "Server: " << this->server << std::endl;
+	buff << "Date: " << this->date << std::endl;
+	buff << "Content-type: " << this->content_type << std::endl;
+	buff << "Content-Length: " << this->content_length << std::endl;
+	buff << "last_modified: " << this->last_modified << std::endl;
+	buff << std::endl;
+	buff << this->content << std::endl;
+	result = buff.str();
+	return (result);
 }
 
-response::respose()
-{
-  this->server = "default server";
-  this->set_actual_date();
-  this->content_type = "default content type";
+class   request{
+	public:
+		// constructors
+		request();
 
+		std::string	method;
+		std::string	path;
+		std::string	htpp_version;
+		std::string	host;
+		std::string	sec_ch_ua;
+		std::string	sec_ch_ua_mobile;
+		std::string	sec_ch_ua_platform;
+		std::string	accept_language;
+		std::string	upgrade_insecure_requests;
+		std::string	user_agent;
+		std::string	accept;
+		std::string	sec_fetch_site;
+		std::string	sec_fetch_mode;
+		std::string	sec_fetch_user;
+		std::string	sec_fetch_dest;
+		std::string	accept_encoding;
+		std::string	connection;
+
+		// funtions
+		std::string	print_str();
+};
+
+request::request()
+{
+	this->method = "default text";
+	this->path = "default text";
+	this->htpp_version = "default text";
+	this->host = "default text";
+	this->sec_ch_ua = "default text";
+	this->sec_ch_ua_mobile = "default text";
+	this->sec_ch_ua_platform = "default text";
+	this->accept_language = "default text";
+	this->upgrade_insecure_requests = "default text";
+	this->user_agent = "default text";
+	this->accept = "default text";
+	this->sec_fetch_site = "default text";
+	this->sec_fetch_mode = "default text";
+	this->sec_fetch_user = "default text";
+	this->sec_fetch_dest = "default text";
+	this->accept_encoding = "default text";
+	this->connection = "default text";
+};
+
+std::string get_actual_date()
+{
+	time_t		now;
+	time_t		*lock;
+	std::string	result;
+
+	lock = &now;
+	now = time(lock);
+	if (lock)
+		result = std::string(ctime(lock));
+	else
+		result = std::string("error in getting time!!!");
+	return (result);
+}
+
+std::string	open_file(const std::string& path, )
+{
+	std::string		result;
+	std::stringstream	buff;
+	std::ifstream		file(path.c_str());
+
+	if (!file)
+	{
+		buff << "<!DOCTYPE html>\n\n<html lang=\"en\"><head>\n "
+		<< "       <meta charset=\"utf-8\">\n        <title>Error response</title>\n "
+		<< "   </head>\n    <body>\n        <h1>Error response</h1>\n    "
+		<< "    <p>Error code: 404</p>\n        <p>Message: File not found.</p>\n "
+		<< "       <p>Error code explanation: 404 - Nothing matches the given URI.</p>\n    \n\n</body></html>";
+	}
+	else
+	{
+		buff << file.rdbuf();
+		file.close();
+	}
+	result = buff.str();
+	return (result);
+}
+
+void	response::get_content(const std::string& path)
+{
+	std::stringstream	buff;
+	
+	this->content = open_file(path);
+	buff << content.length();
+	this->content_length = buff.str();
 }
 
 int	main()
 {
-  response  respuesta = response();
+	response	respuesta = response();
 
-  respuesta.server = string("SimpleHTTP/0.6 Python/3.11.2");
-  std::cout << respuesta.server << std::endl;
-  std::cout << respuesta.date << std::endl;
-  std::cout << respuesta.content_type << std::endl;
-  std::cout << respuesta.content_length << std::endl;
-  std::cout << respuesta.get_actual_date() << std::endl;
+	respuesta.get_content("./t.html");
+	std::cout << respuesta.print_str();
 }

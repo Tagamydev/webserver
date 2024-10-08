@@ -6,7 +6,7 @@
 /*   By: samusanc <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/11 08:36:52 by samusanc          #+#    #+#             */
-/*   Updated: 2024/09/18 22:07:56 by samusanc         ###   ########.fr       */
+/*   Updated: 2024/10/08 13:31:12 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,99 +20,8 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-
-/*
-int main() {
-    int sockfd;
-    struct sockaddr_in server_addr;
-    struct sockaddr_in client_addr;
-	fd_set	readfds1;
-	fd_set	readfds2;
-
-    // Step 1: Create a socket
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0) {
-        perror("Socket creation failed");
-        exit(EXIT_FAILURE);
-    }
-
-	bzero(&server_addr, sizeof(sockaddr));
-	bzero(&client_addr, sizeof(sockaddr));
-    server_addr.sin_family = AF_INET; // IPv4
-    server_addr.sin_addr.s_addr = INADDR_ANY; // Bind to any available interface
-	//server_addr.sin_addr.s_addr = htonl(213076433);
-	int port_number;
-
-	port_number = 8090;
-    server_addr.sin_port = htons(port_number); // Port 8080
-
-    // Step 3: Bind the socket to the IP address and port
-    if (bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-        perror("Bind failed");
-        close(sockfd);
-        exit(EXIT_FAILURE);
-    }
-
-    printf("Bind successful on port :%d\n", port_number);
-
-    // Step 4: Now you can listen for connections, accept them, etc.
-    listen(sockfd, 5);
-
-	struct timeval timeout;
-	timeout.tv_sec = 1;  // 5 seconds
-	timeout.tv_usec = 0; // 0 microseconds
-	
-	int	max_fd;
-
-	FD_ZERO(&readfds1);
-	FD_ZERO(&readfds2);
-
-	printf("sockfd:%d\n", sockfd);
-	FD_SET(sockfd, &readfds1);
-	max_fd = sockfd;
-	char	str[100];
-	int		select_num;
-	int		client_fd;
-	socklen_t	len;
-
-
-	while (1)
-	{
-		readfds2 = readfds1;
-		select_num = select(max_fd + 1, &readfds2, NULL, NULL, &timeout);
-		if (select_num > 0)
-		{
-			for (int fd_i = 0; fd_i <= max_fd; fd_i++)
-			{
-				printf("test:%d, fd_i:%d\n",FD_ISSET(fd_i, &readfds2), fd_i);
-				if (fd_i == sockfd && FD_ISSET(fd_i, &readfds2))
-				{
-					printf("new client!!\n");
-					bzero(&client_addr, sizeof(sockaddr));
-					client_fd = accept(sockfd, (struct sockaddr *)&server_addr, &len);
-					FD_SET(client_fd, &readfds1);
-					if (max_fd < client_fd)
-						max_fd = client_fd;
-
-				}
-				else if (FD_ISSET(fd_i, &readfds2))
-				{
-					//recv(fd_i, str, 99, 0);
-					char	*hello = "hello\n";
-
-					recv(fd_i, hello, 5, 0);
-					printf("in fd: %d: %s\n", fd_i, str);
-				}
-
-			}
-		}
-	}
-
-    // Close the socket when done
-    close(sockfd);
-    return 0;
-}
-*/
+#include <fcntl.h>
+#include <cstdio>    
 
 /*
 HTTP/1.0 200 OK
@@ -192,10 +101,42 @@ std::string	response::print_str()
 	return (result);
 }
 
+/*
+GET / HTTP/1.1
+
+Host: localhost:8000
+
+sec-ch-ua: "Not;A=Brand";v="24", "Chromium";v="128"
+
+sec-ch-ua-mobile: ?0
+
+sec-ch-ua-platform: "Linux"
+
+Accept-Language: en-US,en;q=0.9
+
+Upgrade-Insecure-Requests: 1
+
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.6613.120 Safari/537.36
+
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+Sec-Fetch-Site: none
+
+Sec-Fetch-Mode: navigate
+
+Sec-Fetch-User: ?1
+
+Sec-Fetch-Dest: document
+
+Accept-Encoding: gzip, deflate, br
+
+Connection: keep-alive
+*/
+
 class   request{
 	public:
 		// constructors
-		request();
+		request(int fd);
 
 		std::string	method;
 		std::string	path;
@@ -214,31 +155,101 @@ class   request{
 		std::string	sec_fetch_dest;
 		std::string	accept_encoding;
 		std::string	connection;
+		void		parse(const std::string& input);
 
 		// funtions
 		std::string	print_str();
 };
 
-request::request()
+std::string parse_helper(const std::string& input, std::string string_to_find)
+{
+	string_to_find = string_to_find + ": ";
+	size_t	case_idk = input.find(string_to_find);
+
+	if (case_idk != std::string::npos)
+	{
+		size_t end_idk = input.find("\n", case_idk);
+		return (input.substr(case_idk + string_to_find.length() , end_idk - (case_idk + string_to_find.length())));
+	}
+	else
+		return (std::string("default text"));
+}
+
+void request::parse(const std::string& input)
+{
+	// special cases
+	/*
+	this->method = parse_helper(input, "");
+	this->path = parse_helper(input, "");
+	this->htpp_version = parse_helper(input, "");
+	*/
+
+	this->host = parse_helper(input, "Host");
+	this->sec_ch_ua = parse_helper(input, "sec-ch-ua");
+	this->sec_ch_ua_mobile = parse_helper(input, "sec-ch-ua-mobile");
+	this->sec_ch_ua_platform = parse_helper(input, "sec-ch-ua-platform");
+	this->accept_language = parse_helper(input, "Accept-Language");
+	this->upgrade_insecure_requests = parse_helper(input, "Upgrade-Insecure-Requests");
+	this->user_agent = parse_helper(input, "User-Agent");
+	this->accept = parse_helper(input, "Accept");
+	this->sec_fetch_site = parse_helper(input, "Sec-Fetch-Site");
+	this->sec_fetch_mode = parse_helper(input, "Sec-Fetch-Mode");
+	this->sec_fetch_user = parse_helper(input, "Sec-Fetch-User");
+	this->sec_fetch_dest = parse_helper(input, "Sec-Fetch-Dest");
+	this->accept_encoding = parse_helper(input, "Accept-Encoding");
+	this->connection = parse_helper(input, "Connection");
+}
+
+request::request(int fd)
 {
 	this->method = "default text";
 	this->path = "default text";
 	this->htpp_version = "default text";
-	this->host = "default text";
-	this->sec_ch_ua = "default text";
-	this->sec_ch_ua_mobile = "default text";
-	this->sec_ch_ua_platform = "default text";
-	this->accept_language = "default text";
-	this->upgrade_insecure_requests = "default text";
-	this->user_agent = "default text";
-	this->accept = "default text";
-	this->sec_fetch_site = "default text";
-	this->sec_fetch_mode = "default text";
-	this->sec_fetch_user = "default text";
-	this->sec_fetch_dest = "default text";
-	this->accept_encoding = "default text";
-	this->connection = "default text";
-};
+
+	char	buffer[500];
+	std::string	file;
+	bzero(buffer, sizeof(char) * 500);
+	while (read(fd, buffer, 500) > 0)
+	{
+		file = file + std::string(buffer);
+		bzero(buffer, sizeof(char) * 500);
+	}
+
+	std::cout << "request ==========" << std::endl;
+	std::cout << std::endl;
+	std::cout << std::endl;
+	std::cout << std::endl;
+	
+	this->parse(file);
+	std::cout << this->host << std::endl;
+	
+	std::cout << this->method << std::endl;
+	std::cout << this->path << std::endl;
+	std::cout << this->htpp_version << std::endl;
+	std::cout << this->host << std::endl;
+	std::cout << this->sec_ch_ua << std::endl;
+	std::cout << this->sec_ch_ua_mobile << std::endl;
+	std::cout << this->sec_ch_ua_platform << std::endl;
+	std::cout << this->accept_language << std::endl;
+	std::cout << this->upgrade_insecure_requests << std::endl;
+	std::cout << this->user_agent << std::endl;
+	std::cout << this->accept << std::endl;
+	std::cout << this->sec_fetch_site << std::endl;
+	std::cout << this->sec_fetch_mode << std::endl;
+	std::cout << this->sec_fetch_user << std::endl;
+	std::cout << this->sec_fetch_dest << std::endl;
+	std::cout << this->accept_encoding << std::endl;
+	std::cout << this->connection << std::endl;
+
+	close(fd);
+	std::cout << std::endl;
+	std::cout << std::endl;
+	std::cout << std::endl;
+	std::cout << "response ==========" << std::endl;
+	std::cout << std::endl;
+	std::cout << std::endl;
+
+}
 
 std::string get_actual_date()
 {
@@ -255,7 +266,7 @@ std::string get_actual_date()
 	return (result);
 }
 
-std::string	open_file(const std::string& path, )
+std::string	open_file(const std::string& path)
 {
 	std::string		result;
 	std::stringstream	buff;
@@ -289,8 +300,21 @@ void	response::get_content(const std::string& path)
 
 int	main()
 {
-	response	respuesta = response();
+	int	fd;
 
-	respuesta.get_content("./t.html");
-	std::cout << respuesta.print_str();
+	fd = open("request.txt", O_RDONLY);
+	if (fd < 0)
+		return (-1);
+	try
+	{
+		request		pedido = request(fd);
+		response	respuesta = response();
+	
+		respuesta.get_content("./t.html");
+		std::cout << respuesta.print_str();
+	}
+	catch (const std::exception& e)
+	{
+		std::cout << e.what() << std::endl;
+	}
 }

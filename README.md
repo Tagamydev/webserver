@@ -20,8 +20,6 @@
 	• The server must be able to listen to multiple ports (see Configuration file).
 	
 # CONFIG FILE
-
-In the configuration file, you should be able to:
 	• Choose the port and host of each ’server’.
 	• Setup the server_names or not.
 	• The first server for a host:port will be the default for this host:port (that means it will answer to all the requests that don’t belong to an other server).

@@ -133,32 +133,21 @@ Accept-Encoding: gzip, deflate, br
 Connection: keep-alive
 */
 
+#include <map>
+
 class   request{
 	public:
 		// constructors
 		request(int fd);
 
 		std::string	method;
-		std::string	path;
-		std::string	htpp_version;
-		std::string	host;
-		std::string	sec_ch_ua;
-		std::string	sec_ch_ua_mobile;
-		std::string	sec_ch_ua_platform;
-		std::string	accept_language;
-		std::string	upgrade_insecure_requests;
-		std::string	user_agent;
-		std::string	accept;
-		std::string	sec_fetch_site;
-		std::string	sec_fetch_mode;
-		std::string	sec_fetch_user;
-		std::string	sec_fetch_dest;
-		std::string	accept_encoding;
-		std::string	connection;
-		void		parse(const std::string& input);
-
-		// funtions
-		std::string	print_str();
+		std::string	uri;
+		std::string	http_version;
+		// header, content
+		std::map<std::string, std::string>	headers;	
+		// key, value
+		std::map<std::string, std::string>	query_str;	
+		std::string content;
 };
 
 std::string parse_helper(const std::string& input, std::string string_to_find)

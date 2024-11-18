@@ -1,0 +1,6 @@
+413 Payload Too Large 
+
+Header Size:
+
+Many web servers limit the total size of headers to around 8 KB to 16 KB.
+Exceeding this size can result in a 413 Payload Too Large or similar error.

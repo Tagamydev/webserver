@@ -24,6 +24,25 @@
 #include <map>
 #include <sys/stat.h>
 
+std::string get_actual_date()
+{
+	time_t		now;
+	time_t		*lock;
+	std::string	result;
+
+	lock = &now;
+	now = time(lock);
+	if (lock)
+		result = std::string(ctime(lock));
+	else
+		result = std::string("error in getting time!!!");
+	size_t pos = result.find('\n');
+    if (pos != std::string::npos) {
+        result.erase(pos, 1); // Elimina el carácter '\n'
+    }
+	return (result);
+}
+
 
 class   request{
 	public:
@@ -107,6 +126,8 @@ response::response(request &req)
 	this->set_mime_types_list();
 	this->http_version = "1.1";
 	this->request_form = &req;
+	this->headers["Server"] = "42 Samusanc/Daviles simple webserver";
+	this->headers["Date"] = get_actual_date();
 	if (req.method == "GET")
 		this->do_get();
 	else if (req.method == "POST")
@@ -140,6 +161,7 @@ void	response::get_file(std::string &path)
 {
 	std::ifstream	file(path.c_str());
 	std::stringstream	buff;
+	std::stringstream	length;
 
 	if (file.is_open())
 	{
@@ -148,7 +170,8 @@ void	response::get_file(std::string &path)
 		this->body = buff.str();
 		this->status_code = 200;
 		this->headers["Content-type"] = this->get_mimeType(path);
-		this->headers["Content-Length"] = this->body.length();
+		length << this->body.length();
+		this->headers["Content-Length"] = length.str();
 	}
 	else
 	{
@@ -354,21 +377,6 @@ std::string	response::str()
 	return (result.str());
 }
 
-
-std::string get_actual_date()
-{
-	time_t		now;
-	time_t		*lock;
-	std::string	result;
-
-	lock = &now;
-	now = time(lock);
-	if (lock)
-		result = std::string(ctime(lock));
-	else
-		result = std::string("error in getting time!!!");
-	return (result);
-}
 
 int	main()
 {

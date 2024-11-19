@@ -37,12 +37,25 @@ std::string get_actual_date()
 	else
 		result = std::string("error in getting time!!!");
 	size_t pos = result.find('\n');
-    if (pos != std::string::npos) {
+    if (pos != std::string::npos)
         result.erase(pos, 1); // Elimina el carácter '\n'
-    }
 	return (result);
 }
 
+class	config{
+	//this need a location class diferent from config to make a map with that!!
+	public:
+		int			port;
+		int			body_size_limit;
+		std::string	host;
+		std::string	error_pages;
+		std::string	default_file;
+		std::string	cgi_extention;
+		bool		directory_listing_allowed;
+		bool		file_uploading_allowed;
+
+
+};
 
 class   request{
 	public:

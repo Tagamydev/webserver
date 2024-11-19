@@ -37,15 +37,15 @@ Last-Modified: Tue, 17 Sep 2024 13:33:58 GMT
 
   <head>
 
-    <title>Page Title</title>
+	<title>Page Title</title>
 
   </head>
 
   <body>
 
-    <h1>This is a Heading</h1>
+	<h1>This is a Heading</h1>
 
-    <p>This is a paragraph.</p>
+	<p>This is a paragraph.</p>
 
   </body>
 
@@ -137,17 +137,29 @@ Connection: keep-alive
 
 class   request{
 	public:
-		// constructors
-		request(int fd);
 
+		// con/destructor
+		request(int fd);
+		~request(void);
+
+	// FIRST LINE
+
+		// QUERY
+		std::map<std::string, std::string>	query_str;	
+		// key, value
+
+		// METHOD: GET, POST, DELETE
 		std::string	method;
+
 		std::string	uri;
 		std::string	http_version;
-		// header, content
+
+	// HEADERS
 		std::map<std::string, std::string>	headers;	
-		// key, value
-		std::map<std::string, std::string>	query_str;	
-		std::string content;
+		// header, content
+
+	// BODY
+		std::string	body;
 };
 
 std::string parse_helper(const std::string& input, std::string string_to_find)

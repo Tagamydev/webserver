@@ -22,6 +22,7 @@
 #include <fcntl.h>
 #include <cstdio>    
 #include <map>
+#include <sys/stat.h>
 
 
 class   request{
@@ -50,6 +51,15 @@ class   request{
 	// BODY
 		std::string	body;
 };
+
+request::request(int fd)
+{
+	this->http_version = "1.1";
+	this->uri = "/minecraft.jpg";
+	this->method = "GET";
+
+}
+request::~request(){}
 
 class   response{
 	public:
@@ -84,6 +94,8 @@ class   response{
 		void		do_get();
 		void		do_post();
 		void		do_delete();
+		void		get_file(std::string &path);
+		std::string	get_mimeType(std::string &path);
 		std::string print_status_line();
 		std::string print_headers();
 		request		*request_form;
@@ -93,6 +105,7 @@ response::response(request &req)
 {
 	this->set_status_codes_list();
 	this->set_mime_types_list();
+	this->http_version = "1.1";
 	this->request_form = &req;
 	if (req.method == "GET")
 		this->do_get();
@@ -103,7 +116,6 @@ response::response(request &req)
 	else
 	{
 		this->status_code = 404;
-		this->http_version = "1.1";
 		this->body = "a";
 		this->headers["Content-Length"] = "0";
 	}
@@ -111,25 +123,87 @@ response::response(request &req)
 
 response::~response(){}
 
+std::string	response::get_mimeType(std::string &path)
+{
+	size_t	dotPos = path.find_last_of('.');
+
+    if (dotPos != std::string::npos) {
+        std::string extension = path.substr(dotPos);
+        if (this->mime_types_list.count(extension)) {
+            return this->mime_types_list[extension];
+        }
+    }
+	return ("application/octet-stream");
+}
+
+void	response::get_file(std::string &path)
+{
+	std::ifstream	file(path.c_str());
+	std::stringstream	buff;
+
+	if (file.is_open())
+	{
+		buff << file.rdbuf();
+		file.close();
+		this->body = buff.str();
+		this->status_code = 200;
+		this->headers["Content-type"] = this->get_mimeType(path);
+		this->headers["Content-Length"] = this->body.length();
+	}
+	else
+	{
+		this->status_code = 404;
+
+	}
+
+}
+
 void	response::do_get()
 {
+	std::string	path;
+	struct stat pathStat;
+
+	path = "." + this->request_form->uri;
 	if (!request_form)
 		return ;
+	std::cout << path << std::endl;
+	if (stat(path.c_str(), &pathStat) == 0)
+	{
+		if (S_ISREG(pathStat.st_mode))
+		{
+			// regular file
+			this->get_file(path);
+		}
+		else if (S_ISDIR(pathStat.st_mode))
+		{
+			// directory
+
+		}
+		else
+		{
+			// maybe 400?
+
+		}
+	}
+	else
+	{
+		// not found
+
+	}
 }
 
 void	response::do_post()
 {
 	if (!request_form)
 		return ;
-
 }
 
 void	response::do_delete()
 {
 	if (!request_form)
 		return ;
-
 }
+
 void	response::set_mime_types_list()
 {
     this->mime_types_list[".html"] = "text/html";

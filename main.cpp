@@ -55,7 +55,7 @@ class   response{
 	public:
 
 		// con/destructor
-		response();
+		response(request &rq);
 		~response(void);
 
 	// STATUS LINE
@@ -78,21 +78,102 @@ class   response{
 
 	private:
 		std::map<int, std::string>	status_codes_list;
+		std::map<std::string, std::string>	mime_types_list;
 		void		set_status_codes_list();
+		void		set_mime_types_list();
+		void		do_get();
+		void		do_post();
+		void		do_delete();
 		std::string print_status_line();
 		std::string print_headers();
+		request		*request_form;
 };
 
-response::response()
+response::response(request &req)
 {
 	this->set_status_codes_list();
-	this->status_code = 200;
-	this->http_version = "1.1";
-	this->body = "a";
-	this->headers["Content-Length"] = "0";
+	this->set_mime_types_list();
+	this->request_form = &req;
+	if (req.method == "GET")
+		this->do_get();
+	else if (req.method == "POST")
+		this->do_post();
+	else if (req.method == "DELETE")
+		this->do_delete();
+	else
+	{
+		this->status_code = 404;
+		this->http_version = "1.1";
+		this->body = "a";
+		this->headers["Content-Length"] = "0";
+	}
 }
 
 response::~response(){}
+
+void	response::do_get()
+{
+	if (!request_form)
+		return ;
+}
+
+void	response::do_post()
+{
+	if (!request_form)
+		return ;
+
+}
+
+void	response::do_delete()
+{
+	if (!request_form)
+		return ;
+
+}
+void	response::set_mime_types_list()
+{
+    this->mime_types_list[".html"] = "text/html";
+    this->mime_types_list[".htm"] = "text/html";
+    this->mime_types_list[".css"] = "text/css";
+    this->mime_types_list[".js"] = "application/javascript";
+    this->mime_types_list[".json"] = "application/json";
+    this->mime_types_list[".xml"] = "application/xml";
+    this->mime_types_list[".txt"] = "text/plain";
+    this->mime_types_list[".csv"] = "text/csv";
+    this->mime_types_list[".jpg"] = "image/jpeg";
+    this->mime_types_list[".jpeg"] = "image/jpeg";
+    this->mime_types_list[".png"] = "image/png";
+    this->mime_types_list[".gif"] = "image/gif";
+    this->mime_types_list[".bmp"] = "image/bmp";
+    this->mime_types_list[".webp"] = "image/webp";
+    this->mime_types_list[".svg"] = "image/svg+xml";
+    this->mime_types_list[".ico"] = "image/vnd.microsoft.icon";
+    this->mime_types_list[".woff"] = "font/woff";
+    this->mime_types_list[".woff2"] = "font/woff2";
+    this->mime_types_list[".ttf"] = "font/ttf";
+    this->mime_types_list[".otf"] = "font/otf";
+    this->mime_types_list[".eot"] = "application/vnd.ms-fontobject";
+    this->mime_types_list[".vtt"] = "text/vtt";
+    this->mime_types_list[".mp4"] = "video/mp4";
+    this->mime_types_list[".mpeg"] = "video/mpeg";
+    this->mime_types_list[".webm"] = "video/webm";
+    this->mime_types_list[".avi"] = "video/x-msvideo";
+    this->mime_types_list[".mp3"] = "audio/mpeg";
+    this->mime_types_list[".wav"] = "audio/wav";
+    this->mime_types_list[".ogg"] = "audio/ogg";
+    this->mime_types_list[".pdf"] = "application/pdf";
+    this->mime_types_list[".zip"] = "application/zip";
+    this->mime_types_list[".tar"] = "application/x-tar";
+    this->mime_types_list[".gz"] = "application/gzip";
+    this->mime_types_list[".7z"] = "application/x-7z-compressed";
+    this->mime_types_list[".rar"] = "application/vnd.rar";
+    this->mime_types_list[".doc"] = "application/msword";
+    this->mime_types_list[".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    this->mime_types_list[".xls"] = "application/vnd.ms-excel";
+    this->mime_types_list[".xlsx"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    this->mime_types_list[".ppt"] = "application/vnd.ms-powerpoint";
+    this->mime_types_list[".pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+}
 
 void	response::set_status_codes_list()
 {
@@ -224,8 +305,8 @@ int	main()
 		fd = open("request.txt", O_RDONLY);
 		if (fd < 0)
 			return (-1);
-
-		response	respuesta = response();
+		request		req = request(fd);
+		response	respuesta = response(req);
 		std::cout << respuesta.str() << std::endl;
 	}
 	catch (const std::exception& e)

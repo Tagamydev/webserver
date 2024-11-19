@@ -42,19 +42,29 @@ std::string get_actual_date()
 	return (result);
 }
 
+class	location{
+	std::string	location;
+	// this need to be reworked idk if you can have both without problems
+	std::string	root;
+	std::string	alias;
+	std::string	index_file;
+	bool		get_enabled;
+	bool		post_enabled;
+	bool		delete_enabled;
+	bool		autoindex_enabled;
+	bool		file_uploading_enabled;
+};
+
 class	config{
 	//this need a location class diferent from config to make a map with that!!
 	public:
 		int			port;
 		int			body_size_limit;
 		std::string	host;
-		std::string	error_pages;
 		std::string	default_file;
 		std::string	cgi_extention;
-		bool		directory_listing_allowed;
-		bool		file_uploading_allowed;
-
-
+		std::map<int, std::string>		error_pages;
+		std::map<std::string, location>	locations;
 };
 
 class   request{

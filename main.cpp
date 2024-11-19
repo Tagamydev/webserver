@@ -99,9 +99,6 @@ int	main()
 			return (-1);
 
 		response	respuesta = response();
-	
-		respuesta.get_content("./t.html");
-		std::cout << respuesta.print_str();
 	}
 	catch (const std::exception& e)
 	{

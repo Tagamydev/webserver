@@ -11,12 +11,22 @@
 # **************************************************************************** #
 
 NAME		=	result
-CXXFLAGS	=	-I ./#-Wall -Wextra -Werror -I ./
+CXXFLAGS	=	-I ./src/ -I ./src/server/ -I ./src/request/ -I ./src/response/ #-Wall -Wextra -Werror -I ./
 CXXFLAGS	+=	-std=c++98
 CXX		=	c++ $(CXXFLAGS)
 MAIN		=	./main.cpp
-INC		=	./ClassPref.hpp
-SRCS		=	$(MAIN)
+INC		= ./src/main.hpp \
+		./src/response/response.hpp \
+		./src/request/request.hpp \
+		./src/server/location.hpp \
+		./src/server/server.hpp \
+
+SRCS		= ./src/response/response.cpp \
+		./src/request/request.cpp \
+		./src/server/server.cpp \
+		./src/server/location.cpp \
+		./src/main.cpp 
+
 O_DIR		=	./objects/
 OBJS		=	$(addprefix $(O_DIR)/, $(SRCS:.cpp=.o))
 

@@ -28,6 +28,9 @@ class   request{
 
 	// BODY
 		std::string	body;
+
+        int check_startline(std::string line);
+        void fix_spaces_in_line(std::string &line);
 };
 
 #endif

@@ -12,6 +12,8 @@
 
 #include "main.hpp"
 
+
+
 std::string get_actual_date()
 {
 	time_t		now;
@@ -42,8 +44,19 @@ int	main()
 		if (fd < 0)
 			return (-1);
 		request		req = request(fd);
-		response	respuesta = response(req);
-		std::cout << respuesta.str() << std::endl;
+		
+        //David tests
+        std::fstream    reqfile;
+        std::string line;
+
+        reqfile.open("request.txt");
+        if (!reqfile.is_open())
+            return(-1);
+        getline(reqfile, line);
+        req.check_startline(line);
+        
+		// response	respuesta = response(req);
+		// std::cout << respuesta.str() << std::endl;
 	}
 	catch (const std::exception& e)
 	{

@@ -60,7 +60,7 @@ bool request::is_valid_method(std::string line)
         if (!line.compare(methods[i]) && line.length() == methods[i].length())
             return (true);
     }
-    std::cout << "Invalid method name." << std::endl;
+    std::cerr << "Invalid method name." << std::endl;
     return(false);
 }
 
@@ -115,10 +115,10 @@ int request::check_startline(std::string line)
     if (line.find(delimiter) != std::string::npos)
         key = line.substr(0, line.find(delimiter));
     else
-        return (std::cout << "Invalid number of parameters on request line." << std::endl, 1);
+        return (std::cerr << "Invalid number of parameters on request line." << std::endl, 1);
     if (!this->is_valid_uri(key))
     {
-        std::cout << "Invalid URI path." << std::endl;
+        std::cerr << "Invalid URI path." << std::endl;
         return (1);
     }
     this->uri = key;
@@ -129,13 +129,13 @@ int request::check_startline(std::string line)
     if (line.find(delimiter) == std::string::npos)
         key = line.substr(0, line.length());
     else
-        return (std::cout << "Invalid number of parameters on request line." << std::endl, 1);
+        return (std::cerr << "Invalid number of parameters on request line." << std::endl, 1);
     if (!this->is_valid_httpv(key))
     {
-        std::cout << "Invalid HTTP version." << std::endl;
+        std::cerr << "Invalid HTTP version." << std::endl;
         return (1);
     }
     this->http_version = key;
     std::cout << "HTTP V : " << this->http_version << std::endl;
-    // return (0);
+    return (0);
 }

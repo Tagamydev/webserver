@@ -1,4 +1,4 @@
-GET      /             HTTP/1.0   
+GET      /minecraft.jpg             HTTP/1.0   
 
 Host: localhost:8000
 

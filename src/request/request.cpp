@@ -9,6 +9,14 @@ request::request(int fd)
 
 request::~request(){}
 
+bool request::is_valid_httpv(std::string line)
+{
+    //should we check separately HTTP from number?
+ if (line != "HTTP/1.0" && line != "HTTP/1.1")
+    return (false);
+ return(true);
+}
+
 bool request::is_valid_uri(std::string &line)
 {
     std::string::iterator it;
@@ -89,9 +97,9 @@ int request::check_startline(std::string line)
     std::map<std::string, std::string> mp;
     
     delimiter = " ";
-    std::cout << "Line :" << line << "|\n";
+    std::cout << "Line : " << line << "|\n";
     this->fix_spaces_in_line(line);
-    std::cout << "Parsed Line: " << line << "|\n";
+    std::cout << "Parsed Line : " << line << "|\n";
     std::cout << std::endl;
 
     //check method
@@ -101,34 +109,33 @@ int request::check_startline(std::string line)
         return (1); //error printed in function. Check cout error?
     this->method = key;
     line = line.substr((line.find(delimiter) + 1), line.length());
-    std::cout << "Method :" << this->method << std::endl;
+    std::cout << "Method : " << this->method << std::endl;
 
     //check URI
     if (line.find(delimiter) != std::string::npos)
         key = line.substr(0, line.find(delimiter));
+    else
+        return (std::cout << "Invalid number of parameters on request line." << std::endl, 1);
     if (!this->is_valid_uri(key))
     {
         std::cout << "Invalid URI path." << std::endl;
         return (1);
     }
     this->uri = key;
-    std::cout << "URI :" << this->uri << std::endl;
-
-
+    std::cout << "URI : " << this->uri << std::endl;
     line = line.substr((line.find(delimiter) + 1), line.length());
 
-
-    // while (line.find(delimiter) != std::string::npos)
-    // {
-    // // std::cout << "Line :" << line << "\n";
-    // key = line.substr(0, line.find(delimiter));
-    // std::cout << "Key :" << key << "\n";
-    // // redefine line?
-    // line = line.substr((line.find(delimiter) + 1), line.length());
-	// // nextKey = line.substr((line.find(delimiter) + 1), line.length());
-    // }
-    // key = line;
-    // std::cout << "Key :" << key << "\n";
-    // std::cout << std::endl;
-    return (0);
+    //check HTTP Version
+    if (line.find(delimiter) == std::string::npos)
+        key = line.substr(0, line.length());
+    else
+        return (std::cout << "Invalid number of parameters on request line." << std::endl, 1);
+    if (!this->is_valid_httpv(key))
+    {
+        std::cout << "Invalid HTTP version." << std::endl;
+        return (1);
+    }
+    this->http_version = key;
+    std::cout << "HTTP V : " << this->http_version << std::endl;
+    // return (0);
 }

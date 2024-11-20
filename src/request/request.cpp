@@ -9,6 +9,53 @@ request::request(int fd)
 
 request::~request(){}
 
+bool request::is_valid_uri(std::string &line)
+{
+    std::string::iterator it;
+    std::string normalized;
+    size_t len = line.length();
+
+    if (line.empty())
+        return (false);
+    // max size?
+    if (len > 2000)
+        return (false);
+    // Check for invalid characters
+    for (it = line.begin(); it < line.end(); it++)
+    {
+        if (!std::isalnum(*it) && *it != '/' && *it != '.' && *it != '-' && *it != '_' && *it != '%' && *it != ':')
+            return (false);
+    }
+    // Check for ../ and //
+    for (size_t i = 0; i < len; ++i) 
+    {
+        if (i + 2 < len && line[i] == '.' && line[i+1] == '.' && line[i+2] == '/')
+            i += 2;
+        else if (line[i] == '/' && i + 1 < len && line[i + 1] == '/') 
+            return (false);
+        else 
+            normalized += line[i];
+    }
+    if (normalized.empty())
+        return (false);
+    line = normalized;
+    return (true);
+}
+bool request::is_valid_method(std::string line)
+{
+    std::string methods[3] = {"GET", "POST", "DELETE"};
+
+    if (line.empty())
+        return (false);
+    for (size_t i = 0; i < methods->length(); i++)
+    {
+        if (!line.compare(methods[i]) && line.length() == methods[i].length())
+            return (true);
+    }
+    std::cout << "Invalid method name." << std::endl;
+    return(false);
+}
+
 void request::fix_spaces_in_line(std::string &line)
 {
     std::string parsedLine;
@@ -30,7 +77,6 @@ void request::fix_spaces_in_line(std::string &line)
         parsedLine += line[i];
         i++;
     }
-    //check leaks
     line = parsedLine;
 }
 
@@ -44,39 +90,45 @@ int request::check_startline(std::string line)
     
     delimiter = " ";
     std::cout << "Line :" << line << "|\n";
-    //parse line? fix spaces
-    // if (line[0] == ' ')
-    //     while (line[i] == ' ')
-    //         i++;
-    // while (i != line.length() || line[i] != '\0')
-    // {
-    //     if (line[i] == ' ')
-    //     {
-    //         while (line[i] == ' ')
-    //            i++;
-    //         if (line[i] == '\0')
-    //             break;
-    //         parsedLine += ' ';
-    //     }
-    //     parsedLine += line[i];
-    //     i++;
-    // }
     this->fix_spaces_in_line(line);
     std::cout << "Parsed Line: " << line << "|\n";
     std::cout << std::endl;
 
-
-    while (line.find(delimiter) != std::string::npos)
-    {
-    // std::cout << "Line :" << line << "\n";
-    key = line.substr(0, line.find(delimiter));
-    std::cout << "Key :" << key << "\n";
-    // redefine line?
+    //check method
+    if (line.find(delimiter) != std::string::npos)
+        key = line.substr(0, line.find(delimiter));
+    if (!this->is_valid_method(key))
+        return (1); //error printed in function. Check cout error?
+    this->method = key;
     line = line.substr((line.find(delimiter) + 1), line.length());
-	// nextKey = line.substr((line.find(delimiter) + 1), line.length());
+    std::cout << "Method :" << this->method << std::endl;
+
+    //check URI
+    if (line.find(delimiter) != std::string::npos)
+        key = line.substr(0, line.find(delimiter));
+    if (!this->is_valid_uri(key))
+    {
+        std::cout << "Invalid URI path." << std::endl;
+        return (1);
     }
-    key = line;
-    std::cout << "Key :" << key << "\n";
-    std::cout << std::endl;
+    this->uri = key;
+    std::cout << "URI :" << this->uri << std::endl;
+
+
+    line = line.substr((line.find(delimiter) + 1), line.length());
+
+
+    // while (line.find(delimiter) != std::string::npos)
+    // {
+    // // std::cout << "Line :" << line << "\n";
+    // key = line.substr(0, line.find(delimiter));
+    // std::cout << "Key :" << key << "\n";
+    // // redefine line?
+    // line = line.substr((line.find(delimiter) + 1), line.length());
+	// // nextKey = line.substr((line.find(delimiter) + 1), line.length());
+    // }
+    // key = line;
+    // std::cout << "Key :" << key << "\n";
+    // std::cout << std::endl;
     return (0);
 }

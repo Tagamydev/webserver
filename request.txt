@@ -1,4 +1,4 @@
-GET      /              HTTP/1.1   
+GET      ./asdas/../dasd              HTTP/1.1   
 
 Host: localhost:8000
 

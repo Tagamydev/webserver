@@ -9,6 +9,17 @@ request::request(int fd)
 
 request::~request(){}
 
+
+// Headers
+bool    request::check_save_headers(std::string line)
+{
+    return(true);
+}
+
+
+
+// Request line
+
 bool request::is_valid_httpv(std::string line)
 {
     //should we check separately HTTP from number?
@@ -69,14 +80,14 @@ void request::fix_spaces_in_line(std::string &line)
     std::string parsedLine;
     int i = 0;
 
-    if (line[0] == ' ')
-        while (line[i] == ' ')
+    if (std::isspace(line[0]))
+        while (std::isspace(line[i]))
             i++;
     while (i != line.length() || line[i] != '\0')
     {
-        if (line[i] == ' ')
+        if (std::isspace(line[i]))
         {
-            while (line[i] == ' ')
+            while (std::isspace(line[i]))
                i++;
             if (line[i] == '\0')
                 break;
@@ -88,7 +99,7 @@ void request::fix_spaces_in_line(std::string &line)
     line = parsedLine;
 }
 
-int request::check_startline(std::string line)
+bool request::check_save_request_line(std::string line)
 {
     // std::string parsedLine;
     // int i = 0;
@@ -97,11 +108,12 @@ int request::check_startline(std::string line)
     std::map<std::string, std::string> mp;
     
     delimiter = " ";
-    std::cout << "Line : " << line << "|\n";
+    // std::cout << "Line : " << line << "|\n";
     this->fix_spaces_in_line(line);
-    std::cout << "Parsed Line : " << line << "|\n";
-    std::cout << std::endl;
+    // std::cout << "Parsed Line : " << line << "|\n";
+    // std::cout << std::endl;
 
+    std::cout << "\n<<<<    Request    >>>>" << std::endl;
     //check method
     if (line.find(delimiter) != std::string::npos)
         key = line.substr(0, line.find(delimiter));

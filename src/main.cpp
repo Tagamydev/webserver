@@ -48,12 +48,30 @@ int	main()
         //David tests
         std::fstream    reqfile;
         std::string line;
+        std::string tmp;
 
         reqfile.open("request.txt");
         if (!reqfile.is_open())
             return(-1);
         getline(reqfile, line);
-        req.check_startline(line);
+        req.check_save_request_line(line);
+        
+        //read headers: read until found "\r\n\r\n"
+        line.clear();
+        getline(reqfile, tmp);
+        while (!tmp.empty() && tmp != "\r\n\r\n")
+        {
+            line += tmp;
+            line += '\n';
+            getline(reqfile, tmp);
+            if (reqfile.eof())
+            {
+                line += tmp;
+                break;
+            }
+        }
+		std::cout << "\n<<<<    HEADER    >>>>" << std::endl;
+		std::cout << line << std::endl;
         
 		// response	respuesta = response(req);
 		// std::cout << respuesta.str() << std::endl;

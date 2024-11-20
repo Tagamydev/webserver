@@ -29,11 +29,12 @@ class   request{
 	// BODY
 		std::string	body;
 
-        int check_startline(std::string line);
+        bool check_save_request_line(std::string line);
         void fix_spaces_in_line(std::string &line);
         bool is_valid_method(std::string line);
         bool is_valid_uri(std::string &line);
         bool is_valid_httpv(std::string line);
+        bool check_save_headers(std::string line);
 
 };
 

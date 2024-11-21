@@ -30,6 +30,31 @@ std::string get_actual_date()
 	return (result);
 }
 
+void send_response(int socket_fd, const std::string &response_str)
+{
+    size_t total_sent = 0;
+    size_t response_length = response_str.length();
+
+    while (total_sent < response_length)
+    {
+        ssize_t bytes_sent = write(socket_fd, response_str.c_str() + total_sent, response_length - total_sent);
+
+        if (bytes_sent < 0)
+        {
+            perror("Error al enviar la respuesta");
+            break;
+        }
+
+        total_sent += bytes_sent;
+    }
+
+    if (total_sent < response_length)
+    {
+        std::cerr << "Advertencia: No se enviaron todos los bytes de la respuesta. Enviados: "
+                  << total_sent << " de " << response_length << " bytes.\n";
+    }
+}
+
 int	test()
 {
 	int	port = 1234;
@@ -118,39 +143,19 @@ int	test()
                 }
 				else
 				{
-					/*
-                    int valread = read(fds[i].fd, buffer, BUFFER_SIZE);
-                    if (valread <= 0)
-					{
-                        std::cout << "Cliente desconectado\n";
-                        close(fds[i].fd);
-                        fds[i] = fds[--client_count];
-                    }
-					else
-					{
-                        // Responder con página por defecto
-                        std::cout << "Solicitud recibida:\n" << buffer << "\n";
-                        write(fds[i].fd, RESPONSE, strlen(RESPONSE));
-                        close(fds[i].fd);
-                        fds[i] = fds[--client_count];
-                    }
-					*/
                     try
                     {
 					    request		req = request(fds[i].fd);
+    					response	respuesta = response(req);
 
+                        send_response(fds[i].fd, respuesta.str());
+                        close(fds[i].fd);
+                        fds[i] = fds[--client_count];
                     }
                     catch (std::exception &e)
                     {
-                        e.what();
-
+                        std::cout << e.what() << std::endl;
                     }
-					response	respuesta = response(req);
-
-                    write(fds[i].fd, respuesta.str().c_str(), respuesta.str().length());
-                    write(1, respuesta.str().c_str(), respuesta.str().length());
-                    close(fds[i].fd);
-                    fds[i] = fds[--client_count];
                 }
             }
         }

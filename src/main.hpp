@@ -14,6 +14,8 @@
 # include <fcntl.h>
 # include <cstdio>    
 # include <map>
+# include <list>
+# include <dirent.h>
 # include <poll.h>
 # include <cstring>
 # include <cstdlib>

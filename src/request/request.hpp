@@ -34,7 +34,7 @@ class   request{
         bool is_valid_method(std::string line);
         bool is_valid_uri(std::string &line);
         bool is_valid_httpv(std::string line);
-        bool check_save_headers(std::string line);
+        bool check_save_headers(std::fstream &reqfile, std::string line);
 
 };
 

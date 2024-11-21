@@ -3,27 +3,11 @@
 request::request(std::fstream    &reqfile)
 {
     std::string line;
-    std::string tmp;
 
     getline(reqfile, line);
     this->check_save_request_line(line);
+    this->check_save_headers(reqfile, line);
 
-//read headers: read until found "\r\n\r\n"
-        line.clear();
-        getline(reqfile, tmp);
-        while (!tmp.empty() && tmp != "\r\n\r\n")
-        {
-            line += tmp;
-            line += '\n';
-            getline(reqfile, tmp);
-            if (reqfile.eof())
-            {
-                line += tmp;
-                break;
-            }
-        }
-		std::cout << "\n<<<<    HEADER    >>>>" << std::endl;
-		std::cout << line << std::endl;
 
 
 	// this->http_version = "1.1";
@@ -35,8 +19,41 @@ request::~request(){}
 
 
 // Headers
-bool    request::check_save_headers(std::string line)
+bool    request::check_save_headers(std::fstream &reqfile, std::string line)
 {
+    std::string tmp;
+
+	line.clear();
+	getline(reqfile, tmp);
+	while (!tmp.empty() && tmp != "\r\n\r\n")
+	{
+		line += tmp;
+		line += '\n';
+		getline(reqfile, tmp);
+		if (reqfile.eof())
+		{
+			line += tmp;
+			break;
+		}
+	}
+	std::cout << line << std::endl;
+	std::cout << "\n<<<<    normalized    >>>>" << std::endl;
+	fix_spaces_in_line(line);
+	std::cout << line << std::endl;
+	// while (!line.empty())
+	// {
+	// 	line += tmp;
+	// 	line += '\n';
+	// 	getline(reqfile, tmp);
+	// 	if (reqfile.eof())
+	// 	{
+	// 		line += tmp;
+	// 		break;
+	// 	}
+	// }
+	// std::cout << "\n<<<<    HEADER    >>>>" << std::endl;
+	// std::cout << line << std::endl;
+
     return(true);
 }
 
@@ -104,14 +121,14 @@ void request::fix_spaces_in_line(std::string &line)
     std::string parsedLine;
     int i = 0;
 
-    if (std::isspace(line[0]))
-        while (std::isspace(line[i]))
+    if (line[0] == ' ' || line[0] == '\t' || line[0] == '\r' || line[0] == '\f')
+        while (line[i] == ' ' || line[i] == '\t' || line[i] == '\r' || line[i] == '\f')
             i++;
     while (i != line.length() || line[i] != '\0')
     {
-        if (std::isspace(line[i]))
+        if (line[i] == ' ' || line[i] == '\t' || line[i] == '\r' || line[i] == '\f')
         {
-            while (std::isspace(line[i]))
+            while (line[i] == ' ' || line[i] == '\t' || line[i] == '\r' || line[i] == '\f')
                i++;
             if (line[i] == '\0')
                 break;

@@ -1,8 +1,8 @@
 POST /submit-form HTTP/1.1
-Host: localhost
-User-Agent: TestClient/1.0
-Content-Type: application/x-www-form-urlencoded
-Content-Length: 27
-Connection: keep-alive
+		Host:    localhost
+  User-Agent:			 TestClient/1.0
+Content-Type: 		application/x-www-form-urlencoded
+ Content-Length: 27     
+Connection: 		keep-alive   
 
 name=John+Doe&age=30

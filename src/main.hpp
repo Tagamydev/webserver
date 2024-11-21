@@ -14,6 +14,11 @@
 # include <fcntl.h>
 # include <cstdio>    
 # include <map>
+# include <poll.h>
+# include <cstring>
+# include <cstdlib>
+# include <sys/socket.h>
+# include <netinet/in.h>
 # include <sys/stat.h>
 # include "location.hpp"
 # include "server.hpp"

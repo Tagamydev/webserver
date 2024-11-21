@@ -20,6 +20,10 @@ response::response(request &req)
 		this->body = "a";
 		this->headers["Content-Length"] = "0";
 	}
+	if (0)
+	{
+		throw ("404");
+	}
 }
 
 response::~response(){}
@@ -84,7 +88,7 @@ void	response::do_get()
 		}
 		else
 		{
-			// maybe 400?
+			// maybe 404?
 
 		}
 	}

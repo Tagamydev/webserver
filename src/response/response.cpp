@@ -70,12 +70,13 @@ std::list<std::string> listDirectory(const std::string& path) {
     DIR* dir = opendir(path.c_str());
     struct dirent* entry;
 
-    if (dir == nullptr) {
+    if (dir == NULL)
+	{
         perror("Error al abrir el directorio");
         return directoryEntries;
     }
 
-    while ((entry = readdir(dir)) != nullptr)
+    while ((entry = readdir(dir)) != NULL)
 	{
         if (std::string(entry->d_name) != "." && std::string(entry->d_name) != "..")
             directoryEntries.push_back(entry->d_name);
@@ -90,7 +91,7 @@ void	response::do_get()
 	std::string	path;
 	struct stat pathStat;
 
-	path = "." + this->request_form->uri;
+	path = "." + std::string("/examples/");//this->request_form->uri;
 	if (!request_form)
 		return ;
 	if (stat(path.c_str(), &pathStat) == 0)
@@ -105,6 +106,12 @@ void	response::do_get()
 			// directory
 			//'/?' 301
     		std::list<std::string> entries = listDirectory(path);
+			std::list<std::string>::iterator	i = entries.begin();
+			std::list<std::string>::iterator	ie = entries.end();
+
+			for (; i != ie; i++) {
+				std::cout << *i << std::endl;
+			}
 		}
 		else
 		{

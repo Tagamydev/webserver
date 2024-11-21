@@ -17,6 +17,18 @@ request::request(std::fstream    &reqfile)
 
 request::~request(){}
 
+int	request::size_in_bytes(std::map<std::string, std::string> mp)
+{
+  int mapSize = mp.size();
+
+    // Calculating the size of any individual element in the map
+    int elementSize = sizeof(mp.begin()->first) + sizeof(mp.begin()->second);
+
+    // Calculate the size of the map in bytes
+    int size = mapSize * elementSize;
+	std::cout << "Size of the map in bytes is : " << size << std::endl;
+	return (mapSize);
+}
 
 // Headers
 void request::is_empty(std::string &line)
@@ -54,6 +66,7 @@ void request::is_valid_header(std::string &line)
 		line.erase(0, line.find('\n') + 1);
 		i = 0;
 	}
+	//check mandatory headers headers.find("Host") 
 	std::cout << "\n<<<<    HEADER    >>>>" << std::endl;
 	for (std::map<std::string,std::string>::iterator it = this->headers.begin(); it != this->headers.end(); it++)
 	{
@@ -166,19 +179,14 @@ void request::fix_spaces_in_line(std::string &line)
     line = parsedLine;
 }
 
-bool request::check_save_request_line(std::string line)
+void request::check_save_request_line(std::string line)
 {
-    // std::string parsedLine;
-    // int i = 0;
     std::string key;
     std::string delimiter;
     std::map<std::string, std::string> mp;
     
     delimiter = " ";
-    // std::cout << "Line : " << line << "|\n";
     this->fix_spaces_in_line(line);
-    // std::cout << "Parsed Line : " << line << "|\n";
-    // std::cout << std::endl;
 
     std::cout << "\n<<<<    Request    >>>>" << std::endl;
     //check method
@@ -190,22 +198,19 @@ bool request::check_save_request_line(std::string line)
     std::cout << "Method : " << this->method << std::endl;
 
     //check URI
-    if (line.find(delimiter) != std::string::npos)
-        key = line.substr(0, line.find(delimiter));
-    else
-        return (std::cerr << "Invalid number of parameters on request line." << std::endl, 1);
+    if (line.find(delimiter) == std::string::npos)
+		throw std::runtime_error("400 Bad Request");
+	key = line.substr(0, line.find(delimiter));
     this->is_valid_uri(key);
     this->uri = key;
     std::cout << "URI : " << this->uri << std::endl;
     line = line.substr((line.find(delimiter) + 1), line.length());
 
     //check HTTP Version
-    if (line.find(delimiter) == std::string::npos)
-        key = line.substr(0, line.length());
-    else
-        return (std::cerr << "Invalid number of parameters on request line." << std::endl, 1);
+    if (line.find(delimiter) != std::string::npos)
+		throw std::runtime_error("400 Bad Request");
+	key = line.substr(0, line.length());
     this->is_valid_httpv(key);
     this->http_version = key;
     std::cout << "HTTP V : " << this->http_version << std::endl;
-    return (0);
 }

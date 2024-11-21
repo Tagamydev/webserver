@@ -19,6 +19,7 @@
 # include "server.hpp"
 # include "request.hpp"
 # include "response.hpp"
+# include <algorithm>    // std::count
 
 std::string get_actual_date();
 #endif

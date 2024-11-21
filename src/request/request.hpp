@@ -31,11 +31,12 @@ class   request{
 
         bool check_save_request_line(std::string line);
         void fix_spaces_in_line(std::string &line);
-        bool is_valid_method(std::string line);
-        bool is_valid_uri(std::string &line);
-        bool is_valid_httpv(std::string line);
-        bool check_save_headers(std::fstream &reqfile, std::string line);
-
+        void is_valid_method(std::string line);
+        void is_valid_uri(std::string &line);
+        void is_valid_httpv(std::string line);
+        void check_save_headers(std::fstream &reqfile, std::string line);
+		void is_valid_header(std::string &line);
+		void is_empty(std::string &line);
 };
 
 #endif

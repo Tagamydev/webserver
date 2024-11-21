@@ -7,7 +7,7 @@ class   request{
 	public:
 
 		// con/destructor
-		request(int fd);
+		request(std::fstream    &reqfile);
 		~request(void);
 
 	// FIRST LINE

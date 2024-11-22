@@ -54,6 +54,7 @@ int	request::size_in_bytes(std::map<std::string, std::string> mp)
 }
 
 // Headers
+/* Function to forbid empty values on headers*/
 void request::is_empty(std::string &line)
 {
 	int	i = 0;

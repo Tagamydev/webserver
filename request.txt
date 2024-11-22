@@ -1,7 +1,7 @@
 GET / HTTP/1.1
 Host: localhost
 User-Agent: TestClient/1.0
-Content-Type:
+Content-Type
 Content-Length: 75
 Authorization:
 Accept: application/json

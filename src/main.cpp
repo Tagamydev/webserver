@@ -148,8 +148,10 @@ int	test()
 					    request		req = request(fds[i].fd);
     					response	respuesta = response(req);
 
+                        //write(2, respuesta.str().c_str() + 147, respuesta.str().length() - 147);
                         send_response(fds[i].fd, respuesta.str());
-                        close(fds[i].fd);
+
+                        //close(fds[i].fd);
                         fds[i] = fds[--client_count];
                     }
                     catch (std::exception &e)

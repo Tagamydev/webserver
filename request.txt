@@ -1,9 +1,14 @@
-POST /submit-form HTTP/1.1
-		Host:    localhost
-  User-Agent:			 TestClient/1.0
-Content-Type: 		application/x-www-form-urlencoded
- Content-Length: 27     
- Content-Length: 5627     
-Connection: 		keep-alive   
+GET / HTTP/1.1
+Host: localhost
+User-Agent: TestClient/1.0
+Content-Type: application/json
+Content-Length: 75
+Authorization: Bearer abc123xyz456
+Accept: application/json
+Connection: keep-alive
 
-name=John+Doe&age=30
+{
+    "name": "Jane Doe",
+    "email": "jane.doe@example.com",
+    "roles": ["admin", "editor"]
+}

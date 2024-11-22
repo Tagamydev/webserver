@@ -20,6 +20,10 @@ response::response(request &req)
 		this->body = "a";
 		this->headers["Content-Length"] = "0";
 	}
+	if (0)
+	{
+		throw ("404");
+	}
 }
 
 response::~response(){}
@@ -39,15 +43,15 @@ std::string	response::get_mimeType(std::string &path)
 
 void	response::get_file(std::string &path)
 {
-	std::ifstream	file(path.c_str());
+	std::ifstream	file(path.c_str(), std::ios::binary);
 	std::stringstream	buff;
 	std::stringstream	length;
 
 	if (file.is_open())
 	{
 		buff << file.rdbuf();
-		file.close();
 		this->body = buff.str();
+		file.close();
 		this->status_code = 200;
 		this->headers["Content-type"] = this->get_mimeType(path);
 		length << this->body.length();
@@ -61,15 +65,35 @@ void	response::get_file(std::string &path)
 
 }
 
+std::list<std::string> listDirectory(const std::string& path) {
+    std::list<std::string> directoryEntries;
+    DIR* dir = opendir(path.c_str());
+    struct dirent* entry;
+
+    if (dir == NULL)
+	{
+        perror("Error al abrir el directorio");
+        return directoryEntries;
+    }
+
+    while ((entry = readdir(dir)) != NULL)
+	{
+        if (std::string(entry->d_name) != "." && std::string(entry->d_name) != "..")
+            directoryEntries.push_back(entry->d_name);
+    }
+
+    closedir(dir);
+    return directoryEntries;
+}
+
 void	response::do_get()
 {
 	std::string	path;
 	struct stat pathStat;
 
-	path = "." + this->request_form->uri;
+	path = "." + std::string("/minecraft.jpg");//this->request_form->uri;
 	if (!request_form)
 		return ;
-	std::cout << path << std::endl;
 	if (stat(path.c_str(), &pathStat) == 0)
 	{
 		if (S_ISREG(pathStat.st_mode))
@@ -81,10 +105,17 @@ void	response::do_get()
 		{
 			// directory
 			//'/?' 301
+    		std::list<std::string> entries = listDirectory(path);
+			std::list<std::string>::iterator	i = entries.begin();
+			std::list<std::string>::iterator	ie = entries.end();
+
+			for (; i != ie; i++) {
+				std::cout << *i << std::endl;
+			}
 		}
 		else
 		{
-			// maybe 400?
+			// maybe 404?
 
 		}
 	}
@@ -226,7 +257,7 @@ std::string	response::print_status_line()
 	result 
 	<< "HTTP/" << this->http_version << " " 
 	<< this->status_code << " " 
-	<< this->status_codes_list[this->status_code] << std::endl;
+	<< this->status_codes_list[this->status_code] << "\r\n";
 
 	return (result.str());
 }
@@ -239,7 +270,7 @@ std::string	response::print_headers()
 
 	for (; i != ie; i++) {
 		result << i->first << ": " << i->second;
-		result << std::endl;
+		result << "\r\n";
 	}
 
 	return (result.str());
@@ -251,7 +282,7 @@ std::string	response::str()
 
 	result << this->print_status_line();
 	result << this->print_headers();
-	result << std::endl;
+	result << "\r\n";
 	result << this->body;
 
 	return (result.str());

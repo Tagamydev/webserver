@@ -24,6 +24,7 @@ request::request(int fd)
 	std::string			line;
 
 	file = read_file(fd);
+	// std::cout << "LINE \n" << file << std::endl;
 	reqfile << file;
 	reqfile.seekg(0);
 	getline(reqfile, line);
@@ -92,7 +93,8 @@ void request::is_valid_header(std::string &line)
 	std::cout << "\n<<<<    HEADER    >>>>" << std::endl;
 	for (std::map<std::string,std::string>::iterator it = this->headers.begin(); it != this->headers.end(); it++)
 	{
-		std::cout << "Key: " << it->first << "| Value: " << it->second << "|" << std::endl;
+		std::cout << "Key: " << it->first<<  std::endl;
+		std::cout << " Value: " << it->second << "" << std::endl;
 	}
 }
 void    request::check_save_headers(std::stringstream &reqfile, std::string line)
@@ -139,12 +141,12 @@ void request::is_valid_uri(std::string &line)
 	if (line.empty())
 		throw std::runtime_error("400 Bad Request");
 	// max size?
-	if (len > 2000)
+	if (len > 4000)
 		throw std::runtime_error("414 URI Too Long");
 	// Check for invalid characters
 	for (it = line.begin(); it < line.end(); it++)
 	{
-		if (!std::isalnum(*it) && *it != '/' && *it != '.' && *it != '-' && *it != '_' && *it != '%' && *it != ':')
+		if (!std::isalnum(*it) && *it != '/' && *it != '.' && *it != '-' && *it != '_' && *it != '%' && *it != ':' && *it != '&' && *it != '?' && *it != '=')
 			throw std::runtime_error("400 Bad Request");
 
 	}

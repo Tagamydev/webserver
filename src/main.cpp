@@ -182,9 +182,9 @@ int	main()
 		if (fd < 0)
 			return (-1);
 		request		req = request(fd);
-		response	respuesta = response(req);
-		std::cout << "\n<<<<    Response    >>>>" << std::endl;
-		std::cout << respuesta.str() << std::endl;
+		// response	respuesta = response(req);
+		// std::cout << "\n<<<<    Response    >>>>" << std::endl;
+		// std::cout << respuesta.str() << std::endl;
 		
 	}
 	catch (const std::exception& e)

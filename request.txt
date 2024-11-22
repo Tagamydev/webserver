@@ -1,7 +1,7 @@
-POST /../submit-form HTTP/1.1
+POST /submit-form HTTP/1.1
 		Host:    localhost
   User-Agent:			 TestClient/1.0
-ontent-Type: 		application/x-www-form-urlencoded
+Content-Type: 		application/x-www-form-urlencoded
  Content-Length: 27     
  Content-Length: 5627     
 Connection: 		keep-alive   

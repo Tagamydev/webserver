@@ -84,7 +84,8 @@ void request::is_valid_header(std::string &line)
 		while (line[i] == ' ')
 			i++;
 		this->headers[tmp] = line.substr(i,(line.find('\n') - i));
-		is_empty(this->headers[tmp]);
+		// Call function is_empty to rejecct empty header
+		// is_empty(this->headers[tmp]);
 
 		line.erase(0, line.find('\n') + 1);
 		i = 0;

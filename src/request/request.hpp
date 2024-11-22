@@ -34,7 +34,7 @@ class   request{
         void is_valid_method(std::string line);
         void is_valid_uri(std::string &line);
         void is_valid_httpv(std::string line);
-        void check_save_headers(std::fstream &reqfile, std::string line);
+        void check_save_headers(std::stringstream &reqfile, std::string line);
 		void is_valid_header(std::string &line);
 		void is_empty(std::string &line);
 		int	size_in_bytes(std::map<std::string, std::string> mp);

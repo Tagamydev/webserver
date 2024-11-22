@@ -12,21 +12,20 @@ std::string	read_file(int fd)
     }
 
     if (bytesRead == -1) {
-        std::cerr << "Error al leer del file descriptor: " << std::strerror(errno) << std::endl;
+        std::cerr << "Error reading file descriptor." << std::strerror(errno) << std::endl;
     }
-	
-
 	return (result);
 }
 
 request::request(int fd)
 {
-	std::string		file;
-	std::fstream	reqfile;
-	std::string		line;
+	std::string			file;
+	std::stringstream	reqfile;
+	std::string			line;
 
 	file = read_file(fd);
 	reqfile << file;
+	reqfile.seekg(0);
 	getline(reqfile, line);
 	this->check_save_request_line(line);
 	this->check_save_headers(reqfile, line);
@@ -96,7 +95,7 @@ void request::is_valid_header(std::string &line)
 		std::cout << "Key: " << it->first << "| Value: " << it->second << "|" << std::endl;
 	}
 }
-void    request::check_save_headers(std::fstream &reqfile, std::string line)
+void    request::check_save_headers(std::stringstream &reqfile, std::string line)
 {
 	std::string tmp;
 

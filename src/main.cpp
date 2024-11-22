@@ -174,8 +174,8 @@ int	main()
 {
 	try
 	{
-		test();
-		/*
+		// test();
+		
 		int	fd;
 
 		fd = open("request.txt", O_RDONLY);
@@ -183,8 +183,9 @@ int	main()
 			return (-1);
 		request		req = request(fd);
 		response	respuesta = response(req);
+		std::cout << "\n<<<<    Response    >>>>" << std::endl;
 		std::cout << respuesta.str() << std::endl;
-		*/
+		
 	}
 	catch (const std::exception& e)
 	{

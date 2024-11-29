@@ -3,6 +3,14 @@
 # define REQUEST_HPP
 # include "main.hpp"
 
+#define MAX_URI_LENGTH 4096
+#define MAX_CONTENT_LENGTH 30000000
+
+enum ParsingState
+{
+
+};
+
 class   request{
 	public:
 
@@ -13,21 +21,29 @@ class   request{
 	// FIRST LINE
 
 		// QUERY
-		std::map<std::string, std::string>	query_str;	
+		std::map<std::string, std::string>	_query_str;	
 		// key, value
 
 		// METHOD: GET, POST, DELETE
-		std::string	method;
+		std::string	_method;
 
-		std::string	uri;
-		std::string	http_version;
+		std::string	_uri;
+		std::string	_http_version;
 
 	// HEADERS
-		std::map<std::string, std::string>	headers;	
+		std::map<std::string, std::string>	_headers;	
 		// header, content
 
 	// BODY
-		std::string	body;
+		std::string	_body;
+		int		_body_length;
+		bool		_has_body;
+        bool        _chunked_flag;
+
+	// STATES FOR RESPONSE
+		ParsingState	_state;
+		int				_error_code;
+
 
         void check_save_request_line(std::string line);
         void fix_spaces_in_line(std::string &line);
@@ -37,7 +53,7 @@ class   request{
         void check_save_headers(std::stringstream &reqfile, std::string line);
 		void is_valid_header(std::string &line);
 		void is_empty(std::string &line);
-		int	size_in_bytes(std::map<std::string, std::string> mp);
+		void handle_headers();
 };
 
 #endif

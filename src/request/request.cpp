@@ -33,24 +33,20 @@ request::request(int fd)
 
 
 
-	// this->http_version = "1.1";
-	// this->uri = "/minecraft.jpg";
-	// this->method = "GET";
+	// this->_http_version = "1.1";
+	// this->_uri = "/minecraft.jpg";
+	// this->_method = "GET";
 }
 
 request::~request(){}
 
-int	request::size_in_bytes(std::map<std::string, std::string> mp)
+void request::handle_headers()
 {
-  int mapSize = mp.size();
-
-	// Calculating the size of any individual element in the map
-	int elementSize = sizeof(mp.begin()->first) + sizeof(mp.begin()->second);
-
-	// Calculate the size of the map in bytes
-	int size = mapSize * elementSize;
-	std::cout << "Size of the map in bytes is : " << size << std::endl;
-	return (mapSize);
+	if (this->_headers.count("content-length"))
+    {
+        this->_has_body = true;
+        this->_body_length = std::stoi(_headers["content-length"]);
+    }
 }
 
 // Headers
@@ -84,16 +80,16 @@ void request::is_valid_header(std::string &line)
 		i = line.find(':') + 1;
 		while (line[i] == ' ')
 			i++;
-		this->headers[tmp] = line.substr(i,(line.find('\n') - i));
+		this->_headers[tmp] = line.substr(i,(line.find('\n') - i));
 		// Call function is_empty to rejecct empty header
-		// is_empty(this->headers[tmp]);
+		// is_empty(this->_headers[tmp]);
 
 		line.erase(0, line.find('\n') + 1);
 		i = 0;
 	}
 	//check mandatory headers headers.find("Host") 
 	std::cout << "\n<<<<    HEADER    >>>>" << std::endl;
-	for (std::map<std::string,std::string>::iterator it = this->headers.begin(); it != this->headers.end(); it++)
+	for (std::map<std::string,std::string>::iterator it = this->_headers.begin(); it != this->_headers.end(); it++)
 	{
 		std::cout << "Key: " << it->first<<  std::endl;
 		std::cout << " Value: " << it->second << "" << std::endl;
@@ -117,6 +113,7 @@ void    request::check_save_headers(std::stringstream &reqfile, std::string line
 		}
 	}
 	fix_spaces_in_line(line);
+	//fix headers name to lower and erase spaces? 
 	is_valid_header(line);
 	// std::cout << "\n<<<<    HEADER    >>>>" << std::endl;
 	// std::cout << line << std::endl;
@@ -129,7 +126,6 @@ void    request::check_save_headers(std::stringstream &reqfile, std::string line
 
 void request::is_valid_httpv(std::string line)
 {
-	//should we check separately HTTP from number?
  if (line != "HTTP/1.0" && line != "HTTP/1.1")
 	throw std::runtime_error("505 HTTP Version Not Supported");
 }
@@ -167,6 +163,7 @@ void request::is_valid_uri(std::string &line)
 		throw std::runtime_error("400 Bad Request");
 	line = normalized;
 }
+
 void request::is_valid_method(std::string line)
 {
 	std::string methods[3] = {"GET", "POST", "DELETE"};
@@ -219,17 +216,17 @@ void request::check_save_request_line(std::string line)
 	if (line.find(delimiter) != std::string::npos)
 		key = line.substr(0, line.find(delimiter));
 	this->is_valid_method(key);
-	this->method = key;
+	this->_method = key;
 	line = line.substr((line.find(delimiter) + 1), line.length());
-	std::cout << "Method : " << this->method << std::endl;
+	std::cout << "Method : " << this->_method << std::endl;
 
 	//check URI
 	if (line.find(delimiter) == std::string::npos)
 		throw std::runtime_error("400 Bad Request");
 	key = line.substr(0, line.find(delimiter));
 	this->is_valid_uri(key);
-	this->uri = key;
-	std::cout << "URI : " << this->uri << std::endl;
+	this->_uri = key;
+	std::cout << "URI : " << this->_uri << std::endl;
 	line = line.substr((line.find(delimiter) + 1), line.length());
 
 	//check HTTP Version
@@ -237,6 +234,6 @@ void request::check_save_request_line(std::string line)
 		throw std::runtime_error("400 Bad Request");
 	key = line.substr(0, line.length());
 	this->is_valid_httpv(key);
-	this->http_version = key;
-	std::cout << "HTTP V : " << this->http_version << std::endl;
+	this->_http_version = key;
+	std::cout << "HTTP V : " << this->_http_version << std::endl;
 }

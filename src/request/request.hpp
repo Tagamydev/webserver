@@ -54,6 +54,10 @@ class   request{
 		void is_valid_header(std::string &line);
 		void is_empty(std::string &line);
 		void handle_headers();
+
+	// Assets
+		void	print_header();
+		
 };
 
 #endif

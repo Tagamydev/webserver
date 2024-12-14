@@ -29,4 +29,6 @@
 # include <algorithm>    // std::count
 
 std::string get_actual_date();
+void    ft_toLower(std::string &str);
+
 #endif

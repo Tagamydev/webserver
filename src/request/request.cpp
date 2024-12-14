@@ -1,5 +1,5 @@
 #include "request.hpp"
-
+#include <string>
 std::string	read_file(int fd)
 {
     const std::size_t bufferSize = 1024;
@@ -30,7 +30,7 @@ request::request(int fd)
 	getline(reqfile, line);
 	this->check_save_request_line(line);
 	this->check_save_headers(reqfile, line);
-
+	this->handle_headers();
 
 
 	// this->_http_version = "1.1";
@@ -42,11 +42,23 @@ request::~request(){}
 
 void request::handle_headers()
 {
+	//check mandatory headers headers.find("Host") 
+
 	if (this->_headers.count("content-length"))
     {
         this->_has_body = true;
-        this->_body_length = std::stoi(_headers["content-length"]);
+        this->_body_length = std::atoi(_headers["content-length"].c_str());
     }
+	if (!this->_method.find("GET"))
+		this->_has_body = false;
+	if (this->_headers.count("transfer-encoding") && this->_headers["transfer-encoding"] == "chunked")
+        this->_chunked_flag = true;
+
+
+	std::cout << "\n<<<<    Control vars    >>>>" << std::endl;
+	std::cout << "body lenght: " << this->_body_length << std::endl;
+	std::cout << "Has body : " << this->_has_body << std::endl;
+	std::cout << "Is chunked : " << this->_chunked_flag << std::endl;
 }
 
 // Headers
@@ -74,9 +86,16 @@ void request::is_valid_header(std::string &line)
 		// check : before \n
 		if (i < line.size() && line.find('\n') != std::string::npos) 
 			flag = std::count(line.begin() + i, line.begin() + line.find('\n'), ':');
+		//check what to do in this case. NGINX accept header without : and value.
+		// if(flag)
+		// 	std::cout << "Found header without :" << std::endl;
 		if (line.find(':') == std::string::npos || line.find(':') > line.find('\n') || flag > 1)
-			throw std::runtime_error("400 Bad Request");
+			throw std::runtime_error("400 Bad Request - Found header without :");
+			// throw std::runtime_error("400 Bad Request");
+		
+		
 		tmp = line.substr(i, (line.find(':') - i));
+		ft_toLower(tmp);
 		i = line.find(':') + 1;
 		while (line[i] == ' ')
 			i++;
@@ -87,13 +106,8 @@ void request::is_valid_header(std::string &line)
 		line.erase(0, line.find('\n') + 1);
 		i = 0;
 	}
-	//check mandatory headers headers.find("Host") 
-	std::cout << "\n<<<<    HEADER    >>>>" << std::endl;
-	for (std::map<std::string,std::string>::iterator it = this->_headers.begin(); it != this->_headers.end(); it++)
-	{
-		std::cout << "Key: " << it->first<<  std::endl;
-		std::cout << " Value: " << it->second << "" << std::endl;
-	}
+	print_header();
+
 }
 void    request::check_save_headers(std::stringstream &reqfile, std::string line)
 {
@@ -113,14 +127,8 @@ void    request::check_save_headers(std::stringstream &reqfile, std::string line
 		}
 	}
 	fix_spaces_in_line(line);
-	//fix headers name to lower and erase spaces? 
 	is_valid_header(line);
-	// std::cout << "\n<<<<    HEADER    >>>>" << std::endl;
-	// std::cout << line << std::endl;
-
 }
-
-
 
 // Request line
 
@@ -130,6 +138,16 @@ void request::is_valid_httpv(std::string line)
 	throw std::runtime_error("505 HTTP Version Not Supported");
 }
 
+/**
+
+* Checks whether the character passed is allowed in a field name
+* Characters allowed as specifed in RFC:
+
+"!" / "#" / "$" / "%" / "&" / "'"
+/ "*" / "+" / "-" / "." / "^" / "_"
+/ "`" / "|" / "~" / 0-9 / A-Z / a-z
+
+**/
 void request::is_valid_uri(std::string &line)
 {
 	std::string::iterator it;
@@ -142,6 +160,8 @@ void request::is_valid_uri(std::string &line)
 	if (len > 4000)
 		throw std::runtime_error("414 URI Too Long");
 	// Check for invalid characters
+	// Found this on web (ch >= '#' && ch <= ';') || (ch >= '?' && ch <= '[') || (ch >= 'a' && ch <= 'z') ||
+	//	ch == '!' || ch == '=' || ch == ']' || ch == '_' || ch == '~')
 	for (it = line.begin(); it < line.end(); it++)
 	{
 		if (!std::isalnum(*it) && *it != '/' && *it != '.' && *it != '-' && *it != '_' && *it != '%' && *it != ':' && *it != '&' && *it != '?' && *it != '=')
@@ -236,4 +256,16 @@ void request::check_save_request_line(std::string line)
 	this->is_valid_httpv(key);
 	this->_http_version = key;
 	std::cout << "HTTP V : " << this->_http_version << std::endl;
+}
+
+
+//assets
+void	request::print_header()
+{
+	std::cout << "\n<<<<    HEADER    >>>>" << std::endl;
+	for (std::map<std::string,std::string>::iterator it = this->_headers.begin(); it != this->_headers.end(); it++)
+	{
+		std::cout << "Key: " << it->first <<  std::endl;
+		std::cout << " Value: " << it->second << "" << std::endl;
+	}
 }

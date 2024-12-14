@@ -8,11 +8,11 @@ response::response(request &req)
 	this->request_form = &req;
 	this->headers["Server"] = "42 Samusanc/Daviles simple webserver";
 	this->headers["Date"] = get_actual_date();
-	if (req.method == "GET")
+	if (req._method == "GET")
 		this->do_get();
-	else if (req.method == "POST")
+	else if (req._method == "POST")
 		this->do_post();
-	else if (req.method == "DELETE")
+	else if (req._method == "DELETE")
 		this->do_delete();
 	else
 	{

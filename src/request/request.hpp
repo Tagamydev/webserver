@@ -23,7 +23,7 @@ class   request{
 		// QUERY
 		std::map<std::string, std::string>	_query_str;	
 		// key, value
-
+		int	_fd;
 		// METHOD: GET, POST, DELETE
 		std::string	_method;
 

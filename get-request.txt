@@ -1,11 +1,7 @@
-POST /api/v1/resource HTTP/1.1
-Host: example.com
-Content-Type: application/json
-Authorization: Bearer your_access_token
-Content-Length: 123
-
-{
-  "key1": "value1",
-  "key2": "value2",
-  "key3": "value3"
-}
+GET /index.html HTTP/1.1
+Host: localhost
+User-Agent: TestClient/1.0
+Content-Type:
+Authorization:
+Accept: application/json
+Connection: keep-alive

@@ -42,10 +42,12 @@ request::~request(){}
 
 void request::handle_headers()
 {
-	//check mandatory headers headers.find("Host") 
+	//check if has body first
 
 	if (this->_headers.count("content-length"))
     {
+		if (this->_headers.count("transfer-encoding") && this->_headers["transfer-encoding"] == "chunked")
+			throw std::runtime_error("400 Bad Request");
         this->_has_body = true;
         this->_body_length = std::atoi(_headers["content-length"].c_str());
     }
@@ -53,7 +55,6 @@ void request::handle_headers()
 		this->_has_body = false;
 	if (this->_headers.count("transfer-encoding") && this->_headers["transfer-encoding"] == "chunked")
         this->_chunked_flag = true;
-
 
 	std::cout << "\n<<<<    Control vars    >>>>" << std::endl;
 	std::cout << "body lenght: " << this->_body_length << std::endl;

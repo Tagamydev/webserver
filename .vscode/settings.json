@@ -60,5 +60,6 @@
 		"typeinfo": "cpp",
 		"semaphore": "cpp",
 		"list": "cpp"
-	}
+	},
+	"makefile.configureOnOpen": false
 }

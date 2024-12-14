@@ -7,8 +7,3 @@ Authorization:
 Accept: application/json
 Connection: keep-alive
 
-{
-    "name": "Jane Doe",
-    "email": "jane.doe@example.com",
-    "roles": ["admin", "editor"]
-}

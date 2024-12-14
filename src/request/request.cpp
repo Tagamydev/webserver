@@ -90,9 +90,9 @@ void request::is_valid_header(std::string &line)
 		//check what to do in this case. NGINX accept header without : and value.
 		// if(flag)
 		// 	std::cout << "Found header without :" << std::endl;
-		// if (line.find(':') == std::string::npos || line.find(':') > line.find('\n') || flag > 1)
-		// 	throw std::runtime_error("400 Bad Request - Found header without :");
-		// 	// throw std::runtime_error("400 Bad Request");
+		if (line.find(':') == std::string::npos || line.find(':') > line.find('\n') || flag > 1)
+			throw std::runtime_error("400 Bad Request - Found header without :");
+			// throw std::runtime_error("400 Bad Request");
 		
 		
 		tmp = line.substr(i, (line.find(':') - i));

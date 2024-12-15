@@ -43,18 +43,23 @@ request::~request(){}
 void request::handle_headers()
 {
 	//check if has body first
-
+	if (!this->_headers.count("host"))
+			throw std::runtime_error("400 Bad Request");
 	if (this->_headers.count("content-length"))
     {
-		if (this->_headers.count("transfer-encoding") && this->_headers["transfer-encoding"] == "chunked")
+		if (this->_headers.count("transfer-encoding"))
 			throw std::runtime_error("400 Bad Request");
         this->_has_body = true;
         this->_body_length = std::atoi(_headers["content-length"].c_str());
     }
-	if (!this->_method.find("GET"))
-		this->_has_body = false;
-	if (this->_headers.count("transfer-encoding") && this->_headers["transfer-encoding"] == "chunked")
+	if (this->_http_version.compare("HTTP/1.0") == 0 && this->_headers.count("transfer-encoding"))
+				throw std::runtime_error("400 Bad Request");
+	if (this->_headers.count("transfer-encoding") && this->_headers["transfer-encoding"].find_first_of("chunked") != std::string::npos)
+	{
+		this->_has_body = true;
         this->_chunked_flag = true;
+	}
+
 
 	std::cout << "\n<<<<    Control vars    >>>>" << std::endl;
 	std::cout << "body lenght: " << this->_body_length << std::endl;

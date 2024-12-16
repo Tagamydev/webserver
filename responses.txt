@@ -1,0 +1,114 @@
+HTTP/1.1 200 OK
+Server: nginx/1.27.3
+Date: Sun, 15 Dec 2024 19:15:16 GMT
+Content-Type: text/html
+Content-Length: 615
+Last-Modified: Tue, 26 Nov 2024 15:55:00 GMT
+Connection: keep-alive
+ETag: "6745ef54-267"
+Accept-Ranges: bytes
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="
+ ">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="
+
+ ">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+
+ 
+
+ 
+
+///////// Error
+
+ 
+
+HTTP/1.1 400 Bad Request
+Server: nginx/1.27.3
+Date: Sun, 15 Dec 2024 19:16:11 GMT
+Content-Type: text/html
+Content-Length: 157
+Connection: close
+
+<html>
+<head><title>400 Bad Request</title></head>
+<body>
+<center><h1>400 Bad Request</h1></center>
+<hr><center>nginx/1.27.3</center>
+</body>
+</html>
+
+ 
+
+ 
+
+HTTP/1.1 404 Not Found
+Server: nginx/1.27.3
+Date: Sun, 15 Dec 2024 17:40:55 GMT
+Content-Type: text/html
+Content-Length: 153
+Connection: keep-alive
+
+<html>
+<head><title>404 Not Found</title></head>
+<body>
+<center><h1>404 Not Found</h1></center>
+<hr><center>nginx/1.27.3</center>
+</body>
+</html>
+
+ 
+
+HTTP/1.1 405 Not Allowed
+Server: nginx/1.27.3
+Date: Sun, 15 Dec 2024 19:17:41 GMT
+Content-Type: text/html
+Content-Length: 157
+Connection: keep-alive
+
+<html>
+<head><title>405 Not Allowed</title></head>
+<body>
+<center><h1>405 Not Allowed</h1></center>
+<hr><center>nginx/1.27.3</center>
+</body>
+</html>
+
+ 
+
+ 
+
+HTTP/1.1 501 Not Implemented
+Server: nginx/1.27.3
+Date: Sun, 15 Dec 2024 19:19:52 GMT
+Content-Type: text/html
+Content-Length: 165
+Connection: close
+
+<html>
+<head><title>501 Not Implemented</title></head>
+<body>
+<center><h1>501 Not Implemented</h1></center>
+<hr><center>nginx/1.27.3</center>
+</body>
+</html>

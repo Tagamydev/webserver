@@ -29,8 +29,10 @@ request::request(int fd)
 	reqfile.seekg(0);
 	getline(reqfile, line);
 	this->check_save_request_line(line);
-	this->check_save_headers(reqfile, line);
-	this->handle_headers();
+	this->process_headers(reqfile, line);
+	this->process_body(reqfile, line);
+
+	this->parse_headers();
 
 
 	// this->_http_version = "1.1";
@@ -40,31 +42,27 @@ request::request(int fd)
 
 request::~request(){}
 
-void request::handle_headers()
+
+
+void request::process_body(std::stringstream &reqfile, std::string line)
 {
-	//check if has body first
-	if (!this->_headers.count("host"))
-			throw std::runtime_error("400 Bad Request");
-	if (this->_headers.count("content-length"))
-    {
-		if (this->_headers.count("transfer-encoding"))
-			throw std::runtime_error("400 Bad Request");
-        this->_has_body = true;
-        this->_body_length = std::atoi(_headers["content-length"].c_str());
-    }
-	if (this->_http_version.compare("HTTP/1.0") == 0 && this->_headers.count("transfer-encoding"))
-				throw std::runtime_error("400 Bad Request");
-	if (this->_headers.count("transfer-encoding") && this->_headers["transfer-encoding"].find_first_of("chunked") != std::string::npos)
+	std::string tmp;
+
+	line.clear();
+	getline(reqfile, tmp);
+	// if (reqfile.eof())
+	// {
+	// 	line += tmp;
+	// }
+	while ( !reqfile.eof())
 	{
-		this->_has_body = true;
-        this->_chunked_flag = true;
+		line += tmp;
+		line += '\n';
+		getline(reqfile, tmp);
 	}
-
-
-	std::cout << "\n<<<<    Control vars    >>>>" << std::endl;
-	std::cout << "body lenght: " << this->_body_length << std::endl;
-	std::cout << "Has body : " << this->_has_body << std::endl;
-	std::cout << "Is chunked : " << this->_chunked_flag << std::endl;
+	std::cout << "\n <<<<<<<<<< Body A >>>>>>>>>\n " << line << std::endl;
+	trim_space_newline(line);
+	std::cout << "\n <<<<<<<<<< Body B>>>>>>>>>\n " << line << "||" << std::endl;
 }
 
 // Headers
@@ -113,9 +111,38 @@ void request::is_valid_header(std::string &line)
 		i = 0;
 	}
 	print_header();
-
 }
-void    request::check_save_headers(std::stringstream &reqfile, std::string line)
+
+
+void request::parse_headers()
+{
+	//check if has body first
+	if (!this->_headers.count("host"))
+			throw std::runtime_error("400 Bad Request");
+	if (this->_headers.count("content-length"))
+    {
+		if (this->_headers.count("transfer-encoding"))
+			throw std::runtime_error("400 Bad Request");
+        this->_has_body = true;
+        this->_body_length = std::atoi(_headers["content-length"].c_str());
+    }
+	if (this->_http_version.compare("HTTP/1.0") == 0 && this->_headers.count("transfer-encoding"))
+				throw std::runtime_error("400 Bad Request");
+	if (this->_headers.count("transfer-encoding") && this->_headers["transfer-encoding"].find_first_of("chunked") != std::string::npos)
+	{
+		this->_has_body = true;
+        this->_chunked_flag = true;
+	}
+
+
+	std::cout << "\n<<<<    Control vars    >>>>" << std::endl;
+	std::cout << "body lenght: " << this->_body_length << std::endl;
+	std::cout << "Has body : " << this->_has_body << std::endl;
+	std::cout << "Is chunked : " << this->_chunked_flag << std::endl;
+}
+
+
+void    request::process_headers(std::stringstream &reqfile, std::string line)
 {
 	std::string tmp;
 

@@ -30,5 +30,6 @@
 
 std::string get_actual_date();
 void    ft_toLower(std::string &str);
+void	trim_space_newline(std::string &line);
 
 #endif

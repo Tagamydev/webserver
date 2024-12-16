@@ -12,8 +12,27 @@
 
 #include "main.hpp"
 
+/*
+@brief transform a string in lower case
+ */
 void    ft_toLower(std::string &str)
 {
     for (size_t i = 0; i < str.length(); ++i)
         str[i] = std::tolower(str[i]);
+}
+
+/*
+@brief trim al spaces and new lines from the start and the end on a string
+ */
+void trim_space_newline(std::string &line)
+{
+	int i = 0;
+	int j = line.length() - 1;
+	std::cout << "\n J length " << j;
+
+	while (line[i] != '\0' && line[i] == ' ' || line[i] == '\t' || line[i] == '\r' || line[i] == '\f' || line[i] == '\n')
+		i++;
+	while (line[j] != '\0' && line[j] == ' ' || line[j] == '\t' || line[j] == '\r' || line[j] == '\f' || line[j] == '\n')
+		j--;
+	line = line.substr(i,j - i +1);
 }

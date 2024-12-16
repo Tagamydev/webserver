@@ -1,6 +1,17 @@
-POST /api/resource HTTP/1.1
+POST /api/v1/resource HTTP/1.1
 Host: example.com
-Content-Type: application/json
-Content-Length: 27
+Content-Type: 
+Authorization: Bearer your_access_token
+transfer-encoding: other chunked
 
-{"key1": "value1", "key2": 42}
+
+
+
+{
+  "key1": "value1",
+  "key2": "value2",
+  "key3": "value3"
+}
+
+
+

@@ -50,10 +50,11 @@ class   request{
         void is_valid_method(std::string line);
         void is_valid_uri(std::string &line);
         void is_valid_httpv(std::string line);
-        void check_save_headers(std::stringstream &reqfile, std::string line);
+        void process_headers(std::stringstream &reqfile, std::string line);
 		void is_valid_header(std::string &line);
 		void is_empty(std::string &line);
-		void handle_headers();
+		void parse_headers();
+		void process_body(std::stringstream &reqfile, std::string line);
 
 	// Assets
 		void	print_header();

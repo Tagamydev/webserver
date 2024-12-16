@@ -23,17 +23,21 @@ request::request(int fd)
 	std::stringstream	reqfile;
 	std::string			line;
 
+	this->clear();
 	file = read_file(fd);
-	// std::cout << "LINE \n" << file << std::endl;
 	reqfile << file;
 	reqfile.seekg(0);
 	getline(reqfile, line);
 	this->check_save_request_line(line);
 	this->process_headers(reqfile, line);
 	this->process_body(reqfile, line);
-
 	this->parse_headers();
 
+	print_request();
+	print_header();
+	print_body();
+	
+	print_others();
 
 	// this->_http_version = "1.1";
 	// this->_uri = "/minecraft.jpg";
@@ -42,7 +46,19 @@ request::request(int fd)
 
 request::~request(){}
 
-
+void	request::clear()
+{
+	this->_fd = -1;
+	this->_method.clear();
+	this->_uri.clear();
+	this->_http_version.clear();
+	this->_headers.clear();
+	this->_body.clear();
+	this->_body_length = -1;
+	this->_has_body = -1;
+	this->_chunked_flag = false;
+	this->_error_code = -1;
+}
 
 void request::process_body(std::stringstream &reqfile, std::string line)
 {
@@ -50,34 +66,49 @@ void request::process_body(std::stringstream &reqfile, std::string line)
 
 	line.clear();
 	getline(reqfile, tmp);
-	// if (reqfile.eof())
-	// {
-	// 	line += tmp;
-	// }
-	while ( !reqfile.eof())
+	while (!reqfile.eof())
 	{
 		line += tmp;
 		line += '\n';
 		getline(reqfile, tmp);
 	}
-	std::cout << "\n <<<<<<<<<< Body A >>>>>>>>>\n " << line << std::endl;
+	line += tmp;
 	trim_space_newline(line);
-	std::cout << "\n <<<<<<<<<< Body B>>>>>>>>>\n " << line << "||" << std::endl;
+	if (is_empty(line))
+	{
+		this->_has_body = 0;
+		return ;
+	}
+	this->_has_body = 1;
+	this->_body = line;
+	//clear line?
 }
 
 // Headers
-/* Function to forbid empty values on headers*/
-void request::is_empty(std::string &line)
-{
-	int	i = 0;
 
-	while (line[i] != '\0' && line[i] == ' ' && line[i] == '\n')
-		i++;
-	if (line.length() == i)
-		throw std::runtime_error("400 Bad Request");
+void request::parse_headers()
+{
+	if (!this->_headers.count("host"))
+			throw std::runtime_error("400 Bad Request");
+	if (this->_headers.count("content-length"))
+    {
+		if (this->_headers.count("transfer-encoding"))
+			throw std::runtime_error("400 Bad Request");
+		//Check how it works nginx
+		this->_body_length = std::atoi(_headers["content-length"].c_str());
+		//check if return of atoi is number?
+		if (this->_body_length <= 0)
+			throw std::runtime_error("400 Bad Request");
+    }
+	if (this->_http_version.compare("HTTP/1.0") == 0 && this->_headers.count("transfer-encoding"))
+				throw std::runtime_error("400 Bad Request");
+	if (this->_headers.count("transfer-encoding") && this->_headers["transfer-encoding"].find_first_of("chunked") != std::string::npos)
+        this->_chunked_flag = 1;
 }
 
-void request::is_valid_header(std::string &line)
+/* @brief save formated headers in map
+*/
+void request::save_headers(std::string &line)
 {
 	int	i = 0;
 	int	flag = 0;
@@ -110,35 +141,7 @@ void request::is_valid_header(std::string &line)
 		line.erase(0, line.find('\n') + 1);
 		i = 0;
 	}
-	print_header();
-}
-
-
-void request::parse_headers()
-{
-	//check if has body first
-	if (!this->_headers.count("host"))
-			throw std::runtime_error("400 Bad Request");
-	if (this->_headers.count("content-length"))
-    {
-		if (this->_headers.count("transfer-encoding"))
-			throw std::runtime_error("400 Bad Request");
-        this->_has_body = true;
-        this->_body_length = std::atoi(_headers["content-length"].c_str());
-    }
-	if (this->_http_version.compare("HTTP/1.0") == 0 && this->_headers.count("transfer-encoding"))
-				throw std::runtime_error("400 Bad Request");
-	if (this->_headers.count("transfer-encoding") && this->_headers["transfer-encoding"].find_first_of("chunked") != std::string::npos)
-	{
-		this->_has_body = true;
-        this->_chunked_flag = true;
-	}
-
-
-	std::cout << "\n<<<<    Control vars    >>>>" << std::endl;
-	std::cout << "body lenght: " << this->_body_length << std::endl;
-	std::cout << "Has body : " << this->_has_body << std::endl;
-	std::cout << "Is chunked : " << this->_chunked_flag << std::endl;
+	
 }
 
 
@@ -160,7 +163,7 @@ void    request::process_headers(std::stringstream &reqfile, std::string line)
 		}
 	}
 	fix_spaces_in_line(line);
-	is_valid_header(line);
+	save_headers(line);
 }
 
 // Request line
@@ -264,14 +267,12 @@ void request::check_save_request_line(std::string line)
 	delimiter = " ";
 	this->fix_spaces_in_line(line);
 
-	std::cout << "\n<<<<    Request    >>>>" << std::endl;
 	//check method
 	if (line.find(delimiter) != std::string::npos)
 		key = line.substr(0, line.find(delimiter));
 	this->is_valid_method(key);
 	this->_method = key;
 	line = line.substr((line.find(delimiter) + 1), line.length());
-	std::cout << "Method : " << this->_method << std::endl;
 
 	//check URI
 	if (line.find(delimiter) == std::string::npos)
@@ -279,7 +280,6 @@ void request::check_save_request_line(std::string line)
 	key = line.substr(0, line.find(delimiter));
 	this->is_valid_uri(key);
 	this->_uri = key;
-	std::cout << "URI : " << this->_uri << std::endl;
 	line = line.substr((line.find(delimiter) + 1), line.length());
 
 	//check HTTP Version
@@ -288,11 +288,19 @@ void request::check_save_request_line(std::string line)
 	key = line.substr(0, line.length());
 	this->is_valid_httpv(key);
 	this->_http_version = key;
-	std::cout << "HTTP V : " << this->_http_version << std::endl;
+
 }
 
 
 //assets
+void	request::print_request()
+{
+	std::cout << "\n<<<<    Request    >>>>" << std::endl;
+	std::cout << "Method : " << this->_method << std::endl;
+	std::cout << "URI : " << this->_uri << std::endl;
+	std::cout << "HTTP V : " << this->_http_version << std::endl;
+}
+
 void	request::print_header()
 {
 	std::cout << "\n<<<<    HEADER    >>>>" << std::endl;
@@ -301,4 +309,17 @@ void	request::print_header()
 		std::cout << "Key: " << it->first <<  std::endl;
 		std::cout << " Value: " << it->second << "" << std::endl;
 	}
+}
+
+void	request::print_body()
+{
+	std::cout << "\n<<<<    BODY    >>>>" << std::endl;
+	std::cout << this->_body <<  std::endl;
+}
+void	request::print_others()
+{
+std::cout << "\n<<<<    Control vars    >>>>" << std::endl;
+	std::cout << "body lenght: " << this->_body_length << std::endl;
+	std::cout << "Has body : " << this->_has_body << std::endl;
+	std::cout << "Is chunked : " << this->_chunked_flag << std::endl;
 }

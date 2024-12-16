@@ -21,7 +21,7 @@ class   request{
 	// FIRST LINE
 
 		// QUERY
-		std::map<std::string, std::string>	_query_str;	
+		// std::map<std::string, std::string>	_query_str;	
 		// key, value
 		int	_fd;
 		// METHOD: GET, POST, DELETE
@@ -37,11 +37,11 @@ class   request{
 	// BODY
 		std::string	_body;
 		int		_body_length;
-		bool		_has_body;
+		int		_has_body;
         bool        _chunked_flag;
 
 	// STATES FOR RESPONSE
-		ParsingState	_state;
+		// ParsingState	_state;
 		int				_error_code;
 
 
@@ -51,13 +51,16 @@ class   request{
         void is_valid_uri(std::string &line);
         void is_valid_httpv(std::string line);
         void process_headers(std::stringstream &reqfile, std::string line);
-		void is_valid_header(std::string &line);
-		void is_empty(std::string &line);
+		void save_headers(std::string &line);
 		void parse_headers();
 		void process_body(std::stringstream &reqfile, std::string line);
 
 	// Assets
+		void	clear();
+		void	print_request();
 		void	print_header();
+		void	print_body();
+		void	print_others();
 		
 };
 

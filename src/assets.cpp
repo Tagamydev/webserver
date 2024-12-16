@@ -28,11 +28,23 @@ void trim_space_newline(std::string &line)
 {
 	int i = 0;
 	int j = line.length() - 1;
-	std::cout << "\n J length " << j;
 
 	while (line[i] != '\0' && line[i] == ' ' || line[i] == '\t' || line[i] == '\r' || line[i] == '\f' || line[i] == '\n')
 		i++;
 	while (line[j] != '\0' && line[j] == ' ' || line[j] == '\t' || line[j] == '\r' || line[j] == '\f' || line[j] == '\n')
 		j--;
 	line = line.substr(i,j - i +1);
+}
+
+int is_empty(std::string &line)
+{
+	int	i = 0;
+
+	if (line.empty())
+		return (1);
+	while (line[i] != '\0' && line[i] == ' ' || line[i] == '\n' || line[i] == '\t')
+		i++;
+	if (line.length() == i)
+		return (1);
+	return (0);
 }

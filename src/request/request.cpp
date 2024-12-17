@@ -19,6 +19,7 @@ std::string	read_file(int fd)
 
 request::request(int fd)
 {
+	/*
 	std::string			file;
 	std::stringstream	reqfile;
 	std::string			line;
@@ -31,6 +32,7 @@ request::request(int fd)
 	this->check_save_request_line(line);
 	this->check_save_headers(reqfile, line);
 	this->handle_headers();
+	*/
 
 
 	// this->_http_version = "1.1";

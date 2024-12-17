@@ -129,12 +129,10 @@ int	test()
 				{
                     try
                     {
-					    //request		req = request(fds[i].fd);
-    					//response	respuesta = response(req);
+					    request		req = request(fds[i].fd);
+    					response	respuesta = response(req);
 
-                        //write(2, respuesta.str().c_str() + 147, respuesta.str().length() - 147);
-                        send_response(fds[i].fd, "hola\r\n");
-
+                        send_response(fds[i].fd, respuesta.str);
                         close(fds[i].fd);
                         fds[i] = fds[--client_count];
                     }

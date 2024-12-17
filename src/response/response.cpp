@@ -2,6 +2,10 @@
 
 response::response(request &req)
 {
+	this->_error = false;
+	if (req._error_code != -1)
+		this->do_error_page();
+
 	this->set_status_codes_list();
 	this->set_mime_types_list();
 	this->http_version = "1.1";
@@ -27,6 +31,11 @@ response::response(request &req)
 }
 
 response::~response(){}
+
+void::string	response::do_error_page()
+{
+
+}
 
 std::string	response::get_mimeType(std::string &path)
 {

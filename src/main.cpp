@@ -34,27 +34,9 @@ std::string get_actual_date()
 
 void send_response(int socket_fd, const std::string &response_str)
 {
-    size_t total_sent = 0;
     size_t response_length = response_str.length();
 
-    while (total_sent < response_length)
-    {
-        ssize_t bytes_sent = write(socket_fd, response_str.c_str() + total_sent, response_length - total_sent);
-
-        if (bytes_sent < 0)
-        {
-            perror("Error al enviar la respuesta");
-            break;
-        }
-
-        total_sent += bytes_sent;
-    }
-
-    if (total_sent < response_length)
-    {
-        std::cerr << "Advertencia: No se enviaron todos los bytes de la respuesta. Enviados: "
-                  << total_sent << " de " << response_length << " bytes.\n";
-    }
+    send(socket_fd, response_str.c_str(), response_length, 0);
 }
 
 int	test()
@@ -147,13 +129,13 @@ int	test()
 				{
                     try
                     {
-					    request		req = request(fds[i].fd);
-    					response	respuesta = response(req);
+					    //request		req = request(fds[i].fd);
+    					//response	respuesta = response(req);
 
                         //write(2, respuesta.str().c_str() + 147, respuesta.str().length() - 147);
-                        send_response(fds[i].fd, respuesta.str());
+                        send_response(fds[i].fd, "hola\r\n");
 
-                        //close(fds[i].fd);
+                        close(fds[i].fd);
                         fds[i] = fds[--client_count];
                     }
                     catch (std::exception &e)
@@ -174,14 +156,16 @@ int	main()
 {
 	try
 	{
-		// test();
+		test();
 		
+        /*
 		int	fd;
 
 		fd = open("request.txt", O_RDONLY);
 		if (fd < 0)
 			return (-1);
 		request		req = request(fd);
+        */
 		// response	respuesta = response(req);
 		// std::cout << "\n<<<<    Response    >>>>" << std::endl;
 		// std::cout << respuesta.str() << std::endl;

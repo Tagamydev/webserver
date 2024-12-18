@@ -26,8 +26,10 @@ class   request{
 		int	_fd;
 		// METHOD: GET, POST, DELETE
 		std::string	_method;
-
 		std::string	_uri;
+		std::string	_uri_file;
+		std::string	_uri_params;
+
 		std::string	_http_version;
 
 	// HEADERS
@@ -49,6 +51,7 @@ class   request{
         void fix_spaces_in_line(std::string &line);
         void is_valid_method(std::string line);
         void is_valid_uri(std::string &line);
+        void process_uri(std::string line);
         void is_valid_httpv(std::string line);
         void process_headers(std::stringstream &reqfile, std::string line);
 		void save_headers(std::string &line);

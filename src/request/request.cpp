@@ -174,6 +174,17 @@ void request::is_valid_httpv(std::string line)
 	throw std::runtime_error("505 HTTP Version Not Supported");
 }
 
+void	request::process_uri(std::string line)
+{
+	if (line.find('?') == std::string::npos)
+	{
+		this->_uri_file = line;
+		return ;
+	}
+	this->_uri_file = line.substr(0, line.find('?'));
+	this->_uri_params = line.substr(line.find('?') + 1, line.length());
+}
+
 /**
 
 * Checks whether the character passed is allowed in a field name
@@ -218,6 +229,7 @@ void request::is_valid_uri(std::string &line)
 	if (normalized.empty())
 		throw std::runtime_error("400 Bad Request");
 	line = normalized;
+	process_uri(line);
 }
 
 void request::is_valid_method(std::string line)
@@ -299,6 +311,8 @@ void	request::print_request()
 	std::cout << "Method : " << this->_method << std::endl;
 	std::cout << "URI : " << this->_uri << std::endl;
 	std::cout << "HTTP V : " << this->_http_version << std::endl;
+	std::cout << "Uri_file : " << this->_uri_file << std::endl;
+	std::cout << "Uri_params : " << this->_uri_params << std::endl;
 }
 
 void	request::print_header()

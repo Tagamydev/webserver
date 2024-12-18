@@ -1,7 +1,6 @@
-GET //home///asd/// HTTP/1.0
+GET //home///asd HTTP/1.0
 Host: example.com
 Content-Type: 
 Content-Length: 27
 
 username=john&password=12345
-

@@ -29,11 +29,7 @@ request::request(int fd)
 	reqFile.seekg(0);
 	getline(reqFile, line);
 	while (!reqFile.eof() && line.empty())
-	{
-		std::cout << "LINE: " << line << std::endl;
 		getline(reqFile, line);
-	}
-		std::cout << "LINE: " << line << std::endl;
 	this->check_save_request_line(line);
 	this->process_headers(reqFile, line);
 	this->process_body(reqFile, line);
@@ -44,10 +40,6 @@ request::request(int fd)
 	print_body();
 	
 	print_others();
-
-	// this->_http_version = "1.1";
-	// this->_uri = "/minecraft.jpg";
-	// this->_method = "GET";
 }
 
 request::~request(){}
@@ -137,17 +129,10 @@ void request::save_headers(std::string &line)
 	{
 		while (line[i] == ' ')
 			i++;
-		// check : before \n
 		if (i < line.size() && line.find('\n') != std::string::npos) 
 			flag = std::count(line.begin() + i, line.begin() + line.find('\n'), ':');
-		//check what to do in this case. NGINX accept header without : and value.
-		// if(flag)
-		// 	std::cout << "Found header without ':'" << std::endl;
 		if (line.find(':') == std::string::npos || line.find(':') > line.find('\n') || flag > 1)
 			throw std::runtime_error("400 Bad Request - Found header without :");
-			// throw std::runtime_error("400 Bad Request");
-		
-		
 		tmp = line.substr(i, (line.find(':') - i));
 		trim_space_newline(tmp);
 		if(space_in_header_name(tmp))
@@ -157,9 +142,6 @@ void request::save_headers(std::string &line)
 		while (line[i] == ' ')
 			i++;
 		this->_headers[tmp] = line.substr(i,(line.find('\n') - i));
-		// Call function is_empty to rejecct empty header
-		// is_empty(this->_headers[tmp]);
-
 		line.erase(0, line.find('\n') + 1);
 		i = 0;
 	}
@@ -211,11 +193,9 @@ void	request::process_uri(std::string line)
 
 * Checks whether the character passed is allowed in a field name
 * Characters allowed as specifed in RFC:
-
 "!" / "#" / "$" / "%" / "&" / "'"
 / "*" / "+" / "-" / "." / "^" / "_"
 / "`" / "|" / "~" / 0-9 / A-Z / a-z
-
 **/
 void request::is_valid_uri(std::string &line)
 {
@@ -231,7 +211,10 @@ void request::is_valid_uri(std::string &line)
 	// Check for invalid characters
 	for (it = line.begin(); it < line.end(); it++)
 	{
-		if (!std::isalnum(*it) && *it != '/' && *it != '.' && *it != '-' && *it != '_' && *it != '%' && *it != ':' && *it != '&' && *it != '?' && *it != '=' && *it != '+')
+		if (!std::isalnum(*it) && *it != '/' && *it != '.' && *it != '-' && *it != '_' && *it != '%' \
+		&& *it != ':' && *it != '&' && *it != '?' && *it != '!' && *it != '=' && *it != '+' \
+		&& *it != '#' && *it != '*' && *it != '$' && *it != '\'' && *it != '^' && *it != '`' \
+		&& *it != '|' && *it != '~')
 			throw std::runtime_error("400 Bad Request - Uri invalid character.");
 
 	}

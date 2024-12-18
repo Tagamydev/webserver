@@ -44,7 +44,7 @@ class   response{
 		void		do_delete();
 		void		get_file(std::string &path);
 
-		void		do_error_page();
+		void		do_error_page(int error);
 
 		std::string	get_mimeType(std::string &path);
 		std::string print_status_line();

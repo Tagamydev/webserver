@@ -19,6 +19,8 @@ std::string	read_file(int fd)
 
 request::request(int fd)
 {
+	this->_error_code = -1;
+	this->_method = "GET";
 	/*
 	std::string			file;
 	std::stringstream	reqfile;

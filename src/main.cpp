@@ -132,7 +132,7 @@ int	test()
 					    request		req = request(fds[i].fd);
     					response	respuesta = response(req);
 
-                        send_response(fds[i].fd, respuesta.str);
+                        send_response(fds[i].fd, respuesta.str());
                         close(fds[i].fd);
                         fds[i] = fds[--client_count];
                     }

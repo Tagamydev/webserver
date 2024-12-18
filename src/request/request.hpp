@@ -43,12 +43,11 @@ class   request{
         bool        _chunked_flag;
 
 	// STATES FOR RESPONSE
-		// ParsingState	_state;
 		int				_error_code;
+		std::string		_debug_msg;
 
-
-        void check_save_request_line(std::string line);
         void fix_spaces_in_line(std::string &line);
+        void check_save_request_line(std::string line);
         void is_valid_method(std::string line);
         void is_valid_uri(std::string &line);
         void process_uri(std::string line);
@@ -59,8 +58,9 @@ class   request{
 		bool space_in_header_name(std::string line);
 		void process_body(std::stringstream &reqFile, std::string line);
 
-	// Assets
+	// Utils
 		void	clear();
+		void	set_error_code(int code, std::string msg);
 		void	print_request();
 		void	print_header();
 		void	print_body();

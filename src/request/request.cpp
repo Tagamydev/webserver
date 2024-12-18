@@ -1,5 +1,6 @@
 #include "request.hpp"
 #include <string>
+
 std::string	read_file(int fd)
 {
     const std::size_t bufferSize = 1024;
@@ -16,7 +17,8 @@ std::string	read_file(int fd)
     }
 	return (result);
 }
-
+/* while on reqFile to skip new lines at the begining of the request.
+*/
 request::request(int fd)
 {
 	std::string			file;
@@ -28,12 +30,18 @@ request::request(int fd)
 	reqFile << file;
 	reqFile.seekg(0);
 	getline(reqFile, line);
+	std::cout << "LINE " << line ;
+	std::cout << "A" << std::endl;
 	while (!reqFile.eof() && line.empty())
 		getline(reqFile, line);
+	// std::cout << "LINE " << line << " | " << std::endl;
 	this->check_save_request_line(line);
-	this->process_headers(reqFile, line);
-	this->process_body(reqFile, line);
-	this->parse_headers();
+	if (this->_error_code == -1)
+		this->process_headers(reqFile, line);
+	if (this->_error_code == -1)
+		this->process_body(reqFile, line);
+	if (this->_error_code == -1)
+		this->parse_headers();
 
 	print_request();
 	print_header();
@@ -56,7 +64,9 @@ void	request::clear()
 	this->_has_body = -1;
 	this->_chunked_flag = false;
 	this->_error_code = -1;
+	this->_debug_msg.clear();
 }
+// Handle body
 
 void request::process_body(std::stringstream &reqFile, std::string line)
 {
@@ -82,7 +92,7 @@ void request::process_body(std::stringstream &reqFile, std::string line)
 	//clear line?
 }
 
-// Headers
+// Handle Headers
 
 void request::parse_headers()
 {
@@ -170,7 +180,7 @@ void    request::process_headers(std::stringstream &reqFile, std::string line)
 	save_headers(line);
 }
 
-// Request line
+// Request (first) line
 
 void request::is_valid_httpv(std::string line)
 {
@@ -239,7 +249,7 @@ void request::is_valid_method(std::string line)
 	std::string methods[3] = {"GET", "POST", "DELETE"};
 
 	if (line.empty())
-		throw std::runtime_error("400 Bad Request - Found space at first line.");
+			return (set_error_code(400, "Found space at first line."));
 	for (size_t i = 0; i < methods->length(); i++)
 	{
 		if (!line.compare(methods[i]) && line.length() == methods[i].length())
@@ -247,6 +257,51 @@ void request::is_valid_method(std::string line)
 	}
 	throw std::runtime_error("405 Method Not Allowed");
 }
+
+void request::check_save_request_line(std::string line)
+{
+	std::string key;
+	std::map<std::string, std::string> mp;
+	
+	if (line[0] == ' ')
+		return (set_error_code(400, "Found spaces before method."));
+	this->fix_spaces_in_line(line);
+	//check method
+	if (line.find(" ") != std::string::npos)
+		key = line.substr(0, line.find(" "));
+	else
+		return (set_error_code(400, "No spaces on first line."));
+	this->is_valid_method(key);
+	this->_method = key;
+	line = line.substr((line.find(" ") + 1), line.length());
+
+	//check URI
+	if (line.find(" ") == std::string::npos)
+		return (set_error_code(400, "No spaces after method."));
+	key = line.substr(0, line.find(" "));
+	this->is_valid_uri(key);
+	this->_uri = key;
+	line = line.substr((line.find(" ") + 1), line.length());
+
+	//check HTTP Version
+	if (line.find(" ") != std::string::npos)
+		return (set_error_code(400, "No spaces after URI."));
+	key = line.substr(0, line.length());
+	this->is_valid_httpv(key);
+	this->_http_version = key;
+
+}
+
+// Handle errors
+void request::set_error_code(int code, std::string msg)
+{
+	this->_error_code = code;
+	this->_debug_msg = msg;	
+}
+
+
+// Utils
+
 
 void request::fix_spaces_in_line(std::string &line)
 {
@@ -272,41 +327,7 @@ void request::fix_spaces_in_line(std::string &line)
 	line = parsedLine;
 }
 
-void request::check_save_request_line(std::string line)
-{
-	std::string key;
-	std::string delimiter;
-	std::map<std::string, std::string> mp;
-	
-	delimiter = " ";
-	this->fix_spaces_in_line(line);
 
-	//check method
-	if (line.find(delimiter) != std::string::npos)
-		key = line.substr(0, line.find(delimiter));
-	this->is_valid_method(key);
-	this->_method = key;
-	line = line.substr((line.find(delimiter) + 1), line.length());
-
-	//check URI
-	if (line.find(delimiter) == std::string::npos)
-		throw std::runtime_error("400 Bad Request");
-	key = line.substr(0, line.find(delimiter));
-	this->is_valid_uri(key);
-	this->_uri = key;
-	line = line.substr((line.find(delimiter) + 1), line.length());
-
-	//check HTTP Version
-	if (line.find(delimiter) != std::string::npos)
-		throw std::runtime_error("400 Bad Request");
-	key = line.substr(0, line.length());
-	this->is_valid_httpv(key);
-	this->_http_version = key;
-
-}
-
-
-//assets
 void	request::print_request()
 {
 	std::cout << "\n<<<<    Request    >>>>" << std::endl;
@@ -336,6 +357,8 @@ void	request::print_others()
 {
 std::cout << "\n<<<<    Control vars    >>>>" << std::endl;
 	std::cout << "body lenght: " << this->_body_length << std::endl;
-	std::cout << "Has body : " << this->_has_body << std::endl;
-	std::cout << "Is chunked : " << this->_chunked_flag << std::endl;
+	std::cout << "Has body: " << this->_has_body << std::endl;
+	std::cout << "Is chunked: " << this->_chunked_flag << std::endl;
+	std::cout << "Error code: " << this->_error_code << std::endl;
+	std::cout << "Debug Message: " << this->_debug_msg << std::endl;
 }

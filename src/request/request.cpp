@@ -28,10 +28,16 @@ request::request(int fd)
 	reqFile << file;
 	reqFile.seekg(0);
 	getline(reqFile, line);
+	while (!reqFile.eof() && line.empty())
+	{
+		std::cout << "LINE: " << line << std::endl;
+		getline(reqFile, line);
+	}
+		std::cout << "LINE: " << line << std::endl;
 	this->check_save_request_line(line);
 	this->process_headers(reqFile, line);
 	this->process_body(reqFile, line);
-	// this->parse_headers();
+	this->parse_headers();
 
 	print_request();
 	print_header();
@@ -106,6 +112,19 @@ void request::parse_headers()
         this->_chunked_flag = 1;
 }
 
+bool request::space_in_header_name(std::string line)
+{
+	int	i = 0;
+
+	while (line[i] != '\0')
+	{
+		if (line[i] == ' ' || line[i] == '\t')
+			return (1);
+		i++;
+	}
+	return(0);
+}
+
 /* @brief save formated headers in map
 */
 void request::save_headers(std::string &line)
@@ -122,13 +141,17 @@ void request::save_headers(std::string &line)
 		if (i < line.size() && line.find('\n') != std::string::npos) 
 			flag = std::count(line.begin() + i, line.begin() + line.find('\n'), ':');
 		//check what to do in this case. NGINX accept header without : and value.
-			std::cout << "\n FLAG " << flag << std::endl;
-		if(!flag)
-		{
-		// if (line.find(':') == std::string::npos || line.find(':') > line.find('\n') || flag > 1)
-		// 	throw std::runtime_error("400 Bad Request - Found header without :");
+		// if(flag)
+		// 	std::cout << "Found header without ':'" << std::endl;
+		if (line.find(':') == std::string::npos || line.find(':') > line.find('\n') || flag > 1)
+			throw std::runtime_error("400 Bad Request - Found header without :");
 			// throw std::runtime_error("400 Bad Request");
+		
+		
 		tmp = line.substr(i, (line.find(':') - i));
+		trim_space_newline(tmp);
+		if(space_in_header_name(tmp))
+			throw std::runtime_error("400 Bad Request - Found space on header name.");
 		ft_toLower(tmp);
 		i = line.find(':') + 1;
 		while (line[i] == ' ')
@@ -139,17 +162,6 @@ void request::save_headers(std::string &line)
 
 		line.erase(0, line.find('\n') + 1);
 		i = 0;
-		}
-		else
-		{
-		// 	std::cout << "Found header without :" << std::endl;
-		tmp = line.substr(i, line.length());
-		ft_toLower(tmp);
-		this->_headers[tmp] = "";
-		line.erase(0, line.find('\n') + 1);
-		i = 0;
-
-		}
 	}
 	
 }
@@ -214,15 +226,13 @@ void request::is_valid_uri(std::string &line)
 	if (line.empty())
 		throw std::runtime_error("400 Bad Request");
 	// max size?
-	if (len > 4000)
+	if (len > MAX_URI_LENGTH)
 		throw std::runtime_error("414 URI Too Long");
 	// Check for invalid characters
-	// Found this on web (ch >= '#' && ch <= ';') || (ch >= '?' && ch <= '[') || (ch >= 'a' && ch <= 'z') ||
-	//	ch == '!' || ch == '=' || ch == ']' || ch == '_' || ch == '~')
 	for (it = line.begin(); it < line.end(); it++)
 	{
-		if (!std::isalnum(*it) && *it != '/' && *it != '.' && *it != '-' && *it != '_' && *it != '%' && *it != ':' && *it != '&' && *it != '?' && *it != '=')
-			throw std::runtime_error("400 Bad Request");
+		if (!std::isalnum(*it) && *it != '/' && *it != '.' && *it != '-' && *it != '_' && *it != '%' && *it != ':' && *it != '&' && *it != '?' && *it != '=' && *it != '+')
+			throw std::runtime_error("400 Bad Request - Uri invalid character.");
 
 	}
 	// Check for ../ and //
@@ -230,9 +240,8 @@ void request::is_valid_uri(std::string &line)
 	{
 		if (i + 2 < len && line[i] == '.' && line[i+1] == '.' && line[i+2] == '/')
 			i += 2;
-		else if (line[i] == '/' && i + 1 < len && line[i + 1] == '/') 
-			throw std::runtime_error("400 Bad Request");
-
+		else if (i + 1 < len && line[i] == '/' && line[i + 1] == '/') 
+			continue ;
 		else 
 			normalized += line[i];
 	}
@@ -247,7 +256,7 @@ void request::is_valid_method(std::string line)
 	std::string methods[3] = {"GET", "POST", "DELETE"};
 
 	if (line.empty())
-		throw std::runtime_error("405 Method Not Allowed");
+		throw std::runtime_error("400 Bad Request - Found space at first line.");
 	for (size_t i = 0; i < methods->length(); i++)
 	{
 		if (!line.compare(methods[i]) && line.length() == methods[i].length())
@@ -261,8 +270,8 @@ void request::fix_spaces_in_line(std::string &line)
 	std::string parsedLine;
 	int i = 0;
 
-	if (line[0] == ' ' || line[0] == '\t' || line[0] == '\r' || line[0] == '\f')
-		while (line[i] == ' ' || line[i] == '\t' || line[i] == '\r' || line[i] == '\f')
+	if (line[0] == ' ' || line[0] == '\t' || line[0] == '\r' || line[0] == '\f' || line[0] == '\n')
+		while (line[i] == ' ' || line[i] == '\t' || line[i] == '\r' || line[i] == '\f' || line[i] == '\n')
 			i++;
 	while (i != line.length() || line[i] != '\0')
 	{

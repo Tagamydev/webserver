@@ -56,6 +56,7 @@ class   request{
         void process_headers(std::stringstream &reqFile, std::string line);
 		void save_headers(std::string &line);
 		void parse_headers();
+		bool space_in_header_name(std::string line);
 		void process_body(std::stringstream &reqFile, std::string line);
 
 	// Assets

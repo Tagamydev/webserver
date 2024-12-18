@@ -20,18 +20,18 @@ std::string	read_file(int fd)
 request::request(int fd)
 {
 	std::string			file;
-	std::stringstream	reqfile;
+	std::stringstream	reqFile;
 	std::string			line;
 
 	this->clear();
 	file = read_file(fd);
-	reqfile << file;
-	reqfile.seekg(0);
-	getline(reqfile, line);
+	reqFile << file;
+	reqFile.seekg(0);
+	getline(reqFile, line);
 	this->check_save_request_line(line);
-	this->process_headers(reqfile, line);
-	this->process_body(reqfile, line);
-	this->parse_headers();
+	this->process_headers(reqFile, line);
+	this->process_body(reqFile, line);
+	// this->parse_headers();
 
 	print_request();
 	print_header();
@@ -60,17 +60,17 @@ void	request::clear()
 	this->_error_code = -1;
 }
 
-void request::process_body(std::stringstream &reqfile, std::string line)
+void request::process_body(std::stringstream &reqFile, std::string line)
 {
 	std::string tmp;
 
 	line.clear();
-	getline(reqfile, tmp);
-	while (!reqfile.eof())
+	getline(reqFile, tmp);
+	while (!reqFile.eof())
 	{
 		line += tmp;
 		line += '\n';
-		getline(reqfile, tmp);
+		getline(reqFile, tmp);
 	}
 	line += tmp;
 	trim_space_newline(line);
@@ -122,13 +122,12 @@ void request::save_headers(std::string &line)
 		if (i < line.size() && line.find('\n') != std::string::npos) 
 			flag = std::count(line.begin() + i, line.begin() + line.find('\n'), ':');
 		//check what to do in this case. NGINX accept header without : and value.
-		// if(flag)
-		// 	std::cout << "Found header without :" << std::endl;
-		if (line.find(':') == std::string::npos || line.find(':') > line.find('\n') || flag > 1)
-			throw std::runtime_error("400 Bad Request - Found header without :");
+			std::cout << "\n FLAG " << flag << std::endl;
+		if(!flag)
+		{
+		// if (line.find(':') == std::string::npos || line.find(':') > line.find('\n') || flag > 1)
+		// 	throw std::runtime_error("400 Bad Request - Found header without :");
 			// throw std::runtime_error("400 Bad Request");
-		
-		
 		tmp = line.substr(i, (line.find(':') - i));
 		ft_toLower(tmp);
 		i = line.find(':') + 1;
@@ -140,23 +139,34 @@ void request::save_headers(std::string &line)
 
 		line.erase(0, line.find('\n') + 1);
 		i = 0;
+		}
+		else
+		{
+		// 	std::cout << "Found header without :" << std::endl;
+		tmp = line.substr(i, line.length());
+		ft_toLower(tmp);
+		this->_headers[tmp] = "";
+		line.erase(0, line.find('\n') + 1);
+		i = 0;
+
+		}
 	}
 	
 }
 
 
-void    request::process_headers(std::stringstream &reqfile, std::string line)
+void    request::process_headers(std::stringstream &reqFile, std::string line)
 {
 	std::string tmp;
 
 	line.clear();
-	getline(reqfile, tmp);
+	getline(reqFile, tmp);
 	while (!tmp.empty() && tmp != "\r\n\r\n")
 	{
 		line += tmp;
 		line += '\n';
-		getline(reqfile, tmp);
-		if (reqfile.eof())
+		getline(reqFile, tmp);
+		if (reqFile.eof())
 		{
 			line += tmp;
 			break;

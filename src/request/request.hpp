@@ -53,10 +53,10 @@ class   request{
         void is_valid_uri(std::string &line);
         void process_uri(std::string line);
         void is_valid_httpv(std::string line);
-        void process_headers(std::stringstream &reqfile, std::string line);
+        void process_headers(std::stringstream &reqFile, std::string line);
 		void save_headers(std::string &line);
 		void parse_headers();
-		void process_body(std::stringstream &reqfile, std::string line);
+		void process_body(std::stringstream &reqFile, std::string line);
 
 	// Assets
 		void	clear();

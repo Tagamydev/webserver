@@ -12,13 +12,11 @@
 
 #include "main.hpp"
 
-
-
 std::string get_actual_date()
 {
-	time_t		now;
-	time_t		*lock;
-	std::string	result;
+	time_t now;
+	time_t *lock;
+	std::string result;
 
 	lock = &now;
 	now = time(lock);
@@ -27,149 +25,95 @@ std::string get_actual_date()
 	else
 		result = std::string("error in getting time!!!");
 	size_t pos = result.find('\n');
-    if (pos != std::string::npos)
-        result.erase(pos, 1); // Elimina el carácter '\n'
+	if (pos != std::string::npos)
+		result.erase(pos, 1); // Elimina el carácter '\n'
 	return (result);
 }
 
 void send_response(int socket_fd, const std::string &response_str)
 {
-    size_t response_length = response_str.length();
+	size_t response_length = response_str.length();
 
-    send(socket_fd, response_str.c_str(), response_length, 0);
+	send(socket_fd, response_str.c_str(), response_length, 0);
 }
 
-int	test()
+
+struct pollfd pollfd_from_fd(int fd, short events)
 {
-	int	port = 1234;
-	int max_clients = 10;
-    int server_fd, new_socket;
-    struct sockaddr_in address;
-    int opt = 1;
-    int addrlen = sizeof(address);
-    char buffer[1000];
+	struct pollfd tmp;
 
-	// make socket
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
-        perror("Socket falló");
-        exit(EXIT_FAILURE);
-    }
+	memset(&tmp, 0, sizeof(tmp));
+	tmp.fd = fd;
+	tmp.events = events;
+	return (tmp);
+}
 
-	// setup socket option to be reusable after the end of the program
-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) {
-        perror("setsockopt falló");
-        exit(EXIT_FAILURE);
-    }
+int test()
+{
+	std::vector<struct pollfd> _pollFds;
+	serverFd*	server_fd;
 
-	// config address and port
-	
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-		// AF_INET every possible net in ipv4
-    address.sin_port = htons(port);
-		// from number to machine readable port
+	server_fd = new serverFd(1234);
+	_pollFds.push_back(pollfd_from_fd(server_fd->_fd, POLLIN));
 
-    // bind socket
-    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
+	int new_socket;
+
+	while (true)
 	{
-        perror("Bind fail");
-        exit(EXIT_FAILURE);
-    }
+		if (poll(_pollFds.data(), static_cast<unsigned int>(_pollFds.size()), 0) < 0)
+			throw (std::runtime_error("Error: Fatal poll fail!"));
 
-	// start socket listeing, 3 is the number of places avalibles in the wait list
-    if (listen(server_fd, 3) < 0) {
-        perror("Listen fail");
-        exit(EXIT_FAILURE);
-    }
-
-    // Configuración para poll
-    struct pollfd fds[max_clients];
-    memset(fds, 0, sizeof(fds));
-
-    fds[0].fd = server_fd;
-    fds[0].events = POLLIN;// triggered in IN operation
-
-    int client_count = 1;
-
-    std::cout << "Server listening in the port... " << port << "...\n";
-
-    while (true) {
-        int poll_count = poll(fds, client_count, -1);
-
-        if (poll_count < 0) {
-            perror("Poll failed");
-            exit(EXIT_FAILURE);
-        }
-
-        for (int i = 0; i < client_count; ++i) {
-            if (fds[i].revents & POLLIN)
+		for (int i = 0; i < static_cast<unsigned int>(_pollFds.size()); ++i)
+		{
+			if (fds[i].revents & POLLIN)
 			{
-                if (fds[i].fd == server_fd)
+				if (fds[i].fd == server_fd)
 				{
 					// new client
-                    if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen)) < 0) {
-                        perror("Accept fail");
-                        continue;
-                    }
+					if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0)
+						throw (std::runtime_error("Error: Fatal acept fail!"));
 
-                    if (client_count < max_clients)
-					{
-                        fds[client_count].fd = new_socket;
-                        fds[client_count].events = POLLIN;
-                        ++client_count;
-                        std::cout << "Nueva conexión aceptada\n";
-                    }
-					else
-					{
-                        std::cerr << "max number of clients reached\n";
-                        close(new_socket);
-                    }
-                }
+					_pollFds.push_back(pollfd_from_fd(new_socket, POLLIN | POLLOUT));
+
+					std::cout << "Nueva conexión aceptada\n";
+				}
 				else
+					request req = request(fds[i].fd);
+
+				if (fds[i].events & POLLOUT)
 				{
-                    try
-                    {
-					    request		req = request(fds[i].fd);
-    					response	respuesta = response(req);
+					response respuesta = response(req);
 
-                        send_response(fds[i].fd, respuesta.str());
-                        close(fds[i].fd);
-                        fds[i] = fds[--client_count];
-                    }
-                    catch (std::exception &e)
-                    {
-                        std::cout << e.what() << std::endl;
-                    }
-                }
-            }
-        }
-    }
+					send_response(fds[i].fd, respuesta.str());
+					close(fds[i].fd);
+					fds[i] = fds[--client_count];
+				}
+			}
+		}
+	}
 
-    return 0;
-
-
+	return 0;
 }
 
-int	main()
+int main()
 {
 	try
 	{
 		test();
-		
-        /*
+
+		/*
 		int	fd;
 
 		fd = open("request.txt", O_RDONLY);
 		if (fd < 0)
 			return (-1);
 		request		req = request(fd);
-        */
+		*/
 		// response	respuesta = response(req);
 		// std::cout << "\n<<<<    Response    >>>>" << std::endl;
 		// std::cout << respuesta.str() << std::endl;
-		
 	}
-	catch (const std::exception& e)
+	catch (const std::exception &e)
 	{
 		std::cout << e.what() << std::endl;
 	}

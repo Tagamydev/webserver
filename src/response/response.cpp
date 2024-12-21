@@ -4,10 +4,19 @@ response::response(request &req)
 {
 	this->set_status_codes_list();
 	this->set_mime_types_list();
+
 	this->http_version = "1.1";
 	this->request_form = &req;
 	this->headers["Server"] = "42 Samusanc/Daviles simple webserver";
 	this->headers["Date"] = get_actual_date();
+
+	this->_error = false;
+	if (req._error_code != -1)
+	{
+		this->do_error_page(req._error_code);
+		return ;
+	}
+
 	if (req._method == "GET")
 		this->do_get();
 	else if (req._method == "POST")
@@ -16,17 +25,20 @@ response::response(request &req)
 		this->do_delete();
 	else
 	{
-		this->status_code = 404;
-		this->body = "a";
-		this->headers["Content-Length"] = "0";
-	}
-	if (0)
-	{
-		throw ("404");
+		this->do_error_page(404);
+		return ;
 	}
 }
 
 response::~response(){}
+
+void	response::do_error_page(int error)
+{
+	this->_error = true;
+	std::cout << "Error page { " << error << " }: "; 
+	std::cout << this->status_codes_list[error] << "!!" << std::endl;
+
+}
 
 std::string	response::get_mimeType(std::string &path)
 {
@@ -43,6 +55,9 @@ std::string	response::get_mimeType(std::string &path)
 
 void	response::get_file(std::string &path)
 {
+	if (this->_error)
+		return ;
+
 	std::ifstream	file(path.c_str(), std::ios::binary);
 	std::stringstream	buff;
 	std::stringstream	length;
@@ -88,6 +103,9 @@ std::list<std::string> listDirectory(const std::string& path) {
 
 void	response::do_get()
 {
+	if (this->_error)
+		return ;
+
 	std::string	path;
 	struct stat pathStat;
 
@@ -128,12 +146,18 @@ void	response::do_get()
 
 void	response::do_post()
 {
+	if (this->_error)
+		return ;
+
 	if (!request_form)
 		return ;
 }
 
 void	response::do_delete()
 {
+	if (this->_error)
+		return ;
+
 	if (!request_form)
 		return ;
 }

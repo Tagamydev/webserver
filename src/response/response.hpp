@@ -31,7 +31,10 @@ class   response{
 
 	// FUNTIONS
 
+
 	private:
+
+		bool		_error;
 		std::map<int, std::string>	status_codes_list;
 		std::map<std::string, std::string>	mime_types_list;
 		void		set_status_codes_list();
@@ -40,6 +43,9 @@ class   response{
 		void		do_post();
 		void		do_delete();
 		void		get_file(std::string &path);
+
+		void		do_error_page(int error);
+
 		std::string	get_mimeType(std::string &path);
 		std::string print_status_line();
 		std::string print_headers();

@@ -65,28 +65,27 @@ int test()
 
 		for (int i = 0; i < static_cast<unsigned int>(_pollFds.size()); ++i)
 		{
-			if (fds[i].revents & POLLIN)
+			if (_pollFds[i].revents & POLLIN)
 			{
-				if (fds[i].fd == server_fd)
+				if (_pollFds[i].fd == server_fd->_fd)
 				{
 					// new client
-					if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0)
-						throw (std::runtime_error("Error: Fatal acept fail!"));
+					if ((new_socket = accept(server_fd->_fd, NULL, NULL)) == -1)
+						throw (std::runtime_error("Error: Fatal accept fail!"));
 
 					_pollFds.push_back(pollfd_from_fd(new_socket, POLLIN | POLLOUT));
 
 					std::cout << "Nueva conexión aceptada\n";
 				}
 				else
-					request req = request(fds[i].fd);
+					request req = request(_pollFds[i].fd);
 
-				if (fds[i].events & POLLOUT)
+				if (_pollFds[i].events & POLLOUT)
 				{
-					response respuesta = response(req);
+					//response respuesta = response(req);
 
-					send_response(fds[i].fd, respuesta.str());
-					close(fds[i].fd);
-					fds[i] = fds[--client_count];
+					send_response(_pollFds[i].fd, "hello!");
+					close(_pollFds[i].fd);
 				}
 			}
 		}

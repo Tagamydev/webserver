@@ -97,19 +97,19 @@ void request::process_body(std::stringstream &reqFile, std::string line)
 void request::parse_headers()
 {
 	if (!this->_headers.count("host"))
-			throw std::runtime_error("400 Bad Request");
+			return (set_error_code(400, "Host header not found."));
 	if (this->_headers.count("content-length"))
     {
 		if (this->_headers.count("transfer-encoding"))
-			throw std::runtime_error("400 Bad Request");
+			return (set_error_code(400, "Incopatible headers: content-length & transfer-encoding."));
 		//Check how it works nginx
 		this->_body_length = std::atoi(_headers["content-length"].c_str());
 		//check if return of atoi is number?
 		if (this->_body_length <= 0)
-			throw std::runtime_error("400 Bad Request");
+			return (set_error_code(400, "Invalid Content-length header."));
     }
 	if (this->_http_version.compare("HTTP/1.0") == 0 && this->_headers.count("transfer-encoding"))
-				throw std::runtime_error("400 Bad Request");
+		return (set_error_code(400, "Invalid header transfer-encoding on HTTP/1.0."));
 	if (this->_headers.count("transfer-encoding") && this->_headers["transfer-encoding"].find_first_of("chunked") != std::string::npos)
         this->_chunked_flag = 1;
 }
@@ -142,11 +142,11 @@ void request::save_headers(std::string &line)
 		if (i < line.size() && line.find('\n') != std::string::npos) 
 			flag = std::count(line.begin() + i, line.begin() + line.find('\n'), ':');
 		if (line.find(':') == std::string::npos || line.find(':') > line.find('\n') || flag > 1)
-			throw std::runtime_error("400 Bad Request - Found header without :");
+			return (set_error_code(400, "Found header without ':'."));
 		tmp = line.substr(i, (line.find(':') - i));
 		trim_space_newline(tmp);
 		if(space_in_header_name(tmp))
-			throw std::runtime_error("400 Bad Request - Found space on header name.");
+			return (set_error_code(400, "Found space on header name."));
 		ft_toLower(tmp);
 		i = line.find(':') + 1;
 		while (line[i] == ' ')
@@ -185,7 +185,7 @@ void    request::process_headers(std::stringstream &reqFile, std::string line)
 void request::is_valid_httpv(std::string line)
 {
  if (line != "HTTP/1.0" && line != "HTTP/1.1")
-	throw std::runtime_error("505 HTTP Version Not Supported");
+	return (set_error_code(505, "HTTP Version Not Supported"));
 }
 
 void	request::process_uri(std::string line)
@@ -214,10 +214,10 @@ void request::is_valid_uri(std::string &line)
 	size_t len = line.length();
 
 	if (line.empty())
-		throw std::runtime_error("400 Bad Request");
+		return (set_error_code(400, "Empty or invalid URI."));
 	// max size?
 	if (len > MAX_URI_LENGTH)
-		throw std::runtime_error("414 URI Too Long");
+		return (set_error_code(414, "Max. URI length reached."));
 	// Check for invalid characters
 	for (it = line.begin(); it < line.end(); it++)
 	{
@@ -225,8 +225,7 @@ void request::is_valid_uri(std::string &line)
 		&& *it != ':' && *it != '&' && *it != '?' && *it != '!' && *it != '=' && *it != '+' \
 		&& *it != '#' && *it != '*' && *it != '$' && *it != '\'' && *it != '^' && *it != '`' \
 		&& *it != '|' && *it != '~')
-			throw std::runtime_error("400 Bad Request - Uri invalid character.");
-
+			return (set_error_code(400, "Invalid character found on URI."));
 	}
 	// Check for ../ and //
 	for (size_t i = 0; i < len; ++i) 
@@ -239,7 +238,7 @@ void request::is_valid_uri(std::string &line)
 			normalized += line[i];
 	}
 	if (normalized.empty())
-		throw std::runtime_error("400 Bad Request");
+		return (set_error_code(400, "Empty or invalid URI."));
 	line = normalized;
 	process_uri(line);
 }
@@ -255,7 +254,7 @@ void request::is_valid_method(std::string line)
 		if (!line.compare(methods[i]) && line.length() == methods[i].length())
 			return ;
 	}
-	throw std::runtime_error("405 Method Not Allowed");
+	return (set_error_code(405, "Method Not Allowed."));
 }
 
 void request::check_save_request_line(std::string line)

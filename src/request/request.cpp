@@ -3,25 +3,43 @@
 
 std::string	read_file(int fd)
 {
-    const std::size_t bufferSize = MAX_BUFFER_LENGTH;
+    const std::size_t bufferSize = 1024;
     char buffer[bufferSize];
     std::string result;
 
     ssize_t bytesRead;
-
-	/*
-    while ((bytesRead = recv(fd, buffer, bufferSize, 0)) > 0)
-	{
+    while ((bytesRead = read(fd, buffer, bufferSize)) > 0) {
         result.append(buffer, bytesRead);
     }
-	*/
-	bytesRead = recv(fd, buffer, bufferSize, 0);
-	result.append(buffer, bytesRead);
 
-    if (bytesRead == -1)
-		throw std::runtime_error("Error reading file descriptor.");
+    if (bytesRead == -1) {
+        std::cerr << "Error reading file descriptor." << std::strerror(errno) << std::endl;
+    }
 	return (result);
 }
+
+// std::string	read_file(int fd)
+// {
+//     const std::size_t bufferSize = MAX_BUFFER_LENGTH;
+//     char buffer[bufferSize];
+//     std::string result;
+
+//     ssize_t bytesRead;
+
+// 	/*
+//     while ((bytesRead = recv(fd, buffer, bufferSize, 0)) > 0)
+// 	{
+//         result.append(buffer, bytesRead);
+//     }
+// 	*/
+// 	bytesRead = recv(fd, buffer, bufferSize, 0);
+// 	result.append(buffer, bytesRead);
+
+// 	std::cout << "buffer" << std::endl;
+//     if (bytesRead == -1)
+// 		throw std::runtime_error("Error reading file descriptor.");
+// 	return (result);
+// }
 /* while on reqFile to skip new lines at the begining of the request.
 */
 request::request(int fd)
@@ -32,6 +50,7 @@ request::request(int fd)
 
 	this->clear();
 	file = read_file(fd);
+	std::cout << file << std::endl;
 	reqFile << file;
 	reqFile.seekg(0);
 	getline(reqFile, line);

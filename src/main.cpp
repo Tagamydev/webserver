@@ -104,16 +104,14 @@ int main()
 {
 	try
 	{
-		test();
+		// test();
 
-		/*
 		int	fd;
 
 		fd = open("request.txt", O_RDONLY);
 		if (fd < 0)
 			return (-1);
 		request		req = request(fd);
-		*/
 		// response	respuesta = response(req);
 		// std::cout << "\n<<<<    Response    >>>>" << std::endl;
 		// std::cout << respuesta.str() << std::endl;

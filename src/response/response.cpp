@@ -32,11 +32,35 @@ response::response(request &req)
 
 response::~response(){}
 
+std::string	make_error_page_html(int error, std::string message)
+{
+	std::stringstream	strm;
+
+	strm << "<!DOCTYPE HTML>";
+	strm << "<html lang=\"en\">";
+	strm << "    <head>";
+	strm << "        <meta charset=\"utf-8\">";
+	strm << "        <title>Error response</title>";
+	strm << "    </head>";
+	strm << "    <body>";
+	strm << "        <h1>Error response</h1>";
+	strm << "        <p>Error code: " << error << "</p>";
+	strm << "        <p>Message: " << message << "</p>";
+//	strm << "        <p>Error code explanation: 404 - Nothing matches the given URI.</p>";
+	strm << "    </body>";
+	strm << "</html>";
+
+	return (strm.str());
+}
+
 void	response::do_error_page(int error)
 {
 	this->_error = true;
+	this->status_code = error;
 	std::cout << "Error page { " << error << " }: "; 
 	std::cout << this->status_codes_list[error] << "!!" << std::endl;
+	this->headers["Content-Type:"] = "text/html;charset=utf-8";
+	this->body = make_error_page_html(error, this->status_codes_list[error]);
 
 }
 
@@ -74,8 +98,8 @@ void	response::get_file(std::string &path)
 	}
 	else
 	{
-		this->status_code = 404;
-
+		this->do_error_page(404);
+		return ;
 	}
 
 }
@@ -109,7 +133,9 @@ void	response::do_get()
 	std::string	path;
 	struct stat pathStat;
 
-	path = "." + std::string("/minecraft.jpg");//this->request_form->uri;
+
+	//path = "." + std::string("/minecraft.jpg");//this->request_form->uri;
+	path = this->request_form->_uri;
 	if (!request_form)
 		return ;
 	if (stat(path.c_str(), &pathStat) == 0)
@@ -134,13 +160,15 @@ void	response::do_get()
 		else
 		{
 			// maybe 404?
-
+			this->do_error_page(404);
+			return ;
 		}
 	}
 	else
 	{
 		// not found
-
+		this->do_error_page(404);
+		return ;
 	}
 }
 

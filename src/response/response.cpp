@@ -133,7 +133,9 @@ void	response::do_get()
 	std::string	path;
 	struct stat pathStat;
 
-	path = "." + std::string("/minecraft.jpg");//this->request_form->uri;
+
+	//path = "." + std::string("/minecraft.jpg");//this->request_form->uri;
+	path = this->request_form->_uri;
 	if (!request_form)
 		return ;
 	if (stat(path.c_str(), &pathStat) == 0)

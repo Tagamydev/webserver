@@ -57,6 +57,11 @@ request::request(int fd)
 
 request::~request(){}
 
+request&	request::operator=(const request& copy)
+{
+	return (*this);
+}
+
 void	request::clear()
 {
 	this->_fd = -1;

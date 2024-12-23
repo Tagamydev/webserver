@@ -50,42 +50,48 @@ struct pollfd pollfd_from_fd(int fd, short events)
 
 int test()
 {
-	std::vector<struct pollfd> _pollFds;
+	std::vector<struct pollfd>	fdsList;
+	std::map<int, request*>		_client_and_request;
 	serverFd*	server_fd;
 
 	server_fd = new serverFd(1234);
-	_pollFds.push_back(pollfd_from_fd(server_fd->_fd, POLLIN));
+	fdsList.push_back(pollfd_from_fd(server_fd->_fd, POLLIN));
 
 	int new_socket;
 
 	while (true)
 	{
-		if (poll(_pollFds.data(), static_cast<unsigned int>(_pollFds.size()), 0) < 0)
+		if (poll(fdsList.data(), static_cast<unsigned int>(fdsList.size()), 0) < 0)
 			throw (std::runtime_error("Error: Fatal poll fail!"));
 
-		for (int i = 0; i < static_cast<unsigned int>(_pollFds.size()); ++i)
+		for (int i = 0; i < static_cast<unsigned int>(fdsList.size()); ++i)
 		{
-			if (_pollFds[i].revents & POLLIN)
+			if (fdsList[i].revents & POLLIN)
 			{
-				if (_pollFds[i].fd == server_fd->_fd)
+				if (fdsList[i].fd == server_fd->_fd)
 				{
 					// new client
 					if ((new_socket = accept(server_fd->_fd, NULL, NULL)) == -1)
 						throw (std::runtime_error("Error: Fatal accept fail!"));
 
-					_pollFds.push_back(pollfd_from_fd(new_socket, POLLIN | POLLOUT));
+					fdsList.push_back(pollfd_from_fd(new_socket, POLLIN | POLLOUT));
 
 					std::cout << "Nueva conexión aceptada\n";
 				}
 				else
-					request req = request(_pollFds[i].fd);
+					_client_and_request[i] = new request(fdsList[i].fd);
 
-				if (_pollFds[i].events & POLLOUT)
+				if (fdsList[i].events & POLLOUT)
 				{
-					//response respuesta = response(req);
+					request	*tmp_req = _client_and_request[i];
+					response respuesta = response(*tmp_req);
 
-					send_response(_pollFds[i].fd, "hello!");
-					close(_pollFds[i].fd);
+					send_response(fdsList[i].fd, respuesta.str());
+
+					close(fdsList[i].fd);
+					delete tmp_req;
+					fdsList.erase(fdsList.begin() + i);
+
 				}
 			}
 		}

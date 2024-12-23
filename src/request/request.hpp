@@ -19,6 +19,12 @@ class   request{
 		request(int fd);
 		~request(void);
 
+		/* Copy constructor*/
+		request(const request& other);
+
+		/* Copy assignment operator overload */
+		request& operator = (const request& other);
+
 	// FIRST LINE
 
 		// QUERY

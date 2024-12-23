@@ -1,45 +1,49 @@
 #include "request.hpp"
 #include <string>
 
-std::string	read_file(int fd)
-{
-    const std::size_t bufferSize = 1024;
-    char buffer[bufferSize];
-    std::string result;
-
-    ssize_t bytesRead;
-    while ((bytesRead = read(fd, buffer, bufferSize)) > 0) {
-        result.append(buffer, bytesRead);
-    }
-
-    if (bytesRead == -1) {
-        std::cerr << "Error reading file descriptor." << std::strerror(errno) << std::endl;
-    }
-	return (result);
-}
-
+/*
+@brief read_file version to test parser.
+*/
 // std::string	read_file(int fd)
 // {
-//     const std::size_t bufferSize = MAX_BUFFER_LENGTH;
+//     const std::size_t bufferSize = 1024;
 //     char buffer[bufferSize];
 //     std::string result;
 
 //     ssize_t bytesRead;
-
-// 	/*
-//     while ((bytesRead = recv(fd, buffer, bufferSize, 0)) > 0)
-// 	{
+//     while ((bytesRead = read(fd, buffer, bufferSize)) > 0) {
 //         result.append(buffer, bytesRead);
 //     }
-// 	*/
-// 	bytesRead = recv(fd, buffer, bufferSize, 0);
-// 	result.append(buffer, bytesRead);
 
-// 	std::cout << "buffer" << std::endl;
-//     if (bytesRead == -1)
-// 		throw std::runtime_error("Error reading file descriptor.");
+//     if (bytesRead == -1) {
+//         std::cerr << "Error reading file descriptor." << std::strerror(errno) << std::endl;
+//     }
 // 	return (result);
 // }
+
+std::string	read_file(int fd)
+{
+    const std::size_t bufferSize = MAX_BUFFER_LENGTH;
+    char buffer[bufferSize];
+    std::string result;
+
+    ssize_t bytesRead;
+
+	/*
+    while ((bytesRead = recv(fd, buffer, bufferSize, 0)) > 0)
+	{
+        result.append(buffer, bytesRead);
+    }
+	*/
+	bytesRead = recv(fd, buffer, bufferSize, 0);
+	result.append(buffer, bytesRead);
+
+	std::cout << "buffer" << std::endl;
+    if (bytesRead == -1)
+		throw std::runtime_error("Error reading file descriptor.");
+	return (result);
+}
+
 /* while on reqFile to skip new lines at the begining of the request.
 */
 request::request(int fd)
@@ -128,9 +132,7 @@ void request::parse_headers()
     {
 		if (this->_headers.count("transfer-encoding"))
 			return (set_error_code(400, "Incopatible headers: content-length & transfer-encoding."));
-		//Check how it works nginx
 		this->_body_length = std::atoi(_headers["content-length"].c_str());
-		//check if return of atoi is number?
 		if (this->_body_length <= 0)
 			return (set_error_code(400, "Invalid Content-length header."));
     }
@@ -165,23 +167,31 @@ void request::save_headers(std::string &line)
 	{
 		while (line[i] == ' ')
 			i++;
-		if (i < line.size() && line.find('\n') != std::string::npos) 
-			flag = std::count(line.begin() + i, line.begin() + line.find('\n'), ':');
-		if (line.find(':') == std::string::npos || line.find(':') > line.find('\n') || flag > 1)
-			return (set_error_code(400, "Found header without ':'."));
-		tmp = line.substr(i, (line.find(':') - i));
-		trim_space_newline(tmp);
-		if(space_in_header_name(tmp))
-			return (set_error_code(400, "Found space on header name."));
-		ft_toLower(tmp);
-		i = line.find(':') + 1;
-		while (line[i] == ' ')
-			i++;
-		this->_headers[tmp] = line.substr(i,(line.find('\n') - i));
+		if (i >= line.size() || line.find('\n') == std::string::npos) 
+			return (set_error_code(-1, "No error, should skip headers."));
+		flag = std::count(line.begin() + i, line.begin() + line.find('\n'), ':');
+		if (flag > 0)
+		{
+			tmp = line.substr(i, (line.find(':') - i));
+			if(space_in_header_name(tmp))
+				return (set_error_code(400, "Found space on header name."));
+			ft_toLower(tmp);
+			i = line.find(':');
+			while (line[i] == ' ' || line[i] == ':')
+				i++;
+			this->_headers[tmp] = line.substr(i, (line.find('\n') - i));
+		}
+		else
+		{
+			tmp = line.substr(i, (line.find('\n') - i));
+			if(space_in_header_name(tmp))
+				return (set_error_code(400, "Found space on header name."));
+			ft_toLower(tmp);
+			this->_headers[tmp] = "";
+		}
 		line.erase(0, line.find('\n') + 1);
 		i = 0;
 	}
-	
 }
 
 
@@ -203,6 +213,7 @@ void    request::process_headers(std::stringstream &reqFile, std::string line)
 		}
 	}
 	fix_spaces_in_line(line);
+	// check if line is empty?
 	save_headers(line);
 }
 

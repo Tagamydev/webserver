@@ -12,9 +12,8 @@ std::string	read_file(int fd)
         result.append(buffer, bytesRead);
     }
 
-    if (bytesRead == -1) {
-        std::cerr << "Error reading file descriptor." << std::strerror(errno) << std::endl;
-    }
+    if (bytesRead == -1)
+		throw std::runtime_error("Error reading file descriptor.");
 	return (result);
 }
 /* while on reqFile to skip new lines at the begining of the request.
@@ -30,11 +29,8 @@ request::request(int fd)
 	reqFile << file;
 	reqFile.seekg(0);
 	getline(reqFile, line);
-	std::cout << "LINE " << line ;
-	std::cout << "A" << std::endl;
 	while (!reqFile.eof() && line.empty())
 		getline(reqFile, line);
-	// std::cout << "LINE " << line << " | " << std::endl;
 	this->check_save_request_line(line);
 	if (this->_error_code == -1)
 		this->process_headers(reqFile, line);

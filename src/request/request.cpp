@@ -3,18 +3,23 @@
 
 std::string	read_file(int fd)
 {
-    const std::size_t bufferSize = 1024;
+    const std::size_t bufferSize = MAX_BUFFER_LENGTH;
     char buffer[bufferSize];
     std::string result;
 
     ssize_t bytesRead;
-    while ((bytesRead = read(fd, buffer, bufferSize)) > 0) {
+
+	/*
+    while ((bytesRead = recv(fd, buffer, bufferSize, 0)) > 0)
+	{
         result.append(buffer, bytesRead);
     }
+	*/
+	bytesRead = recv(fd, buffer, bufferSize, 0);
+	result.append(buffer, bytesRead);
 
-    if (bytesRead == -1) {
+    if (bytesRead == -1)
         std::cerr << "Error reading file descriptor." << std::strerror(errno) << std::endl;
-    }
 	return (result);
 }
 /* while on reqFile to skip new lines at the begining of the request.

@@ -3,8 +3,9 @@
 # define REQUEST_HPP
 # include "main.hpp"
 
-#define MAX_URI_LENGTH 4096
-#define MAX_CONTENT_LENGTH 30000000
+# define MAX_URI_LENGTH 4096
+# define MAX_CONTENT_LENGTH 30000000
+# define MAX_BUFFER_LENGTH 2048
 
 enum ParsingState
 {

@@ -25,7 +25,7 @@ response::response(request &req)
 		this->do_delete();
 	else
 	{
-		this->do_error_page(404);
+		this->do_error_page(405);
 		return ;
 	}
 }
@@ -116,7 +116,6 @@ void	response::get_file(std::string &path)
 		this->do_error_page(404);
 		return ;
 	}
-
 }
 
 std::list<std::string> listDirectory(const std::string& path) {
@@ -125,10 +124,7 @@ std::list<std::string> listDirectory(const std::string& path) {
     struct dirent* entry;
 
     if (dir == NULL)
-	{
-		//throw std::runtime_error("Error reading file descriptor.");
         return directoryEntries;
-    }
 
     while ((entry = readdir(dir)) != NULL)
 	{
@@ -144,16 +140,12 @@ bool	is_dir(std::string path)
 {
 	struct stat pathStat;
 
-	std::cout << "this is the path for testing: " << path << std::endl;
 	if (stat(path.c_str(), &pathStat) == 0)
 	{
 		if (S_ISREG(pathStat.st_mode))
 			return (false);
 		else if (S_ISDIR(pathStat.st_mode))
-		{
-			std::cout << "this is dir: " << path << std::endl;
 			return (true);
-		}
 	}
 	return (false);
 }
@@ -190,7 +182,6 @@ void	response::get_dir(std::string &path)
 {
     std::list<std::string> entries = listDirectory(path);
 
-
 	//if (autoindex == true)
 	this->status_code = 200;
 	this->body = make_autoindex(entries, path, this->request_form->_uri);
@@ -204,7 +195,7 @@ void	response::get_dir(std::string &path)
 
 void	response::do_get()
 {
-	if (this->_error)
+	if (!this->request_form || this->_error)
 		return ;
 
 	std::string	path;
@@ -237,7 +228,6 @@ void	response::do_get()
 	}
 	else
 	{
-		// not found
 		this->do_error_page(404);
 		return ;
 	}
@@ -254,11 +244,40 @@ void	response::do_post()
 
 void	response::do_delete()
 {
-	if (this->_error)
+	if (!this->request_form || this->_error)
 		return ;
 
+	std::string	path;
+	struct stat pathStat;
+
+
+	//path = "." + std::string("/minecraft.jpg");//this->request_form->uri;
+	path = "." + this->request_form->_uri;
 	if (!request_form)
 		return ;
+	if (stat(path.c_str(), &pathStat) == 0)
+	{
+		if (S_ISREG(pathStat.st_mode))
+		{
+			// regular file
+		}
+		else if (S_ISDIR(pathStat.st_mode))
+		{
+			// directory
+		}
+		else
+		{
+			this->do_error_page(404);
+			return ;
+		}
+	}
+	else
+	{
+		// not found
+		this->do_error_page(404);
+		return ;
+	}
+
 }
 
 void	response::set_mime_types_list()

@@ -20,11 +20,13 @@ INC		= ./src/main.hpp \
 		./src/request/request.hpp \
 		./src/server/location.hpp \
 		./src/server/server.hpp \
+		./src/server/webserver.hpp \
 		./src/server/serverFd.hpp \
 
 SRCS		= ./src/response/response.cpp \
 		./src/request/request.cpp \
 		./src/server/server.cpp \
+		./src/server/webserver.cpp \
 		./src/server/serverFd.cpp \
 		./src/server/location.cpp \
 		./src/main.cpp ./src/assets.cpp 

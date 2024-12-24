@@ -32,24 +32,39 @@ response::response(request &req)
 
 response::~response(){}
 
+std::string	html_head(std::string title)
+{
+	std::stringstream	strm;
+
+	strm << "<!DOCTYPE HTML>\r\n";
+	strm << "<html lang=\"en\">\r\n";
+	strm << "    <head>\r\n";
+	strm << "        <meta charset=\"utf-8\">\r\n";
+	strm << "        <title>" << title << "</title>\r\n";
+	strm << "    </head>\r\n";
+	strm << "    <body>\r\n";
+	return (strm.str());
+}
+
+std::string html_tail()
+{
+	std::stringstream	strm;
+
+	strm << "    </body>\r\n";
+	strm << "</html>\r\n";
+	return (strm.str());
+}
+
 std::string	make_error_page_html(int error, std::string message)
 {
 	std::stringstream	strm;
 
-	strm << "<!DOCTYPE HTML>";
-	strm << "<html lang=\"en\">";
-	strm << "    <head>";
-	strm << "        <meta charset=\"utf-8\">";
-	strm << "        <title>Error response</title>";
-	strm << "    </head>";
-	strm << "    <body>";
-	strm << "        <h1>Error response</h1>";
-	strm << "        <p>Error code: " << error << "</p>";
-	strm << "        <p>Message: " << message << "</p>";
+	strm << html_head("Error response");
+	strm << "        <h1>Error response</h1>\r\n";
+	strm << "        <p>Error code: " << error << "</p>\r\n";
+	strm << "        <p>Message: " << message << "</p>\r\n";
 //	strm << "        <p>Error code explanation: 404 - Nothing matches the given URI.</p>";
-	strm << "    </body>";
-	strm << "</html>";
-
+	strm << html_tail();
 	return (strm.str());
 }
 
@@ -111,7 +126,7 @@ std::list<std::string> listDirectory(const std::string& path) {
 
     if (dir == NULL)
 	{
-        perror("Error al abrir el directorio");
+		//throw std::runtime_error("Error reading file descriptor.");
         return directoryEntries;
     }
 
@@ -123,6 +138,68 @@ std::list<std::string> listDirectory(const std::string& path) {
 
     closedir(dir);
     return directoryEntries;
+}
+
+bool	is_dir(std::string path)
+{
+	struct stat pathStat;
+
+	std::cout << "this is the path for testing: " << path << std::endl;
+	if (stat(path.c_str(), &pathStat) == 0)
+	{
+		if (S_ISREG(pathStat.st_mode))
+			return (false);
+		else if (S_ISDIR(pathStat.st_mode))
+		{
+			std::cout << "this is dir: " << path << std::endl;
+			return (true);
+		}
+	}
+	return (false);
+}
+
+std::string	make_autoindex(std::list<std::string> &files, std::string &path, std::string &uri)
+{
+	std::list<std::string>::iterator	i = files.begin();
+	std::list<std::string>::iterator	ie = files.end();
+	std::stringstream					result;
+	std::string							tmp;
+
+	result << html_head("Directory listing");
+	result << "<h1>Directory listing for " << uri << "</h1>";
+	result << "<hr>";
+	result << "<ul>";
+
+	for (; i != ie; i++)
+	{
+		if (is_dir(path + *i))
+			tmp = "<li><a href=\"" + *i + "/"+ "\">" + *i + "</a></li>\r\n";
+		else
+			tmp = "<li><a href=\"" + *i + "\">" + *i + "</a></li>\r\n";
+		result << tmp << std::endl;
+	}
+
+	result << "</ul>";
+	result << "<hr>";
+	result << html_tail();
+
+	return (result.str());
+}
+
+void	response::get_dir(std::string &path)
+{
+    std::list<std::string> entries = listDirectory(path);
+
+
+	//if (autoindex == true)
+	this->status_code = 200;
+	this->body = make_autoindex(entries, path, this->request_form->_uri);
+
+	//else
+	// search index file
+
+	// else
+	// return 403 forbidden
 }
 
 void	response::do_get()
@@ -149,13 +226,7 @@ void	response::do_get()
 		{
 			// directory
 			//'/?' 301
-    		std::list<std::string> entries = listDirectory(path);
-			std::list<std::string>::iterator	i = entries.begin();
-			std::list<std::string>::iterator	ie = entries.end();
-
-			for (; i != ie; i++) {
-				std::cout << *i << std::endl;
-			}
+			this->get_dir(path);
 		}
 		else
 		{

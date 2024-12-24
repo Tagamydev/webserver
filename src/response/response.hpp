@@ -43,6 +43,7 @@ class   response{
 		void		do_post();
 		void		do_delete();
 		void		get_file(std::string &path);
+		void		get_dir(std::string &path);
 
 		void		do_error_page(int error);
 

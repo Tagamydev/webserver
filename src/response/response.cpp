@@ -197,15 +197,13 @@ void	response::do_get()
 {
 	if (!this->request_form || this->_error)
 		return ;
+	// check if this location have get!! permissions
+	// to do ^
 
 	std::string	path;
 	struct stat pathStat;
 
-
-	//path = "." + std::string("/minecraft.jpg");//this->request_form->uri;
 	path = "." + this->request_form->_uri;
-	if (!request_form)
-		return ;
 	if (stat(path.c_str(), &pathStat) == 0)
 	{
 		if (S_ISREG(pathStat.st_mode))
@@ -242,28 +240,57 @@ void	response::do_post()
 		return ;
 }
 
+void	response::delete_dir(std::string &path)
+{
+	if (access(path.c_str(), W_OK) == 0)
+	{
+		if (rmdir(path.c_str()) == 0)
+			this->status_code = 204;
+		else
+		{
+			this->do_error_page(409);
+			return ;
+		}
+	}
+	else
+	{
+		this->do_error_page(403);
+		return ;
+	}
+}
+
+void	response::delete_file(std::string &path)
+{
+	if (std::remove(path.c_str()) == 0)
+		this->status_code = 204;
+	else
+	{
+		this->do_error_page(403);
+		return ;
+	}
+}
+
 void	response::do_delete()
 {
 	if (!this->request_form || this->_error)
 		return ;
 
+	// check if this location have delete permissions
+
 	std::string	path;
 	struct stat pathStat;
 
-
-	//path = "." + std::string("/minecraft.jpg");//this->request_form->uri;
 	path = "." + this->request_form->_uri;
-	if (!request_form)
-		return ;
 	if (stat(path.c_str(), &pathStat) == 0)
 	{
 		if (S_ISREG(pathStat.st_mode))
-		{
-			// regular file
-		}
+			this->delete_file(path);
 		else if (S_ISDIR(pathStat.st_mode))
 		{
 			// directory
+			//'/?' 301
+
+			this->delete_dir(path);
 		}
 		else
 		{

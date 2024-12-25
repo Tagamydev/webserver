@@ -233,11 +233,34 @@ void	response::do_get()
 
 void	response::do_post()
 {
-	if (this->_error)
+	std::string	path;
+	if (!this->request_form || this->_error)
 		return ;
 
-	if (!request_form)
+	path = "." + this->request_form->_uri;
+
+	// this method is cgi's deppendant, so the response came from the cgi
+	// not from this, this webserver is not a cgi is a webserver cgi dependant
+	// so the only method with post allowed is when the content-type has:
+	// multipart/form-data
+
+	// check post permissions
+
+	// check if the content-type from the response has multipart/form-data
+	// if not 400
+
+	// try to upload the file!
+	// in success return this
+	if (true)
+	{
+		this->status_code = 201;
+		this->headers["Location"] = path;
+	}
+	else
+	{
+		this->do_error_page(403);
 		return ;
+	}
 }
 
 void	response::delete_dir(std::string &path)
@@ -309,6 +332,7 @@ void	response::do_delete()
 
 void	response::set_mime_types_list()
 {
+	// this need to be moved into webserver class, start this every response generation is a waste of resources.
     this->mime_types_list[".html"] = "text/html";
     this->mime_types_list[".htm"] = "text/html";
     this->mime_types_list[".css"] = "text/css";

@@ -48,14 +48,32 @@ struct pollfd pollfd_from_fd(int fd, short events)
 	return (tmp);
 }
 
+bool	find_server_fd(std::list<int> &_serversFD, int value)
+{
+	std::list<int>::iterator i = std::find(_serversFD.begin(), _serversFD.end(), value);
+	if (i == _serversFD.end())
+		return (false);
+	return (true);
+}
+
 int main_loop(webserver &server)
 {
 	std::vector<struct pollfd>	fdsList;
 	std::map<int, request*>		_client_and_request;
+	std::map<int, int>			_socket_serverFD;
+	std::list<int>				_serversFD;
 	serverFd*	server_fd;
+	serverFd*	server_fd2;
 
 	server_fd = new serverFd(1234);
 	fdsList.push_back(pollfd_from_fd(server_fd->_fd, POLLIN));
+	_socket_serverFD[1234] = server_fd->_fd;
+	_serversFD.push_back(server_fd->_fd);
+
+	server_fd2 = new serverFd(4321);
+	fdsList.push_back(pollfd_from_fd(server_fd2->_fd, POLLIN));
+	_socket_serverFD[4321] = server_fd2->_fd;
+	_serversFD.push_back(server_fd2->_fd);
 
 	int new_socket;
 
@@ -68,11 +86,11 @@ int main_loop(webserver &server)
 		{
 			if (fdsList[i].revents & POLLIN)
 			{
-				if (fdsList[i].fd == server_fd->_fd)
+				if (find_server_fd(_serversFD, fdsList[i].fd))
 				{
 					// new client
 
-					if ((new_socket = accept(server_fd->_fd, NULL, NULL)) == -1)
+					if ((new_socket = accept(fdsList[i].fd, NULL, NULL)) == -1)
 						throw (std::runtime_error("Accept fail."));
 
 					fdsList.push_back(pollfd_from_fd(new_socket, POLLIN | POLLOUT));
@@ -89,10 +107,10 @@ int main_loop(webserver &server)
 
 					send_response(fdsList[i].fd, respuesta.str());
 
-					close(fdsList[i].fd);
 					delete tmp_req;
-					fdsList.erase(fdsList.begin() + i);
-
+					// if (!connection_keep_alive)
+						close(fdsList[i].fd);
+						fdsList.erase(fdsList.begin() + i);
 				}
 			}
 		}

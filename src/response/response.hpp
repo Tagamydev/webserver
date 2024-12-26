@@ -3,27 +3,29 @@
 # define RESPONSE_HPP
 # include "main.hpp"
 # include "request.hpp"
+# include "webserver.hpp"
 
 class request;
+class webserver;
 
 class   response{
 	public:
 
 		// con/destructor
-		response(request &rq);
+		response(request &rq, webserver &global_struct);
 		~response(void);
 
 	// STATUS LINE
 
-		std::string	http_version;
-		int			status_code;
+		std::string	_http_version;
+		int			_status_code;
 
 	// HEADERS
-		std::map<std::string, std::string>	headers;	
+		std::map<std::string, std::string>	_headers;	
 		// header, content
 
 	// BODY
-		std::string	body;
+		std::string	_body;
 	
 	// PRINT RESPONSE
 		std::string	str();
@@ -35,10 +37,7 @@ class   response{
 	private:
 
 		bool		_error;
-		std::map<int, std::string>	status_codes_list;
-		std::map<std::string, std::string>	mime_types_list;
-		void		set_status_codes_list();
-		void		set_mime_types_list();
+
 		void		do_get();
 		void		do_post();
 		void		do_delete();
@@ -47,12 +46,16 @@ class   response{
 		void		delete_dir(std::string &path);
 		void		delete_file(std::string &path);
 
+		std::string	status_message(int error);
 		void		do_error_page(int error);
 
 		std::string	get_mimeType(std::string &path);
 		std::string print_status_line();
 		std::string print_headers();
-		request		*request_form;
+
+		webserver	*_webserver;
+		request		*_request_form;
+		
 };
 
 #endif

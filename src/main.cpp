@@ -85,7 +85,7 @@ int main_loop(webserver &server)
 				if (fdsList[i].events & POLLOUT)
 				{
 					request	*tmp_req = _client_and_request[i];
-					response respuesta = response(*tmp_req);
+					response respuesta = response(*tmp_req, server);
 
 					send_response(fdsList[i].fd, respuesta.str());
 

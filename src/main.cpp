@@ -48,31 +48,50 @@ struct pollfd pollfd_from_fd(int fd, short events)
 	return (tmp);
 }
 
-int test()
+bool	find_server_fd(std::list<int> &_serversFD, int value)
+{
+	std::list<int>::iterator i = std::find(_serversFD.begin(), _serversFD.end(), value);
+	if (i == _serversFD.end())
+		return (false);
+	return (true);
+}
+
+int main_loop(webserver &server)
 {
 	std::vector<struct pollfd>	fdsList;
 	std::map<int, request*>		_client_and_request;
+	std::map<int, int>			_socket_serverFD;
+	std::list<int>				_serversFD;
 	serverFd*	server_fd;
+	serverFd*	server_fd2;
 
 	server_fd = new serverFd(1234);
 	fdsList.push_back(pollfd_from_fd(server_fd->_fd, POLLIN));
+	_socket_serverFD[1234] = server_fd->_fd;
+	_serversFD.push_back(server_fd->_fd);
+
+	server_fd2 = new serverFd(4321);
+	fdsList.push_back(pollfd_from_fd(server_fd2->_fd, POLLIN));
+	_socket_serverFD[4321] = server_fd2->_fd;
+	_serversFD.push_back(server_fd2->_fd);
 
 	int new_socket;
 
 	while (true)
 	{
 		if (poll(fdsList.data(), static_cast<unsigned int>(fdsList.size()), 0) < 0)
-			throw (std::runtime_error("Error: Fatal poll fail!"));
+			throw (std::runtime_error("Poll fail."));
 
 		for (int i = 0; i < static_cast<unsigned int>(fdsList.size()); ++i)
 		{
 			if (fdsList[i].revents & POLLIN)
 			{
-				if (fdsList[i].fd == server_fd->_fd)
+				if (find_server_fd(_serversFD, fdsList[i].fd))
 				{
 					// new client
-					if ((new_socket = accept(server_fd->_fd, NULL, NULL)) == -1)
-						throw (std::runtime_error("Error: Fatal accept fail!"));
+
+					if ((new_socket = accept(fdsList[i].fd, NULL, NULL)) == -1)
+						throw (std::runtime_error("Accept fail."));
 
 					fdsList.push_back(pollfd_from_fd(new_socket, POLLIN | POLLOUT));
 
@@ -84,14 +103,14 @@ int test()
 				if (fdsList[i].events & POLLOUT)
 				{
 					request	*tmp_req = _client_and_request[i];
-					response respuesta = response(*tmp_req);
+					response respuesta = response(*tmp_req, server);
 
 					send_response(fdsList[i].fd, respuesta.str());
 
-					close(fdsList[i].fd);
 					delete tmp_req;
-					fdsList.erase(fdsList.begin() + i);
-
+					// if (!connection_keep_alive)
+						close(fdsList[i].fd);
+						fdsList.erase(fdsList.begin() + i);
 				}
 			}
 		}
@@ -100,24 +119,29 @@ int test()
 	return 0;
 }
 
-int main()
+std::string	path_config_file(int argc, char **argv)
+{
+	std::string	config_file = "./conf.d/webserver.conf";
+	if (argc != 2)
+		std::cout << "[Info]: configuration file not found," <<
+		"starting server with the default configuration file from: " 
+		<< config_file << std::endl;
+	else
+		config_file = "./" + std::string(argv[1]);
+	return (config_file);
+}
+
+int main(int argc, char **argv)
 {
 	try
 	{
-		test();
+		std::string	config_file = path_config_file(argc, argv);
+		webserver	server(config_file);	
 
-		// int	fd;
-
-		// fd = open("request.txt", O_RDONLY);
-		// if (fd < 0)
-		// 	return (-1);
-		// request		req = request(fd);
-		// response	respuesta = response(req);
-		// std::cout << "\n<<<<    Response    >>>>" << std::endl;
-		// std::cout << respuesta.str() << std::endl;
+		main_loop(server);
 	}
 	catch (const std::exception &e)
 	{
-		std::cout << e.what() << std::endl;
+		std::cout << "[Fatal]: " << e.what() << std::endl;
 	}
 }

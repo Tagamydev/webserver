@@ -42,7 +42,7 @@ webserver::webserver(std::string &path)
 {
 	this->set_status_codes();
 	this->set_mime_types();
-	this->get_file_info(path);
+	this->get_file_info(path); // move to server class?
 	this->_config_file = save_config_file(path);
 }
 

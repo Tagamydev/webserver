@@ -15,6 +15,7 @@ class webserver
 		//parser
 		void	get_file_info(std::string path);
 		std::string	save_config_file(std::string &path);
+		void	set_server_list(std::string path);
 
 		std::string	status_message(int code);
 		std::string	mime_types(std::string &extention);

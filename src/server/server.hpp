@@ -7,6 +7,7 @@ class	server{
 	//this need a location class diferent from config to make a map with that!!
 	public:
 		server();
+		server(std::string &path);
 		~server();
 
 		// mandatory
@@ -27,6 +28,11 @@ class	server{
 		std::map<std::list<int>, std::string>		error_pages;
 
 		std::map<std::string, location>	locations;
+
+		// parser
+		void	get_file_info(std::string path);
+		void	set_server_list(std::string path);
+
 };
 
 #endif

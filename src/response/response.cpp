@@ -8,13 +8,11 @@ response::response(request &req, webserver &global_struct)
 	this->_http_version = "1.1";
 	this->_headers["Server"] = "42 Samusanc/Daviles simple webserver";
 	this->_headers["Date"] = get_actual_date();
+	this->_body = "";
 
 	this->_error = false;
 	if (req._error_code != -1)
-	{
 		this->do_error_page(req._error_code);
-		return ;
-	}
 
 	if (req._method == "GET")
 		this->do_get();
@@ -22,14 +20,23 @@ response::response(request &req, webserver &global_struct)
 		this->do_post();
 	else if (req._method == "DELETE")
 		this->do_delete();
-	else
-	{
+	else if (!_error)
 		this->do_error_page(405);
-		return ;
-	}
+
+	this->set_length();
+
+	// connection keep alive when not error and the request have also the keep alive?
 }
 
 response::~response(){}
+
+void	response::set_length()
+{
+	std::stringstream	length;
+
+	length << this->_body.length();
+	this->_headers["Content-Length"] = length.str();
+}
 
 std::string	html_head(std::string title)
 {
@@ -73,7 +80,7 @@ void	response::do_error_page(int error)
 	this->_status_code = error;
 	std::cout << "Error page { " << error << " }: "; 
 	std::cout << this->status_message(error) << "!!" << std::endl;
-	this->_headers["Content-Type:"] = "text/html;charset=utf-8";
+	this->_headers["Content-Type"] = "text/html;charset=utf-8";
 	this->_body = make_error_page_html(error, this->status_message(error));
 
 }
@@ -97,7 +104,6 @@ void	response::get_file(std::string &path)
 
 	std::ifstream	file(path.c_str(), std::ios::binary);
 	std::stringstream	buff;
-	std::stringstream	length;
 
 	if (file.is_open())
 	{
@@ -105,9 +111,7 @@ void	response::get_file(std::string &path)
 		this->_body = buff.str();
 		file.close();
 		this->_status_code = 200;
-		this->_headers["Content-type"] = this->get_mimeType(path);
-		length << this->_body.length();
-		this->_headers["Content-Length"] = length.str();
+		this->_headers["Content-Type"] = this->get_mimeType(path);
 	}
 	else
 	{
@@ -212,7 +216,7 @@ void	response::do_get()
 		else if (S_ISDIR(pathStat.st_mode))
 		{
 			// directory
-			//'/?' 301
+			//'/?' 301 redirect to match directory
 			this->get_dir(path);
 		}
 		else
@@ -360,6 +364,7 @@ std::string	response::str()
 
 	result << this->print_status_line();
 	result << this->print_headers();
+
 	result << "\r\n";
 	result << this->_body;
 

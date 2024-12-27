@@ -24,6 +24,7 @@ response::response(request &req, webserver &global_struct)
 		this->do_error_page(405);
 
 	this->set_length();
+
 	// connection keep alive when not error and the request have also the keep alive?
 }
 
@@ -79,7 +80,7 @@ void	response::do_error_page(int error)
 	this->_status_code = error;
 	std::cout << "Error page { " << error << " }: "; 
 	std::cout << this->status_message(error) << "!!" << std::endl;
-	this->_headers["Content-Type:"] = "text/html;charset=utf-8";
+	this->_headers["Content-Type"] = "text/html;charset=utf-8";
 	this->_body = make_error_page_html(error, this->status_message(error));
 
 }
@@ -363,6 +364,7 @@ std::string	response::str()
 
 	result << this->print_status_line();
 	result << this->print_headers();
+
 	result << "\r\n";
 	result << this->_body;
 

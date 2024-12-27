@@ -6,25 +6,100 @@ void	print_config_info(std::string _config_file)
 	std::cout << _config_file << std::endl;
 }
 
-std::vector<std::string>	webserver::check_save_server_vector(std::string &_config_file)
+void	webserver::print_list_content(std::list<std::string> list)
+{
+	size_t i = 1;
+		std::cout << "\n<<<   Server List   >>>" << std::endl;
+	for (std::list<std::string>::iterator it = list.begin(); it != list.end(); it++)
+		{
+			std::cout << "--- Server " << i++ << " ---";
+			std::cout << *it << "\n";
+		}
+	std::cout << std::endl;
+}
+
+size_t	webserver::find_end_server(size_t start, std::string _config_file)
+{
+	size_t brackets = 0;
+	size_t end = start;
+
+	// while (++end < _config_file.length())
+	while (_config_file[++end])
+	{
+		if (_config_file[end] == '{')
+			brackets++;
+		if (_config_file[end] == '}')
+		{
+			if (!brackets)
+				return (end - 1); // to avoid save bracket
+			brackets--;
+		}
+	}
+	if (brackets > 0)
+		throw std::runtime_error("Error reading config file. Scope error, check for open brackets. (1)");
+	if (end >= _config_file.length())
+		return (start); // for the last search?
+	return (start);
+}
+
+size_t	webserver::find_start_server(size_t start, std::string _config_file)
+{
+	size_t pos = start;
+	// size_t pos = _config_file.find("server", start);
+	
+	if (_config_file.find("server", start) == std::string::npos)
+		return (_config_file.length());
+	
+	while (pos < _config_file.length())
+	{
+		if (_config_file[pos] == 's')
+			break;
+		else if (!isspace(_config_file[pos]))
+		{
+			std::cout << "HERE " << _config_file[pos] << std::endl;
+			throw std::runtime_error("Error reading config file. Wrong character out of server scope. (1)");
+		}
+		pos++;
+	}
+	if (_config_file.compare(pos, 6, "server") != 0)
+		throw std::runtime_error("Error reading config file. Wrong character out of server scope. (2)");
+	pos += 6;
+	while (_config_file[pos] && isspace(_config_file[pos] ))
+		pos++;
+	if (_config_file[pos] == '{')
+		return (pos + 1); // to avoid bracket
+	else
+		throw std::runtime_error("Error reading config file. Wrong character out of server scope.(3)");
+
+}
+
+std::list<std::string>	webserver::check_save_server_vector(std::string &_config_file)
 {
 	size_t start = 0;
 	size_t end = 1;
+	// std::vector<std::string> servers;
 
-	// while (start < _config_file.length())
-	// {
-	// 	find_start_server(start, _config_file);
-		
-	// }
-}
-
-void	webserver::find_start_server(size_t &start, std::string _config_file)
-{
-	while (_config_file[start])
+	// if (_config_file.count("server", 0) == std::string::npos) 
+	// Count and compare number of servers at the end?
+	if (_config_file.find("server", 0) == std::string::npos)
+		throw std::runtime_error("Error reading config file. Server not found.");
+	// std::cout << "\n LALALA " << std::endl;
+	while (start != end && start < _config_file.length())
 	{
-
+		// std::cout << "\n SERVER " << std::endl;
+		start = find_start_server(start, _config_file);
+		end = find_end_server(start, _config_file);
+		if (start == end)
+			break ;
+		// std::cout << "\n SERVER " << _config_file.substr(start, end) << std::endl;
+		this->_server_block_list.push_back(_config_file.substr(start, end - start));
+		
+		this->print_list_content(_server_block_list);
+		start = end + 2; //because I save the end before bracket
 	}
-
+	if (_server_block_list.empty())
+		throw std::runtime_error("Error reading config file. Scope error, check for open brackets. (2)");
+	return (this->_server_block_list);
 }
 
 void	webserver::remove_comments(std::string &_config_file)
@@ -88,10 +163,11 @@ webserver::webserver(std::string &path)
 	// parser
 	this->get_file_info(path);
 	this->_config_file = save_config_file(path);
-	print_config_info (_config_file);
 	remove_comments(_config_file);
 	print_config_info (_config_file);
-	// check_save_server_vector(_config_file);
+	fix_spaces_in_line(_config_file);
+	print_config_info (_config_file);
+	check_save_server_vector(_config_file);
 
 }
 

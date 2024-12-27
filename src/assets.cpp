@@ -48,3 +48,29 @@ int is_empty(std::string &line)
 		return (1);
 	return (0);
 }
+/*
+Check duplicated on request*/
+// void request::fix_spaces_in_line(std::string &line)
+void fix_spaces_in_line(std::string &line)
+{
+	std::string parsedLine;
+	int i = 0;
+
+	if (line[0] == ' ' || line[0] == '\t' || line[0] == '\r' || line[0] == '\f' || line[0] == '\n')
+		while (line[i] == ' ' || line[i] == '\t' || line[i] == '\r' || line[i] == '\f' || line[i] == '\n')
+			i++;
+	while (i != line.length() || line[i] != '\0')
+	{
+		if (line[i] == ' ' || line[i] == '\t' || line[i] == '\r' || line[i] == '\f')
+		{
+			while (line[i] == ' ' || line[i] == '\t' || line[i] == '\r' || line[i] == '\f')
+			   i++;
+			if (line[i] == '\0')
+				break;
+			parsedLine += ' ';
+		}
+		parsedLine += line[i];
+		i++;
+	}
+	line = parsedLine;
+}

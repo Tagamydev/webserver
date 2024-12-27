@@ -1,5 +1,44 @@
 #include "webserver.hpp"
 
+void	print_config_info(std::string _config_file)
+{
+	std::cout << "\n<<<   Config File   >>>" << std::endl;
+	std::cout << _config_file << std::endl;
+}
+
+std::vector<std::string>	webserver::check_save_server_vector(std::string &_config_file)
+{
+	size_t start = 0;
+	size_t end = 1;
+
+	// while (start < _config_file.length())
+	// {
+	// 	find_start_server(start, _config_file);
+		
+	// }
+}
+
+void	webserver::find_start_server(size_t &start, std::string _config_file)
+{
+	while (_config_file[start])
+	{
+
+	}
+
+}
+
+void	webserver::remove_comments(std::string &_config_file)
+{
+	size_t	pos;
+
+	pos = _config_file.find('#');
+	while (pos != std::string::npos)
+	{	
+		_config_file.erase(pos, _config_file.find('\n', pos) - pos);
+		pos = _config_file.find('#');
+	}
+}
+
 /*
 returns of stat()
 S_ISREG(m)  is it a regular file?
@@ -35,15 +74,25 @@ std::string	webserver::save_config_file(std::string &path)
 	buff << file.rdbuf();
 	file.close();
 	result = buff.str();
+	if (result.empty())
+		throw std::runtime_error("Config file is empty.");
 	return (result);
 }
 
 webserver::webserver(std::string &path)
 {
+	// set init
 	this->set_status_codes();
 	this->set_mime_types();
-	this->get_file_info(path); // move to server class?
+
+	// parser
+	this->get_file_info(path);
 	this->_config_file = save_config_file(path);
+	print_config_info (_config_file);
+	remove_comments(_config_file);
+	print_config_info (_config_file);
+	// check_save_server_vector(_config_file);
+
 }
 
 void	webserver::set_mime_types()

@@ -1,6 +1,30 @@
 #include "webserver.hpp"
 
-std::string	save_config_file(std::string &path)
+/*
+returns of stat()
+S_ISREG(m)  is it a regular file?
+S_ISDIR(m)  directory?
+S_ISCHR(m)  character device?
+S_ISBLK(m)  block device?
+S_ISFIFO(m) FIFO (named pipe)?
+S_ISLNK(m)  symbolic link?  (Not in POSIX.1-1996.)
+S_ISSOCK(m) socket?  (Not in POSIX.1-1996.)
+*/
+void	webserver::get_file_info(std::string path)
+{
+	struct stat st;
+	
+    if (stat(path.c_str(), &st) == -1)
+		throw std::runtime_error("Error reading config file.");
+    else if (S_ISDIR(st.st_mode))
+		throw std::runtime_error("Error reading config file. Is a directory.");
+    else if (S_ISREG(st.st_mode))
+    	return ;
+    else
+		throw std::runtime_error("Error reading config file. Not a regular file.");
+}
+
+std::string	webserver::save_config_file(std::string &path)
 {
 	std::string			result;
 	std::stringstream	buff;
@@ -8,11 +32,8 @@ std::string	save_config_file(std::string &path)
 
 	if (!file)
 		throw std::runtime_error("Error reading config file.");
-	else
-	{
-		buff << file.rdbuf();
-		file.close();
-	}
+	buff << file.rdbuf();
+	file.close();
 	result = buff.str();
 	return (result);
 }
@@ -21,6 +42,7 @@ webserver::webserver(std::string &path)
 {
 	this->set_status_codes();
 	this->set_mime_types();
+	this->get_file_info(path);
 	this->_config_file = save_config_file(path);
 }
 

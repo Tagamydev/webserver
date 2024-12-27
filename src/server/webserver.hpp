@@ -12,9 +12,15 @@ class webserver
 		webserver(std::string &path);
 		~webserver();
 
+		//parser
+		void	get_file_info(std::string path);
+		std::string	save_config_file(std::string &path);
+
 		std::string	status_message(int code);
 		std::string	mime_types(std::string &extention);
 		std::map<std::string, std::string>	_mime_types;
+
+
 
 	private:
 		std::list<server>	_servers;

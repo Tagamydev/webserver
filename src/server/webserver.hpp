@@ -18,6 +18,7 @@ class webserver
 		void	set_server_list(std::string path);
 		std::list<std::string>	check_save_server_vector(std::string &_config_file);
 		void	remove_comments(std::string &_config_file);
+		void	check_brackets(std::string _config_file);
 		size_t	find_start_server(size_t start, std::string _config_file);
 		size_t	find_end_server(size_t start, std::string _config_file);
 		void	print_list_content(std::list<std::string> list);

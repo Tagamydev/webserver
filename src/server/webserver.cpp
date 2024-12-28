@@ -102,6 +102,23 @@ std::list<std::string>	webserver::check_save_server_vector(std::string &_config_
 	return (this->_server_block_list);
 }
 
+void	webserver::check_brackets(std::string _config_file)
+{
+	size_t brackets = 0;
+	size_t i = 0;
+
+	while (_config_file[i])
+	{
+		if (_config_file[i] == '{')
+			brackets++;
+		else if (_config_file[i] == '}')
+			brackets--;
+		i++;
+	}
+	if (brackets != 0)
+		throw std::runtime_error("Error reading config file. Scope error, check for open brackets. (0)");
+}
+
 void	webserver::remove_comments(std::string &_config_file)
 {
 	size_t	pos;
@@ -164,8 +181,8 @@ webserver::webserver(std::string &path)
 	this->get_file_info(path);
 	this->_config_file = save_config_file(path);
 	remove_comments(_config_file);
-	print_config_info (_config_file);
 	fix_spaces_in_line(_config_file);
+	check_brackets(_config_file);
 	print_config_info (_config_file);
 	check_save_server_vector(_config_file);
 

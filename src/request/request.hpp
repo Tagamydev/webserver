@@ -7,11 +7,6 @@
 # define MAX_CONTENT_LENGTH 30000000
 # define MAX_BUFFER_LENGTH 2048
 
-enum ParsingState
-{
-
-};
-
 class   request{
 	public:
 

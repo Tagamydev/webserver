@@ -29,6 +29,8 @@
 # include "response.hpp"
 # include "serverFd.hpp"
 # include "webserver.hpp"
+# include "cgi.hpp"
+# include "webUtils.hpp"
 # include <algorithm>    // std::count
 
 std::string get_actual_date();

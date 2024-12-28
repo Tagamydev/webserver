@@ -16,9 +16,9 @@ CXXFLAGS	+=	-std=c++98
 CXX		=	c++ $(CXXFLAGS)
 MAIN		=	./main.cpp
 INC		= ./src/main.hpp \
-		./src/response/response.hpp \
 		./src/Utils/webUtils.hpp \
 		./src/CGI/cgi.hpp \
+		./src/response/response.hpp \
 		./src/request/request.hpp \
 		./src/server/location.hpp \
 		./src/server/server.hpp \
@@ -26,9 +26,9 @@ INC		= ./src/main.hpp \
 		./src/server/serverFd.hpp \
 
 SRCS		= ./src/response/response.cpp \
-		./src/request/request.cpp \
 		./src/Utils/webUtils.cpp \
 		./src/CGI/cgi.cpp \
+		./src/request/request.cpp \
 		./src/server/server.cpp \
 		./src/server/webserver.cpp \
 		./src/server/serverFd.cpp \

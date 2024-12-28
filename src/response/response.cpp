@@ -35,6 +35,7 @@ void	response::set_length()
 
 	length << this->_body.length();
 	this->_headers["Content-Length"] = length.str();
+
 }
 
 std::string	html_head(std::string title)

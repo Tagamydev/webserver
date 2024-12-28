@@ -11,11 +11,19 @@
 # **************************************************************************** #
 
 NAME		=	result
-CXXFLAGS	=	-I ./src/ -I ./src/server/ -I ./src/request/ -I ./src/response/ #-Wall -Wextra -Werror -I ./
+INC_DIR		=	-I ./src/ \
+				-I ./src/server/ \
+				-I ./src/request/ \
+				-I ./src/CGI/ \
+				-I ./src/response/ 
+
+CXXFLAGS	=	#-Wall -Wextra -Werror -I ./
+CXXFLAGS	+= $(INC_DIR)
 CXXFLAGS	+=	-std=c++98
 CXX		=	c++ $(CXXFLAGS)
 MAIN		=	./main.cpp
 INC		= ./src/main.hpp \
+		./src/CGI/cgi.hpp \
 		./src/response/response.hpp \
 		./src/request/request.hpp \
 		./src/server/location.hpp \

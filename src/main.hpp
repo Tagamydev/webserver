@@ -23,6 +23,7 @@
 # include <sys/socket.h>
 # include <netinet/in.h>
 # include <sys/stat.h>
+# include "cgi.hpp"
 # include "location.hpp"
 # include "server.hpp"
 # include "request.hpp"

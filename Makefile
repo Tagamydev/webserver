@@ -15,6 +15,7 @@ INC_DIR		=	-I ./src/ \
 				-I ./src/server/ \
 				-I ./src/request/ \
 				-I ./src/CGI/ \
+				-I ./src/utils/ \
 				-I ./src/response/ 
 
 CXXFLAGS	=	#-Wall -Wextra -Werror -I ./
@@ -24,6 +25,7 @@ CXX		=	c++ $(CXXFLAGS)
 MAIN		=	./main.cpp
 INC		= ./src/main.hpp \
 		./src/CGI/cgi.hpp \
+		./src/utils/utils.hpp \
 		./src/response/response.hpp \
 		./src/request/request.hpp \
 		./src/server/location.hpp \
@@ -33,6 +35,8 @@ INC		= ./src/main.hpp \
 
 SRCS		= ./src/response/response.cpp \
 		./src/request/request.cpp \
+		./src/CGI/cgi.cpp \
+		./src/utils/utils.cpp \
 		./src/server/server.cpp \
 		./src/server/webserver.cpp \
 		./src/server/serverFd.cpp \

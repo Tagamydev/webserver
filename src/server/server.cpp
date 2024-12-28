@@ -1,5 +1,43 @@
 #include "server.hpp"
 
+server::server(std::string &content)
+{
+	std::string line;
+	std::string location;
+	std::stringstream contentStream;
+
+	contentStream << content;
+	contentStream.seekg(0);
+	while (getline(contentStream, line))
+	{
+		if (is_empty(line))
+			continue;
+		else if (line.find('{') != std::string::npos)
+		{
+			location += line+ '\n';
+			while (getline(contentStream, line))
+			{
+				location += line + '\n';
+				if (line.find('}') != std::string::npos)
+				break ;
+			}
+			std::cout << "location" << location << std::endl;
+			// std::cout << "process_location"<< std::endl;
+			// process_location(line);		
+			location.clear();	
+		}
+		else
+		{
+			std::cout << "Parameter" << line << std::endl;
+		}
+		// std::cout << "LINE" << line << std::endl;
+		// getline(contentStream, line);
+
+	}
+	//get line
+	//loop until location or brackets
+	//split first parameters
+}
 server::server()
 {
 
@@ -10,26 +48,10 @@ server::~server()
 
 }
 
-/*
-returns of stat()
-S_ISREG(m)  is it a regular file?
-S_ISDIR(m)  directory?
-S_ISCHR(m)  character device?
-S_ISBLK(m)  block device?
-S_ISFIFO(m) FIFO (named pipe)?
-S_ISLNK(m)  symbolic link?  (Not in POSIX.1-1996.)
-S_ISSOCK(m) socket?  (Not in POSIX.1-1996.)
-*/
-void	server::get_file_info(std::string path)
+
+void	server::save_parameters(std::string line, std::string sep)
 {
-	struct stat st;
-	
-    if (stat(path.c_str(), &st) == -1)
-		throw std::runtime_error("Error reading config file.");
-    else if (S_ISDIR(st.st_mode))
-		throw std::runtime_error("Error reading config file. Is a directory.");
-    else if (S_ISREG(st.st_mode))
-    	return ;
-    else
-		throw std::runtime_error("Error reading config file. Not a regular file.");
+	if (is_empty(line))
+		return ;
+
 }

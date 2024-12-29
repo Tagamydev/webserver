@@ -26,8 +26,10 @@ void	server::process_parameters(std::string line)
 	std::cout << "Key " << key << std::endl;
 	std::cout << "value " << value << std::endl;
 	trim_semicolon(value);
+	//check has semicolon
 	if (key == "listen")
 	{
+		// check max port available and is positive
 		if (is_empty(value))
 			throw std::runtime_error("Error reading config file. Wrong value in listen directive.");
 		this->_ports.push_back(atoi(value.c_str()));

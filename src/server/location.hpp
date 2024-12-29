@@ -16,13 +16,13 @@ class	location{
 		// meaning if it is root or alias
 		bool		_is_relative;
 		std::string _root_alias;
-		std::string _index;
 		std::string _cgi;
 		std::string	_index_file;
 		size_t		_max_client_body_size;
 		std::vector<std::string> _allowed_methods;
 
 
+		bool		_index;
 		bool		_get_enabled;
 		bool		_post_enabled;
 		bool		_delete_enabled;

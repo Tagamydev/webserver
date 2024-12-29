@@ -12,18 +12,15 @@
 
 #include "main.hpp"
 
-/*
-@brief transform a string in lower case
- */
+/// @brief transform a string in lower case
 void    ft_toLower(std::string &str)
 {
     for (size_t i = 0; i < str.length(); ++i)
         str[i] = std::tolower(str[i]);
 }
 
-/*
-@brief trim al spaces and new lines from the start and the end on a string
- */
+/// @brief Trim spaces and new lines from the start and from the end on a string.
+/// @param line - Takes the pointer
 void trim_space_newline(std::string &line)
 {
 	int i = 0;
@@ -36,6 +33,9 @@ void trim_space_newline(std::string &line)
 	line = line.substr(i,j - i +1);
 }
 
+/// @brief Check if content is empty, or only have spaces, tabs or \\n
+/// @param line 
+/// @return true if it is empty
 int is_empty(std::string &line)
 {
 	int	i = 0;
@@ -48,9 +48,9 @@ int is_empty(std::string &line)
 		return (1);
 	return (0);
 }
-/*
-Check duplicated on request*/
-// void request::fix_spaces_in_line(std::string &line)
+
+/// @brief Skip is_space at begining. Replace many spaces or tabs to 1 space.
+/// @param line takes the pointer
 void fix_spaces_in_line(std::string &line)
 {
 	std::string parsedLine;
@@ -73,4 +73,28 @@ void fix_spaces_in_line(std::string &line)
 		i++;
 	}
 	line = parsedLine;
+}
+
+void	print_list_content(std::list<std::string> list, std::string title)
+{
+	size_t i = 1;
+		std::cout << "\n<<<   "<< title << "   >>>" << std::endl;
+	for (std::list<std::string>::iterator it = list.begin(); it != list.end(); it++)
+		{
+			std::cout << "--- Item " << i++ << " value: ";
+			std::cout << *it << "\n";
+		}
+	std::cout << std::endl;
+}
+
+void	print_list_content(std::list<int> list, std::string title)
+{
+	size_t i = 1;
+		std::cout << "\n<<<   "<< title << "   >>>" << std::endl;
+	for (std::list<int>::iterator it = list.begin(); it != list.end(); it++)
+		{
+			std::cout << "--- Item " << i++ << "  value: ";
+			std::cout << *it << "\n";
+		}
+	std::cout << std::endl;
 }

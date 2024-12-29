@@ -30,8 +30,10 @@ class	server{
 		std::map<std::string, location>	locations;
 
 		// parser
-		void	save_parameters(std::string line, std::string sep);
-
+		void	check_save_parameters(std::stringstream &contentStream);
+		void	check_location(std::string line);
+		void	process_parameters(std::string line);
+		void 	trim_semicolon(std::string &line);
 };
 
 #endif

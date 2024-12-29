@@ -8,17 +8,6 @@ void	print_config_info(std::string configFile)
 	std::cout << configFile << std::endl;
 }
 
-void	webserver::print_list_content(std::list<std::string> list)
-{
-	size_t i = 1;
-		std::cout << "\n<<<   Server List   >>>" << std::endl;
-	for (std::list<std::string>::iterator it = list.begin(); it != list.end(); it++)
-		{
-			std::cout << "--- Server " << i++ << " ---";
-			std::cout << *it << "\n";
-		}
-	std::cout << std::endl;
-}
 /// Parsing 
 
 size_t	webserver::find_end_server(size_t start, std::string configFile)
@@ -175,7 +164,7 @@ webserver::webserver(std::string &path)
 	check_brackets(_config_file);
 	// print_config_info (_config_file);
 	check_save_server_vector(_config_file);
-	// this->print_list_content(_server_block_list);
+	// print_list_content(_server_block_list, title));
 	//bucle creando servers
 	for (std::list<std::string>::iterator it = _server_block_list.begin(); it != _server_block_list.end(); it++)
 	{

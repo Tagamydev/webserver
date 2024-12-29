@@ -48,7 +48,7 @@ struct pollfd pollfd_from_fd(int fd, short events)
 	return (tmp);
 }
 
-bool	find_server_fd(std::list<int> &_serversFD, int value)
+bool	check_if_fd_match(std::list<int> &_serversFD, int value)
 {
 	std::list<int>::iterator i = std::find(_serversFD.begin(), _serversFD.end(), value);
 	if (i == _serversFD.end())
@@ -56,61 +56,206 @@ bool	find_server_fd(std::list<int> &_serversFD, int value)
 	return (true);
 }
 
+struct loopHandler{
+	public:
+		loopHandler(webserver &server);
+		~loopHandler();
+
+		std::vector<struct pollfd>	_fdsList;
+
+		void			do_poll();
+		unsigned int	total_fds();
+
+		int				port_from_client_fd(int fd);
+
+		void			new_client(int number);
+		void			new_request(int number);
+		void			new_server(int port);
+
+		bool			check_poll_in(int number);
+		bool			check_poll_in_server(int number);
+		bool			check_poll_in_cgi(int number);
+
+		bool			check_poll_out(int number);
+		bool			check_poll_out_cgi(int number);
+
+		request			*get_request_from_client(int n_client);
+
+	private:
+		std::map<int, request*>		_client_and_request;
+
+		// this is saved to find the port by the server FD along with the _clientFD_serverFD
+		// this allow us to find the port of a client from the client fd
+		std::map<int, int>			_serverFD_port;
+		std::map<int, int>			_clientFD_serverFD;
+
+		// list of all servers fd's for loop check
+		std::list<int>				_serversFD;
+		std::list<int>				_cgiFD;
+
+		webserver					*_webserver;
+
+		//Utils
+};
+
+loopHandler::loopHandler(webserver &server)
+{
+	_webserver = &server;
+
+	this->new_server(1234);
+	this->new_server(4321);
+	this->new_server(7777);
+}
+
+loopHandler::~loopHandler()
+{
+	// close all fds from fdList
+
+}
+
+void loopHandler::new_server(int port)
+{
+	serverFd*	server_fd;
+
+	server_fd = new serverFd(port);
+	this->_fdsList.push_back(pollfd_from_fd(server_fd->_fd, POLLIN));
+	this->_serverFD_port[server_fd->_fd] = port;
+	this->_serversFD.push_back(server_fd->_fd);
+}
+
+void	loopHandler::do_poll()
+{
+	int	result;
+
+	result = poll(_fdsList.data(), this->total_fds(), 0);
+	if (result < 0)
+		throw (std::runtime_error("Poll fail."));
+}
+
+int	loopHandler::port_from_client_fd(int fd)
+{
+	int	serverFD;
+	int	port;
+
+	serverFD = this->_clientFD_serverFD[fd];
+	port = this->_serverFD_port[serverFD];
+	return (port);
+}
+
+unsigned int loopHandler::total_fds()
+{
+	return (static_cast<unsigned int>(_fdsList.size()));
+}
+
+bool	loopHandler::check_poll_in(int number)
+{
+	if (_fdsList[number].revents & POLLIN)
+		return (true);
+	return (false);
+}
+
+bool	loopHandler::check_poll_in_server(int number)
+{
+	if (check_if_fd_match(this->_serversFD, this->_fdsList[number].fd))
+		return (true);
+	return (false);
+}
+
+bool	loopHandler::check_poll_in_cgi(int number)
+{
+	if (check_if_fd_match(this->_cgiFD, this->_fdsList[number].fd))
+		return (true);
+	return (false);
+}
+
+
+bool	loopHandler::check_poll_out(int number)
+{
+	if ((_fdsList[number].events & POLLOUT))
+		return (true);
+	return (false);
+}
+
+void	loopHandler::new_client(int number)
+{
+	int new_socket;
+
+	if ((new_socket = accept(this->_fdsList[number].fd, NULL, NULL)) == -1)
+		throw (std::runtime_error("Accept fail."));
+
+	this->_fdsList.push_back(pollfd_from_fd(new_socket, POLLIN | POLLOUT));
+	this->_clientFD_serverFD[this->_fdsList.back().fd] = this->_fdsList[number].fd;
+
+	std::cout << "[LOG]: New client in port: " 
+	<< this->port_from_client_fd(this->_fdsList.back().fd) 
+	<< std::endl;
+}
+
+void	loopHandler::new_request(int number)
+{
+	this->_client_and_request[number] = new request(this->_fdsList[number].fd, *this->_webserver, number);
+}
+
+request	*loopHandler::get_request_from_client(int n_client)
+{
+	return (this->_client_and_request[n_client]);
+}
+
 int main_loop(webserver &server)
 {
-	std::vector<struct pollfd>	fdsList;
-	std::map<int, request*>		_client_and_request;
-	std::map<int, int>			_socket_serverFD;
-	std::list<int>				_serversFD;
-	serverFd*	server_fd;
-	serverFd*	server_fd2;
-
-	server_fd = new serverFd(1234);
-	fdsList.push_back(pollfd_from_fd(server_fd->_fd, POLLIN));
-	_socket_serverFD[1234] = server_fd->_fd;
-	_serversFD.push_back(server_fd->_fd);
-
-	server_fd2 = new serverFd(4321);
-	fdsList.push_back(pollfd_from_fd(server_fd2->_fd, POLLIN));
-	_socket_serverFD[4321] = server_fd2->_fd;
-	_serversFD.push_back(server_fd2->_fd);
-
-	int new_socket;
+	loopHandler		_loop(server);
 
 	while (true)
 	{
-		if (poll(fdsList.data(), static_cast<unsigned int>(fdsList.size()), 0) < 0)
-			throw (std::runtime_error("Poll fail."));
+		_loop.do_poll();
 
-		for (int i = 0; i < static_cast<unsigned int>(fdsList.size()); ++i)
+		for (int i = 0; i < _loop.total_fds() ; ++i)
 		{
-			if (fdsList[i].revents & POLLIN)
+			if (_loop.check_poll_in(i))
 			{
-				if (find_server_fd(_serversFD, fdsList[i].fd))
+				if (_loop.check_poll_in_server(i))
 				{
 					// new client
-
-					if ((new_socket = accept(fdsList[i].fd, NULL, NULL)) == -1)
-						throw (std::runtime_error("Accept fail."));
-
-					fdsList.push_back(pollfd_from_fd(new_socket, POLLIN | POLLOUT));
-
-					std::cout << "Nueva conexión aceptada\n";
+					_loop.new_client(i);
+				}
+				else if (_loop.check_poll_in_cgi(i))
+				{
+					;
 				}
 				else
-					_client_and_request[i] = new request(fdsList[i].fd);
+					_loop.new_request(i);
 
-				if (fdsList[i].events & POLLOUT)
+				if (_loop.check_poll_out(i))
 				{
-					request	*tmp_req = _client_and_request[i];
-					response respuesta = response(*tmp_req, server);
+					request	*tmp_req = _loop.get_request_from_client(i);
 
-					send_response(fdsList[i].fd, respuesta.str());
+					if (!tmp_req->_cgi)
+					{
+						// not cgi response
+						response _response = response(*tmp_req, server);
 
-					delete tmp_req;
-					// if (!connection_keep_alive)
-						close(fdsList[i].fd);
-						fdsList.erase(fdsList.begin() + i);
+						send_response(_loop._fdsList[i].fd, _response.str());
+
+						delete tmp_req;
+						// if (!connection_keep_alive)
+							close(_loop._fdsList[i].fd);
+							_loop._fdsList.erase(_loop._fdsList.begin() + i);
+					}
+					else
+					{
+						// cgi response
+						if (tmp_req->_cgi->_is_ready)
+						{
+							;
+
+						}
+						else
+						{
+							;
+							// check time out
+						}
+
+					}
 				}
 			}
 		}

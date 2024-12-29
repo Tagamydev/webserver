@@ -3,8 +3,10 @@
 # define WEBSERVER_HPP
 # include "main.hpp"
 # include "server.hpp"
+# include "cgi.hpp"
 
 class server;
+class cgi;
 
 class webserver
 {
@@ -15,6 +17,7 @@ class webserver
 		std::string	status_message(int code);
 		std::string	mime_types(std::string &extention);
 		std::map<std::string, std::string>	_mime_types;
+		std::map<int, cgi*>					_cgi_list;
 
 	private:
 		std::list<server>	_servers;

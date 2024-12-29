@@ -1,5 +1,17 @@
 #include "server.hpp"
 
+void	server::set_error_pages(std::string value)
+{
+
+}
+
+bool	server::is_valid_port(int port)
+{
+	if (port < 0 || port > 65535)
+		return (false);
+	return (true);
+}
+
 /// @brief Trim semicolon from the end on a string. Used to clean values on parameters.
 /// @param line - Takes the pointer
 void server::trim_semicolon(std::string &line)
@@ -29,11 +41,11 @@ void	server::process_parameters(std::string line)
 	//check has semicolon
 	if (key == "listen")
 	{
-		// check max port available and is positive
 		if (is_empty(value))
 			throw std::runtime_error("Error reading config file. Wrong value in listen directive.");
+		if (!is_valid_port(atoi(value.c_str())))
+			throw std::runtime_error("Error reading config file. Invalid port, out of range.");
 		this->_ports.push_back(atoi(value.c_str()));
-
 	}
 	else if (key == "server_name")
 	{
@@ -52,6 +64,17 @@ void	server::process_parameters(std::string line)
 				value.erase(0, value.length());
 			}
 		}
+	}
+	else if (key == "client_max_body_size")
+	{
+		if (is_empty(value))
+			throw std::runtime_error("Error reading config file. Wrong value in client_max_body_size directive.");
+		if (!atoi(value.c_str()) || atoi(value.c_str()) < 0)
+			throw std::runtime_error("Error reading config file. Client_max_body_size, invalid or out of range.");
+		this->_max_body_size = atoi(value.c_str());
+	}
+	else if (key == "client_max_body_size")
+	{
 	}
 
 }
@@ -115,13 +138,35 @@ void	server::check_save_parameters(std::stringstream &contentStream)
 	}
 	print_list_content(_ports, "Ports");
 	print_list_content(_names, "Server_name");
+	std::cout << "_max_body_size: " << this->_max_body_size << std::endl;
 
 }
+// Init default
+void server::initErrorPages(void)
+{
+	_error_pages[301] = "";
+	_error_pages[302] = "";
+	_error_pages[400] = "";
+	_error_pages[401] = "";
+	_error_pages[402] = "";
+	_error_pages[403] = "";
+	_error_pages[404] = "";
+	_error_pages[405] = "";
+	_error_pages[406] = "";
+	_error_pages[500] = "";
+	_error_pages[501] = "";
+	_error_pages[502] = "";
+	_error_pages[503] = "";
+	_error_pages[505] = "";
+	_error_pages[505] = "";
+}
+
 
 server::server(std::string &content)
 {
 	// std::string line;
 	// std::string location;
+	initErrorPages();
 	std::stringstream contentStream;
 
 	contentStream << content;

@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "main.hpp"
+#include "utils.hpp"
 
 std::string get_actual_date()
 {
@@ -35,17 +36,6 @@ void send_response(int socket_fd, const std::string &response_str)
 	size_t response_length = response_str.length();
 
 	send(socket_fd, response_str.c_str(), response_length, 0);
-}
-
-
-struct pollfd pollfd_from_fd(int fd, short events)
-{
-	struct pollfd tmp;
-
-	memset(&tmp, 0, sizeof(tmp));
-	tmp.fd = fd;
-	tmp.events = events;
-	return (tmp);
 }
 
 bool	check_if_fd_match(std::list<int> &_serversFD, int value)
@@ -118,7 +108,7 @@ void loopHandler::new_server(int port)
 	serverFd*	server_fd;
 
 	server_fd = new serverFd(port);
-	this->_fdsList.push_back(pollfd_from_fd(server_fd->_fd, POLLIN));
+	this->_fdsList.push_back(utils::pollfd_from_fd(server_fd->_fd, POLLIN));
 	this->_serverFD_port[server_fd->_fd] = port;
 	this->_serversFD.push_back(server_fd->_fd);
 }
@@ -183,10 +173,10 @@ void	loopHandler::new_client(int number)
 	if ((new_socket = accept(this->_fdsList[number].fd, NULL, NULL)) == -1)
 		throw (std::runtime_error("Accept fail."));
 
-	this->_fdsList.push_back(pollfd_from_fd(new_socket, POLLIN | POLLOUT));
+	this->_fdsList.push_back(utils::pollfd_from_fd(new_socket, POLLIN | POLLOUT));
 	this->_clientFD_serverFD[this->_fdsList.back().fd] = this->_fdsList[number].fd;
 
-	std::cout << "[LOG]: New client in port: " 
+	std::cout << "[Info]: New client in port: " 
 	<< this->port_from_client_fd(this->_fdsList.back().fd) 
 	<< std::endl;
 }

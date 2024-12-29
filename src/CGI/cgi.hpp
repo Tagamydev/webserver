@@ -20,6 +20,7 @@ class	cgi
 	private:
 		webserver	*_webserver;
 		request		*_request;
+		char		**_env;
 
 
 };

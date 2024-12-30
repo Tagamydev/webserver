@@ -54,6 +54,7 @@ request::request(int fd, webserver &webservear, int client)
 
 	this->_cgi = NULL;
 	this->clear();
+	this->_request_number = client;
 	file = read_file(fd);
 	std::cout << file << std::endl;
 	reqFile << file;

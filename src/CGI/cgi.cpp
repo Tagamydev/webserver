@@ -1,4 +1,5 @@
 #include "cgi.hpp"
+#include "utils.hpp"
 
 cgi::cgi(webserver &webserver)
 {
@@ -9,6 +10,11 @@ cgi::cgi(webserver &webserver)
 	int pid;
 	int	pipeIN[2];
 	int	pipeOUT[2];
+	loopHandler	*_loop;
+	
+	_loop = this->_webserver->_loop;
+	if(!_loop)
+		throw std::runtime_error("Loop not found.");
 
 	if (pipe(pipeIN) == -1 || pipe(pipeOUT) == -1)
 		throw std::runtime_error("Pipe fail!.");
@@ -32,6 +38,12 @@ cgi::cgi(webserver &webserver)
 	}
 	close(pipeIN[1]);
 	close(pipeOUT[0]);
-	this->_webserver->_loop;
-
+	fcntl(pipeIN[0], F_SETFL, O_NONBLOCK);
+	fcntl(pipeOUT[1], F_SETFL, O_NONBLOCK);
+	_loop->_fdsList[_loop->total_fds()] = utils::pollfd_from_fd(pipeIN[0], POLLIN);
+	_loop->_fdsList[_loop->total_fds()] = utils::pollfd_from_fd(pipeOUT[1], POLLOUT);
+	this->fd_pollIN = pipeIN[0];
+	_loop->_cgi_request[this->fd_pollIN] = this->_request->_request_number;
+	this->fd_pollOUT = pipeOUT[0];
+	_loop->_cgi_request[this->fd_pollOUT] = this->_request->_request_number;
 }

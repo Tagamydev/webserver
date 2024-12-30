@@ -33,6 +33,9 @@ struct loopHandler{
 
 		request			*get_request_from_client(int n_client);
 
+		// number of cgi (relative to the fds list), and the  request assosiated to that cgi;
+		std::map<int, int>			_cgi_request;
+
 	private:
 		std::map<int, request*>		_client_and_request;
 
@@ -40,6 +43,7 @@ struct loopHandler{
 		// this allow us to find the port of a client from the client fd
 		std::map<int, int>			_serverFD_port;
 		std::map<int, int>			_clientFD_serverFD;
+
 
 		// list of all servers fd's for loop check
 		std::list<int>				_serversFD;
@@ -52,4 +56,3 @@ struct loopHandler{
 
 
 #endif
-

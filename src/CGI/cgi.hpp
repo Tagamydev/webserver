@@ -15,15 +15,18 @@ class	cgi
 		cgi(webserver &webserver);
 		~cgi();
 
-		bool	_is_ready;
+		bool		_is_ready;
+		std::string	_cgi_response;
+		void		send_request_to_cgi();
+		void		read_from_cgi();
+		void		check_cgi_timeout();
 
 	private:
 		webserver	*_webserver;
 		request		*_request;
 		char		**_env;
-
-
+		int			fd_pollIN;
+		int			fd_pollOUT;
 };
-
 
 #endif

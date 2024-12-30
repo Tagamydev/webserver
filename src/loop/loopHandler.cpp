@@ -39,12 +39,12 @@ void	loopHandler::delete_cgiFD_from_cgiFD_list(int fd)
 void	loopHandler::send_response_client(int n_client, request *tmp_req)
 {
 	response	_response = response(*tmp_req, *this->_webserver);
-	bool		_keeep_alive;
+	bool		_keep_alive;
 
-	_keeep_alive = _response._keep_alive;
+	_keep_alive = _response._keep_alive;
 	utils::send_response(this->_fdsList[n_client].fd, _response.str());
 	delete tmp_req;
-	if (true)
+	if (!_keep_alive)
 		close(this->_fdsList[n_client].fd);
 		this->_fdsList.erase(this->_fdsList.begin() + n_client);
 }

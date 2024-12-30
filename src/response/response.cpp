@@ -25,6 +25,10 @@ response::response(request &req, webserver &global_struct)
 		this->do_error_page(405);
 
 	this->set_length();
+	if (!this->_keep_alive)
+		this->_headers["Connection"] = "close";
+	else
+		this->_headers["Connection"] = "keep-alive";
 	// connection keep alive when not error and the request have also the keep alive?
 }
 
@@ -36,7 +40,6 @@ void	response::set_length()
 
 	length << this->_body.length();
 	this->_headers["Content-Length"] = length.str();
-	this->_headers["Connection"] = "close";
 }
 
 std::string	html_head(std::string title)

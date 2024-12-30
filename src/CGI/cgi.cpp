@@ -32,5 +32,6 @@ cgi::cgi(webserver &webserver)
 	}
 	close(pipeIN[1]);
 	close(pipeOUT[0]);
+	this->_webserver->_loop;
 
 }

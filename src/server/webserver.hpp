@@ -8,6 +8,7 @@
 class server;
 class cgi;
 
+class loopHandler;
 class webserver
 {
 	public:
@@ -18,6 +19,7 @@ class webserver
 		std::string	mime_types(std::string &extention);
 		std::map<std::string, std::string>	_mime_types;
 		std::map<int, cgi*>					_cgi_list;
+		loopHandler							*_loop;
 
 	private:
 		std::list<server>	_servers;

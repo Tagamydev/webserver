@@ -79,10 +79,10 @@ void	server::process_parameters(std::stringstream &contentStream, std::string li
 		tmp_str = tmp_vector[tmp_vector.size() - 1];
 		for (size_t i = 0; i < tmp_vector.size() - 1; i++)
 		{
-			// if (atoi(tmp_vector[i].c_str()) <= 300 || atoi(tmp_vector[i].c_str()) >= 506 )
-				// throw std::runtime_error("Error reading config file. Wrong or invalid error code directive.");
-			if (atoi(tmp_vector[i].c_str()) >= 300 && atoi(tmp_vector[i].c_str()) <= 506 )
+			if (atoi(tmp_vector[i].c_str()) >= 100 && atoi(tmp_vector[i].c_str()) <= 600 )
 				this->_error_pages[atoi(tmp_vector[i].c_str())] = tmp_str;
+			else
+				throw std::runtime_error("Error reading config file. Wrong or invalid error code directive.");
 		}
 		
 	}

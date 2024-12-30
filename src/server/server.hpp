@@ -3,6 +3,8 @@
 # define SERVER_HPP
 # include "main.hpp"
 
+class location;
+
 class	server{
 	//this need a location class diferent from config to make a map with that!!
 	public:

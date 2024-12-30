@@ -2,6 +2,9 @@
 #ifndef	SERVER_HPP
 # define SERVER_HPP
 # include "main.hpp"
+# include "location.hpp"
+
+class location;
 
 class location;
 

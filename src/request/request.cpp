@@ -1,4 +1,5 @@
 #include "request.hpp"
+#include "utils.hpp"
 #include <string>
 
 /*
@@ -21,39 +22,18 @@
 // 	return (result);
 // }
 
-std::string	read_file(int fd)
-{
-    const std::size_t bufferSize = MAX_BUFFER_LENGTH;
-    char buffer[bufferSize];
-    std::string result;
-
-    ssize_t bytesRead;
-
-	/*
-    while ((bytesRead = recv(fd, buffer, bufferSize, 0)) > 0)
-	{
-        result.append(buffer, bytesRead);
-    }
-	*/
-	bytesRead = recv(fd, buffer, bufferSize, 0);
-	result.append(buffer, bytesRead);
-
-	std::cout << "buffer" << std::endl;
-    if (bytesRead == -1)
-		throw std::runtime_error("Error reading file descriptor.");
-	return (result);
-}
-
 /* while on reqFile to skip new lines at the begining of the request.
 */
-request::request(int fd)
+request::request(int fd, webserver &webservear, int client)
 {
 	std::string			file;
 	std::stringstream	reqFile;
 	std::string			line;
 
+	this->_cgi = NULL;
 	this->clear();
-	file = read_file(fd);
+	this->_request_number = client;
+	file = utils::read_file(fd);
 	std::cout << file << std::endl;
 	reqFile << file;
 	reqFile.seekg(0);
@@ -71,15 +51,26 @@ request::request(int fd)
 	print_request();
 	print_header();
 	print_body();
-	
 	print_others();
+
+	// cgi
+
+	std::cout << "CGI" << std::endl;
+	if (this->check_if_cgi())
+		this->_cgi = new cgi(*this->_webserver);
 }
 
-request::~request(){}
-
-request&	request::operator=(const request& copy)
+request::~request()
 {
-	return (*this);
+	if (this->_cgi)
+		delete this->_cgi;
+}
+
+bool	request::check_if_cgi()
+{
+	// tmp we assume all is a cgi!
+
+	return (false);
 }
 
 void	request::clear()

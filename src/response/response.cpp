@@ -11,6 +11,7 @@ response::response(request &req, webserver &global_struct)
 	this->_body = "";
 
 	this->_error = false;
+	this->_keep_alive = false;
 	if (req._error_code != -1)
 		this->do_error_page(req._error_code);
 
@@ -24,8 +25,10 @@ response::response(request &req, webserver &global_struct)
 		this->do_error_page(405);
 
 	this->set_length();
-
-	// connection keep alive when not error and the request have also the keep alive?
+	if (!this->_keep_alive)
+		this->_headers["Connection"] = "close";
+	else
+		this->_headers["Connection"] = "keep-alive";
 }
 
 response::~response(){}
@@ -195,6 +198,30 @@ void	response::get_dir(std::string &path)
 	// return 403 forbidden
 }
 
+std::string	cut_spaces(std::string &string)
+{
+	std::string	copy = string;
+	std::string	result = "";
+	char		tmp[2];
+
+	tmp[0] = '\0';
+	tmp[1] = '\0';
+	for (size_t i = 0; i < copy.length(); i++)
+	{
+		tmp[0] = copy[i];
+		if (tmp[0] > 32 && tmp[0] < 126)
+			result = result + tmp;
+	}
+	return (result);
+}
+
+void	response::do_redirection(int code, std::string location)
+{
+	this->_error = true;
+	this->_status_code = code;
+	this->_headers["Location"] = location;
+}
+
 void	response::do_get()
 {
 	if (!this->_request_form || this->_error)
@@ -218,6 +245,13 @@ void	response::do_get()
 			// directory
 			//'/?' 301 redirect to match directory
 			this->get_dir(path);
+			char	c;
+
+			c = path[path.length() - 1];
+			if (c == '/')
+				this->get_dir(path);
+			else
+				this->do_redirection(301, std::string(cut_spaces(this->_request_form->_uri) + "/"));
 		}
 		else
 		{
@@ -349,11 +383,15 @@ std::string	response::print_headers()
 	std::stringstream	result;
 	std::map<std::string, std::string>::iterator	i = this->_headers.begin();
 	std::map<std::string, std::string>::iterator	ie = this->_headers.end();
+	ie--;
 
-	for (; i != ie; i++) {
-		result << i->first << ": " << i->second;
+	for (; ie != i; ie--)
+	{
+		result << ie->first << ": " << ie->second;
 		result << "\r\n";
 	}
+	result << ie->first << ": " << ie->second;
+	result << "\r\n";
 
 	return (result.str());
 }

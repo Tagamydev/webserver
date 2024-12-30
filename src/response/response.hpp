@@ -33,6 +33,7 @@ class   response{
 
 	// FUNTIONS
 
+		bool		_keep_alive;
 
 	private:
 
@@ -50,6 +51,7 @@ class   response{
 
 		std::string	status_message(int error);
 		void		do_error_page(int error);
+		void		do_redirection(int code, std::string location);
 
 		std::string	get_mimeType(std::string &path);
 		std::string print_status_line();

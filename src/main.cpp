@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "main.hpp"
+#include "utils.hpp"
 
 std::string get_actual_date()
 {
@@ -30,88 +31,68 @@ std::string get_actual_date()
 	return (result);
 }
 
-void send_response(int socket_fd, const std::string &response_str)
-{
-	size_t response_length = response_str.length();
 
-	send(socket_fd, response_str.c_str(), response_length, 0);
-}
-
-
-struct pollfd pollfd_from_fd(int fd, short events)
-{
-	struct pollfd tmp;
-
-	memset(&tmp, 0, sizeof(tmp));
-	tmp.fd = fd;
-	tmp.events = events;
-	return (tmp);
-}
-
-bool	find_server_fd(std::list<int> &_serversFD, int value)
-{
-	std::list<int>::iterator i = std::find(_serversFD.begin(), _serversFD.end(), value);
-	if (i == _serversFD.end())
-		return (false);
-	return (true);
-}
 
 int main_loop(webserver &server)
 {
-	std::vector<struct pollfd>	fdsList;
-	std::map<int, request*>		_client_and_request;
-	std::map<int, int>			_socket_serverFD;
-	std::list<int>				_serversFD;
-	serverFd*	server_fd;
-	serverFd*	server_fd2;
-
-	server_fd = new serverFd(1234);
-	fdsList.push_back(pollfd_from_fd(server_fd->_fd, POLLIN));
-	_socket_serverFD[1234] = server_fd->_fd;
-	_serversFD.push_back(server_fd->_fd);
-
-	server_fd2 = new serverFd(4321);
-	fdsList.push_back(pollfd_from_fd(server_fd2->_fd, POLLIN));
-	_socket_serverFD[4321] = server_fd2->_fd;
-	_serversFD.push_back(server_fd2->_fd);
-
-	int new_socket;
+	loopHandler		_loop(server);
 
 	while (true)
 	{
-		if (poll(fdsList.data(), static_cast<unsigned int>(fdsList.size()), 0) < 0)
-			throw (std::runtime_error("Poll fail."));
+		_loop.do_poll();
 
-		for (int i = 0; i < static_cast<unsigned int>(fdsList.size()); ++i)
+		for (int i = 0; i < _loop.total_fds() ; ++i)
 		{
-			if (fdsList[i].revents & POLLIN)
+			if (_loop.check_poll_in(i))
 			{
-				if (find_server_fd(_serversFD, fdsList[i].fd))
+				if (_loop.check_poll_in_server(i))
+					_loop.new_client(i);
+				else if (_loop.check_poll_in_cgi(i))
 				{
-					// new client
+					// cgi needs an input
+					cgi	*tmp;
 
-					if ((new_socket = accept(fdsList[i].fd, NULL, NULL)) == -1)
-						throw (std::runtime_error("Accept fail."));
-
-					fdsList.push_back(pollfd_from_fd(new_socket, POLLIN | POLLOUT));
-
-					std::cout << "Nueva conexión aceptada\n";
+					tmp = _loop.get_cgi_from_client(i);
+					if (!tmp)
+						throw (std::runtime_error("get cgi fail. cgi is NULL"));
+					tmp->read_from_cgi();
 				}
 				else
-					_client_and_request[i] = new request(fdsList[i].fd);
+					_loop.new_request(i);
 
-				if (fdsList[i].events & POLLOUT)
+				if (_loop.check_poll_out(i))
 				{
-					request	*tmp_req = _client_and_request[i];
-					response respuesta = response(*tmp_req, server);
+					request	*tmp_req = _loop.get_request_from_client(i);
 
-					send_response(fdsList[i].fd, respuesta.str());
+					if (!tmp_req->_cgi)
+						_loop.send_response_client(i, tmp_req);
+					else
+					{
+						if (tmp_req->_cgi->_is_ready)
+							_loop.send_response_client(i, tmp_req);
+						else
+						{
+							if (tmp_req->_cgi->check_cgi_timeout())
+							{
+								delete tmp_req->_cgi;
+								tmp_req->_cgi = NULL;
+								tmp_req->_error_code = 408;
 
-					delete tmp_req;
-					// if (!connection_keep_alive)
-						close(fdsList[i].fd);
-						fdsList.erase(fdsList.begin() + i);
+								_loop.send_response_client(i, tmp_req);
+								tmp_req = NULL;
+							}
+						}
+					}
 				}
+			}
+			else if (_loop.check_poll_in_cgi(i))
+			{
+				cgi	*tmp;
+
+				tmp = _loop.get_cgi_from_client(i);
+				if (!tmp)
+					throw (std::runtime_error("get cgi fail. cgi is NULL"));
+				tmp->send_request_to_cgi();
 			}
 		}
 	}

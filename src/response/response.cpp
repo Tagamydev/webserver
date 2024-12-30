@@ -11,6 +11,7 @@ response::response(request &req, webserver &global_struct)
 	this->_body = "";
 
 	this->_error = false;
+	this->_keep_alive = false;
 	if (req._error_code != -1)
 		this->do_error_page(req._error_code);
 
@@ -35,7 +36,6 @@ void	response::set_length()
 
 	length << this->_body.length();
 	this->_headers["Content-Length"] = length.str();
-
 }
 
 std::string	html_head(std::string title)
@@ -80,7 +80,7 @@ void	response::do_error_page(int error)
 	this->_status_code = error;
 	std::cout << "Error page { " << error << " }: "; 
 	std::cout << this->status_message(error) << "!!" << std::endl;
-	this->_headers["Content-Type:"] = "text/html;charset=utf-8";
+	this->_headers["Content-Type"] = "text/html;charset=utf-8";
 	this->_body = make_error_page_html(error, this->status_message(error));
 
 }
@@ -245,7 +245,7 @@ void	response::do_get()
 			if (c == '/')
 				this->get_dir(path);
 			else
-				this->do_redirection(301, std::string("http://" + cut_spaces(this->_request_form->_headers["host"]) + cut_spaces(this->_request_form->_uri) + "/"));
+				this->do_redirection(301, std::string(cut_spaces(this->_request_form->_uri) + "/"));
 		}
 		else
 		{
@@ -377,11 +377,15 @@ std::string	response::print_headers()
 	std::stringstream	result;
 	std::map<std::string, std::string>::iterator	i = this->_headers.begin();
 	std::map<std::string, std::string>::iterator	ie = this->_headers.end();
+	ie--;
 
-	for (; i != ie; i++) {
-		result << i->first << ": " << i->second;
+	for (; ie != i; ie--)
+	{
+		result << ie->first << ": " << ie->second;
 		result << "\r\n";
 	}
+	result << ie->first << ": " << ie->second;
+	result << "\r\n";
 
 	return (result.str());
 }

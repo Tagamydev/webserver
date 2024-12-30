@@ -85,6 +85,7 @@ cgi::~cgi()
 
 void cgi::read_from_cgi()
 {
+	this->_cgi_response = utils::read_file(this->fd_pollOUT);
 	this->_is_ready = true;
 }
 

@@ -44,7 +44,7 @@ void	loopHandler::send_response_client(int n_client, request *tmp_req)
 	_keeep_alive = _response._keep_alive;
 	utils::send_response(this->_fdsList[n_client].fd, _response.str());
 	delete tmp_req;
-	if (_keeep_alive)
+	if (true)
 		close(this->_fdsList[n_client].fd);
 		this->_fdsList.erase(this->_fdsList.begin() + n_client);
 }

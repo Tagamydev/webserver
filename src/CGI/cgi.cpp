@@ -12,6 +12,9 @@ cgi::cgi(webserver &webserver)
 	int	pipeOUT[2];
 	loopHandler	*_loop;
 	
+	this->fd_pollIN = -1;
+	this->fd_pollOUT = -1;
+
 	_loop = this->_webserver->_loop;
 	if(!_loop)
 		throw std::runtime_error("Loop not found.");
@@ -22,6 +25,7 @@ cgi::cgi(webserver &webserver)
 	pid = fork();
 	if (pid < 0)
 		throw std::runtime_error("Fork fail!.");
+
 	if (!pid)
 	{
 		int	error;
@@ -36,14 +40,55 @@ cgi::cgi(webserver &webserver)
 		std::cerr << "[FATAL]: execle fail inside fork, log[" << error << "]" << std::endl;
 		exit(-1);
 	}
+
 	close(pipeIN[1]);
 	close(pipeOUT[0]);
+
 	fcntl(pipeIN[0], F_SETFL, O_NONBLOCK);
 	fcntl(pipeOUT[1], F_SETFL, O_NONBLOCK);
+
+	this->pos_pollIN = _loop->total_fds();
 	_loop->_fdsList[_loop->total_fds()] = utils::pollfd_from_fd(pipeIN[0], POLLIN);
+	this->pos_pollOUT = _loop->total_fds();
 	_loop->_fdsList[_loop->total_fds()] = utils::pollfd_from_fd(pipeOUT[1], POLLOUT);
+
 	this->fd_pollIN = pipeIN[0];
+	this->fd_pollOUT = pipeOUT[1];
 	_loop->_cgi_request[this->fd_pollIN] = this->_request->_request_number;
-	this->fd_pollOUT = pipeOUT[0];
 	_loop->_cgi_request[this->fd_pollOUT] = this->_request->_request_number;
+
+	_loop->_cgiFD.push_back(fd_pollIN);
+	_loop->_cgiFD.push_back(fd_pollOUT);
+}
+
+cgi::~cgi()
+{
+
+	loopHandler	*_loop;
+
+	_loop = this->_webserver->_loop;
+
+	if (this->fd_pollIN != -1)
+	{
+		_loop->_fdsList.erase(_loop->_fdsList.begin() + this->pos_pollIN);
+		_loop->delete_cgiFD_from_cgiFD_list(this->fd_pollIN);
+		close(this->fd_pollIN);
+	}
+	if (this->fd_pollOUT != -1)
+	{
+		_loop->_fdsList.erase(_loop->_fdsList.begin() + this->pos_pollOUT);
+		_loop->delete_cgiFD_from_cgiFD_list(this->fd_pollOUT);
+		close(this->fd_pollOUT);
+	}
+
+}
+
+void cgi::read_from_cgi()
+{
+	this->_is_ready = true;
+}
+
+bool cgi::check_cgi_timeout()
+{
+	return (true);
 }

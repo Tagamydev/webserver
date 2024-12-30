@@ -31,12 +31,7 @@ std::string get_actual_date()
 	return (result);
 }
 
-void send_response(int socket_fd, const std::string &response_str)
-{
-	size_t response_length = response_str.length();
 
-	send(socket_fd, response_str.c_str(), response_length, 0);
-}
 
 int main_loop(webserver &server)
 {
@@ -57,7 +52,13 @@ int main_loop(webserver &server)
 				}
 				else if (_loop.check_poll_in_cgi(i))
 				{
-					;
+					// cgi needs an input
+					cgi	*tmp;
+
+					tmp = _loop.get_cgi_from_client(i);
+					if (!tmp)
+						throw (std::runtime_error("get cgi fail. cgi is NULL"));
+					tmp->read_from_cgi();
 				}
 				else
 					_loop.new_request(i);
@@ -68,31 +69,35 @@ int main_loop(webserver &server)
 
 					if (!tmp_req->_cgi)
 					{
-						// not cgi response
-						response _response = response(*tmp_req, server);
-
-						send_response(_loop._fdsList[i].fd, _response.str());
-
-						delete tmp_req;
-						// if (!connection_keep_alive)
-							close(_loop._fdsList[i].fd);
-							_loop._fdsList.erase(_loop._fdsList.begin() + i);
+						_loop.send_response_client(i, tmp_req);
+						tmp_req = NULL;
 					}
 					else
 					{
-						// cgi response
 						if (tmp_req->_cgi->_is_ready)
 						{
-							;
+							_loop.send_response_client(i, tmp_req);
+							tmp_req = NULL;
 						}
 						else
 						{
-							;
-							// check time out
-						}
+							if (tmp_req->_cgi->check_cgi_timeout())
+							{
+								delete tmp_req->_cgi;
+								tmp_req->_cgi = NULL;
+								tmp_req->_error_code = 408;
 
+								_loop.send_response_client(i, tmp_req);
+								tmp_req = NULL;
+							}
+						}
 					}
 				}
+			}
+			else if (_loop.check_poll_in_cgi(i))
+			{
+				// this means the cgi is doing an output
+				std::cout << "hello this is the cgi output" << std::endl;
 			}
 		}
 	}

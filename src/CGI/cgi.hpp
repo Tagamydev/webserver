@@ -19,13 +19,16 @@ class	cgi
 		std::string	_cgi_response;
 		void		send_request_to_cgi();
 		void		read_from_cgi();
-		void		check_cgi_timeout();
+		bool		check_cgi_timeout();
 
 	private:
 		webserver	*_webserver;
 		request		*_request;
 		char		**_env;
+
+		int			pos_pollIN;
 		int			fd_pollIN;
+		int			pos_pollOUT;
 		int			fd_pollOUT;
 };
 

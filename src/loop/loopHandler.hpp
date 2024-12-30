@@ -31,10 +31,17 @@ struct loopHandler{
 		bool			check_poll_out(int number);
 		bool			check_poll_out_cgi(int number);
 
+
+		cgi				*get_cgi_from_client(int n_client);
 		request			*get_request_from_client(int n_client);
+
+
+		void			send_response_client(int n_client, request *tmp_req);
 
 		// number of cgi (relative to the fds list), and the  request assosiated to that cgi;
 		std::map<int, int>			_cgi_request;
+		std::list<int>				_cgiFD;
+		void						delete_cgiFD_from_cgiFD_list(int fd);
 
 	private:
 		std::map<int, request*>		_client_and_request;
@@ -47,7 +54,6 @@ struct loopHandler{
 
 		// list of all servers fd's for loop check
 		std::list<int>				_serversFD;
-		std::list<int>				_cgiFD;
 
 		webserver					*_webserver;
 

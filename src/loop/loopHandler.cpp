@@ -9,6 +9,13 @@ bool	check_if_fd_match(std::list<int> &_serversFD, int value)
 	return (true);
 }
 
+void send_response(int socket_fd, const std::string &response_str)
+{
+	size_t response_length = response_str.length();
+
+	send(socket_fd, response_str.c_str(), response_length, 0);
+}
+
 loopHandler::loopHandler(webserver &server)
 {
 	this->_webserver = &server;
@@ -23,6 +30,39 @@ loopHandler::~loopHandler()
 {
 	// close all fds from fdList
 
+}
+
+void	loopHandler::delete_cgiFD_from_cgiFD_list(int fd)
+{
+	std::list<int>::iterator	i = this->_cgiFD.begin();
+
+	for (; i != this->_cgiFD.end(); i++)
+	{
+		if (*i == fd)
+			this->_cgiFD.erase(i);
+	}
+}
+
+void	loopHandler::send_response_client(int n_client, request *tmp_req)
+{
+	response	_response = response(*tmp_req, *this->_webserver);
+	bool		_keeep_alive;
+
+	_keeep_alive = _response._keep_alive;
+	send_response(this->_fdsList[n_client].fd, _response.str());
+	delete tmp_req;
+	if (_keeep_alive)
+		close(this->_fdsList[n_client].fd);
+		this->_fdsList.erase(this->_fdsList.begin() + n_client);
+}
+
+cgi	*loopHandler::get_cgi_from_client(int n_client)
+{
+	request	*tmp_req = this->get_request_from_client(this->_cgi_request[this->_fdsList[n_client].fd]);
+
+	if (!tmp_req)
+		throw (std::runtime_error("get cgi fail. Request is NULL"));
+	return (tmp_req->_cgi);
 }
 
 void loopHandler::new_server(int port)

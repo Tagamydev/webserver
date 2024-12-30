@@ -33,6 +33,7 @@ class   response{
 
 	// FUNTIONS
 
+		bool		_keep_alive;
 
 	private:
 

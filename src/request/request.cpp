@@ -79,10 +79,14 @@ request::request(int fd, webserver &webservear, int client)
 
 	std::cout << "CGI" << std::endl;
 	if (this->check_if_cgi())
-		this->_webserver->_cgi_list[client] = new cgi(*this->_webserver);
+		this->_cgi = new cgi(*this->_webserver);
 }
 
-request::~request(){}
+request::~request()
+{
+	if (this->_cgi)
+		delete this->_cgi;
+}
 
 bool	request::check_if_cgi()
 {

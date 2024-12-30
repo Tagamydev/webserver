@@ -2,34 +2,29 @@
 #ifndef	REQUEST_HPP
 # define REQUEST_HPP
 # include "main.hpp"
+# include "webserver.hpp"
+# include "cgi.hpp"
 
 # define MAX_URI_LENGTH 4096
 # define MAX_CONTENT_LENGTH 30000000
 # define MAX_BUFFER_LENGTH 2048
 
-enum ParsingState
-{
-
-};
+class webserver;
+class cgi;
 
 class   request{
 	public:
 
 		// con/destructor
-		request(int fd);
+		request(int fd, webserver &webserver, int client);
 		~request(void);
-
-		/* Copy constructor*/
-		request(const request& other);
-
-		/* Copy assignment operator overload */
-		request& operator = (const request& other);
 
 	// FIRST LINE
 
 		// QUERY
 		// std::map<std::string, std::string>	_query_str;	
 		// key, value
+		int _request_number;
 		int	_fd;
 		// METHOD: GET, POST, DELETE
 		std::string	_method;
@@ -45,8 +40,8 @@ class   request{
 
 	// BODY
 		std::string	_body;
-		int		_body_length;
-		int		_has_body;
+		int			_body_length;
+		int			_has_body;
         bool        _chunked_flag;
 
 	// STATES FOR RESPONSE
@@ -72,6 +67,13 @@ class   request{
 		void	print_header();
 		void	print_body();
 		void	print_others();
+
+		cgi		*_cgi;
+	
+	private:
+		webserver	*_webserver;
+
+		bool		check_if_cgi();
 		
 };
 

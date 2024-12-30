@@ -23,12 +23,14 @@
 # include <sys/socket.h>
 # include <netinet/in.h>
 # include <sys/stat.h>
+# include "cgi.hpp"
 # include "location.hpp"
 # include "server.hpp"
 # include "request.hpp"
 # include "response.hpp"
 # include "serverFd.hpp"
 # include "webserver.hpp"
+# include "loopHandler.hpp"
 # include <algorithm>    // std::count
 
 std::string get_actual_date();

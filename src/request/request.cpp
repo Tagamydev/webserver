@@ -292,7 +292,7 @@ void request::check_save_request_line(std::string line)
 	
 	if (line[0] == ' ')
 		return (set_error_code(400, "Found spaces before method."));
-	this->fix_spaces_in_line(line);
+	fix_spaces_in_line(line);
 	//check method
 	if (line.find(" ") != std::string::npos)
 		key = line.substr(0, line.find(" "));
@@ -328,32 +328,6 @@ void request::set_error_code(int code, std::string msg)
 
 
 // Utils
-
-
-void request::fix_spaces_in_line(std::string &line)
-{
-	std::string parsedLine;
-	int i = 0;
-
-	if (line[0] == ' ' || line[0] == '\t' || line[0] == '\r' || line[0] == '\f' || line[0] == '\n')
-		while (line[i] == ' ' || line[i] == '\t' || line[i] == '\r' || line[i] == '\f' || line[i] == '\n')
-			i++;
-	while (i != line.length() || line[i] != '\0')
-	{
-		if (line[i] == ' ' || line[i] == '\t' || line[i] == '\r' || line[i] == '\f')
-		{
-			while (line[i] == ' ' || line[i] == '\t' || line[i] == '\r' || line[i] == '\f')
-			   i++;
-			if (line[i] == '\0')
-				break;
-			parsedLine += ' ';
-		}
-		parsedLine += line[i];
-		i++;
-	}
-	line = parsedLine;
-}
-
 
 void	request::print_request()
 {

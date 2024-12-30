@@ -48,7 +48,6 @@ class   request{
 		int				_error_code;
 		std::string		_debug_msg;
 
-        void fix_spaces_in_line(std::string &line);
         void check_save_request_line(std::string line);
         void is_valid_method(std::string line);
         void is_valid_uri(std::string &line);

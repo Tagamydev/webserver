@@ -6,22 +6,36 @@
 class	location{
 
 	public:
-		std::string	location;
-		// this need to be reworked idk if you can have both without problems
+		location();
+		~location();
+		location(std::string line);
 
+
+
+
+
+		// std::map<int, std::string>	_return;
+
+		bool		_index;
+		bool		_auto_index;
+		bool		_cgi_enabled;
+		// bool		_get_enabled;
+		// bool		_post_enabled;
+		// bool		_delete_enabled;
+
+		void	set_priv_attribute(std::string line);	
+		void	print_location_content();
+		
+	private:
 		std::string	_path;
-
-		std::map<int, std::string>	_return;
-
-		// meaning if it is root or alias
-		bool		_is_relative;
+		std::string _root;
+		std::string _alias;
 		std::string	_index_file;
-
-		bool		_get_enabled;
-		bool		_post_enabled;
-		bool		_delete_enabled;
-
-		bool		_autoindex_enabled;
+		std::string	_save_file;
+		std::vector<std::string> _allowed_methods;
+		std::string _cgi;
+		std::string	_return_code;
+		std::string	_return_path;
 };
 
 #endif

@@ -29,7 +29,6 @@ response::response(request &req, webserver &global_struct)
 		this->_headers["Connection"] = "close";
 	else
 		this->_headers["Connection"] = "keep-alive";
-	// connection keep alive when not error and the request have also the keep alive?
 }
 
 response::~response(){}
@@ -243,6 +242,9 @@ void	response::do_get()
 		}
 		else if (S_ISDIR(pathStat.st_mode))
 		{
+			// directory
+			//'/?' 301 redirect to match directory
+			this->get_dir(path);
 			char	c;
 
 			c = path[path.length() - 1];
@@ -400,6 +402,7 @@ std::string	response::str()
 
 	result << this->print_status_line();
 	result << this->print_headers();
+
 	result << "\r\n";
 	result << this->_body;
 

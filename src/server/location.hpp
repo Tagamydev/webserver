@@ -10,15 +10,7 @@ class	location{
 		~location();
 		location(std::string line);
 
-		std::string	_name;
-		std::string	_path; // uri?
-		std::string _root;
-		std::string _alias;
-		std::string	_index_file;
-		size_t		_max_client_body_size;
-		std::vector<std::string> _allowed_methods;
-		std::string _cgi;
-		std::string	_return;
+
 
 
 
@@ -26,10 +18,24 @@ class	location{
 
 		bool		_index;
 		bool		_auto_index;
+		bool		_cgi_enabled;
 		// bool		_get_enabled;
 		// bool		_post_enabled;
 		// bool		_delete_enabled;
 
+		void	set_priv_attribute(std::string line);	
+		void	print_location_content();
+		
+	private:
+		std::string	_path;
+		std::string _root;
+		std::string _alias;
+		std::string	_index_file;
+		std::string	_save_file;
+		std::vector<std::string> _allowed_methods;
+		std::string _cgi;
+		std::string	_return_code;
+		std::string	_return_path;
 };
 
 #endif

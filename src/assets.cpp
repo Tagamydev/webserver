@@ -69,6 +69,32 @@ void    ft_toLower(std::string &str)
         str[i] = std::tolower(str[i]);
 }
 
+void	trim_curly_brackets(std::string &line)
+{
+	int i = 0;
+	int j = line.length() - 1;
+
+	while (line[i] != '\0' && line[i] == '{')
+		i++;
+	while (line[j] != '\0' && line[j] == '}')
+		j--;
+	line = line.substr(i,j - i +1);
+}
+
+/// @brief Trim semicolon from the end on a string. Used to clean values on parameters.
+/// @param line - Takes the pointer
+void trim_semicolon(std::string &line)
+{
+	int i = 0;
+	int j = line.length() - 1;
+
+	while (line[i] != '\0' && line[i] == ';')
+		i++;
+	while (line[j] != '\0' && line[j] == ';')
+		j--;
+	line = line.substr(i,j - i +1);
+}
+
 /// @brief Trim spaces and new lines from the start and from the end on a string.
 /// @param line - Takes the pointer
 void trim_space_newline(std::string &line)
@@ -154,6 +180,18 @@ void	print_list_content(std::list<int> list, std::string title)
 	size_t i = 1;
 		std::cout << "\n<<<   "<< title << "   >>>" << std::endl;
 	for (std::list<int>::iterator it = list.begin(); it != list.end(); it++)
+		{
+			std::cout << "--- Item " << i++ << "  value: ";
+			std::cout << *it << "\n";
+		}
+	std::cout << std::endl;
+}
+
+void	print_vector_content(std::vector<std::string> vector, std::string title)
+{
+	size_t i = 1;
+		std::cout << "\n<<<   "<< title << "   >>>" << std::endl;
+	for (std::vector<std::string>::iterator it = vector.begin(); it != vector.end(); it++)
 		{
 			std::cout << "--- Item " << i++ << "  value: ";
 			std::cout << *it << "\n";

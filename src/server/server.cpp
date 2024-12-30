@@ -5,6 +5,7 @@ location server::process_location(std::string line)
 {
 	location	loc(line);
 
+
 	return (loc);
 }
 
@@ -15,24 +16,13 @@ void	server::set_error_pages(std::string value)
 
 bool	server::is_valid_port(int port)
 {
+	//check for ips? localhost?
 	if (port < 0 || port > 65535)
 		return (false);
 	return (true);
 }
 
-/// @brief Trim semicolon from the end on a string. Used to clean values on parameters.
-/// @param line - Takes the pointer
-void server::trim_semicolon(std::string &line)
-{
-	int i = 0;
-	int j = line.length() - 1;
 
-	while (line[i] != '\0' && line[i] == ';')
-		i++;
-	while (line[j] != '\0' && line[j] == ';')
-		j--;
-	line = line.substr(i,j - i +1);
-}
 
 void	server::process_parameters(std::stringstream &contentStream, std::string line)
 {
@@ -45,8 +35,8 @@ void	server::process_parameters(std::stringstream &contentStream, std::string li
 	key = line.substr(0, line.find(' '));
 	value = line.substr(line.find(' '), line.length());
 	trim_space_newline(value);
-	std::cout << "Key " << key << std::endl;
-	std::cout << "value " << value << std::endl;
+	// std::cout << "Key " << key << std::endl;
+	// std::cout << "value " << value << std::endl;
 	trim_semicolon(value);
 	//check has semicolon
 	if (key == "listen")
@@ -84,7 +74,6 @@ void	server::process_parameters(std::stringstream &contentStream, std::string li
 			else
 				throw std::runtime_error("Error reading config file. Wrong or invalid error code directive.");
 		}
-		
 	}
 	else if (key == "location")
 	{
@@ -114,7 +103,7 @@ void	server::process_parameters(std::stringstream &contentStream, std::string li
 			if (line.empty())
 				break ;		
 		}
-		std::cout << "location in parameter" << location << std::endl;
+		// std::cout << "location in parameter" << location << std::endl;
 		// std::cout << "process_location"<< std::endl;
 		// process_location(line);		
 		location.clear();	
@@ -167,9 +156,9 @@ void	server::check_save_parameters(std::stringstream &contentStream)
 				if (line.find('}') != std::string::npos)
 				break ;
 			}
-			std::cout << "location WELL " << location << std::endl;
+			// std::cout << "location WELL " << location << std::endl;
 			// std::cout << "process_location"<< std::endl;
-			// process_location(line);		
+			process_location(location);		
 			location.clear();	
 		}
 		else
@@ -181,10 +170,10 @@ void	server::check_save_parameters(std::stringstream &contentStream)
 		// getline(contentStream, line);
 
 	}
-	print_list_content(_ports, "Ports");
-	print_list_content(_names, "Server_name");
-	std::cout << "_max_body_size: " << this->_max_body_size << std::endl;
-	print_map_content(this->_error_pages, "Error pages");
+	// print_list_content(_ports, "Ports");
+	// print_list_content(_names, "Server_name");
+	// std::cout << "_max_body_size: " << this->_max_body_size << std::endl;
+	// print_map_content(this->_error_pages, "Error pages");
 
 }
 // Init default

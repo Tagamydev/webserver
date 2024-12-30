@@ -1,5 +1,13 @@
 #include "server.hpp"
 
+
+location server::process_location(std::string line)
+{
+	location	loc(line);
+
+	return (loc);
+}
+
 void	server::set_error_pages(std::string value)
 {
 
@@ -26,10 +34,12 @@ void server::trim_semicolon(std::string &line)
 	line = line.substr(i,j - i +1);
 }
 
-void	server::process_parameters(std::string line)
+void	server::process_parameters(std::stringstream &contentStream, std::string line)
 {
 	std::string key;
 	std::string value;
+	std::string tmp_str;
+	std::vector<std::string> tmp_vector;
 
 	trim_space_newline(line);
 	key = line.substr(0, line.find(' '));
@@ -51,19 +61,7 @@ void	server::process_parameters(std::string line)
 	{
 		if (is_empty(value))
 			throw std::runtime_error("Error reading config file. Wrong value in host directive.");
-		while (!value.empty())
-		{
-			if (value.find(' ') != std::string::npos)
-			{
-				this->_names.push_back(value.substr(0, value.find(' ')));
-				value.erase(0, value.find(' ') + 1);
-			}
-			else
-			{
-				this->_names.push_back(value.substr(0, value.length()));
-				value.erase(0, value.length());
-			}
-		}
+		this->_names = split_to_list(value, ' ');
 	}
 	else if (key == "client_max_body_size")
 	{
@@ -73,9 +71,56 @@ void	server::process_parameters(std::string line)
 			throw std::runtime_error("Error reading config file. Client_max_body_size, invalid or out of range.");
 		this->_max_body_size = atoi(value.c_str());
 	}
-	else if (key == "client_max_body_size")
+	else if (key == "error_page")
 	{
+		if (is_empty(value))
+			throw std::runtime_error("Error reading config file. Wrong value in host directive.");
+		tmp_vector = split_to_vector(value, ' ');
+		tmp_str = tmp_vector[tmp_vector.size() - 1];
+		for (size_t i = 0; i < tmp_vector.size() - 1; i++)
+		{
+			// if (atoi(tmp_vector[i].c_str()) <= 300 || atoi(tmp_vector[i].c_str()) >= 506 )
+				// throw std::runtime_error("Error reading config file. Wrong or invalid error code directive.");
+			if (atoi(tmp_vector[i].c_str()) >= 300 && atoi(tmp_vector[i].c_str()) <= 506 )
+				this->_error_pages[atoi(tmp_vector[i].c_str())] = tmp_str;
+		}
+		
 	}
+	else if (key == "location")
+	{
+		std::string location;
+
+		check_location(line);
+		location += line+ '\n';
+		while (getline(contentStream, line))
+		{
+			if (is_empty(line))
+				continue;
+			else if (line.find('{') != std::string::npos)
+			{
+				location += line + '\n';
+				while (getline(contentStream, line))
+				{
+					location += line + '\n';
+					if (line.find('}') != std::string::npos)
+					{
+						line.clear();
+						break ;		
+					}
+				}
+			}
+			else
+				throw std::runtime_error("Error reading config file. Wrong parameter in location declaration. (1)");
+			if (line.empty())
+				break ;		
+		}
+		std::cout << "location in parameter" << location << std::endl;
+		// std::cout << "process_location"<< std::endl;
+		// process_location(line);		
+		location.clear();	
+	}
+	else
+		throw std::runtime_error("Error reading config file. Unknown directive.");
 
 }
 
@@ -122,14 +167,14 @@ void	server::check_save_parameters(std::stringstream &contentStream)
 				if (line.find('}') != std::string::npos)
 				break ;
 			}
-			// std::cout << "location" << location << std::endl;
+			std::cout << "location WELL " << location << std::endl;
 			// std::cout << "process_location"<< std::endl;
 			// process_location(line);		
 			location.clear();	
 		}
 		else
 		{
-			process_parameters(line);
+			process_parameters(contentStream, line);
 			// std::cout << "Parameter" << line << std::endl;
 		}
 		// std::cout << "LINE" << line << std::endl;
@@ -139,6 +184,7 @@ void	server::check_save_parameters(std::stringstream &contentStream)
 	print_list_content(_ports, "Ports");
 	print_list_content(_names, "Server_name");
 	std::cout << "_max_body_size: " << this->_max_body_size << std::endl;
+	print_map_content(this->_error_pages, "Error pages");
 
 }
 // Init default

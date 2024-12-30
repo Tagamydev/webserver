@@ -12,6 +12,56 @@
 
 #include "main.hpp"
 
+
+/// @brief Split line by sep, return in a string vector.
+/// @param line content to split
+/// @param sep separator to split by
+/// @return std::vector<std::string>
+std::vector<std::string>	split_to_vector(std::string line, char sep)
+{
+	std::vector<std::string>	vector;
+
+	while (!line.empty())
+	{
+		if (line.find(sep) != std::string::npos)
+		{
+			vector.push_back(line.substr(0, line.find(sep)));
+			line.erase(0, line.find(sep) + 1);
+		}
+		else
+		{
+			vector.push_back(line.substr(0, line.length()));
+			line.erase(0, line.length());
+		}
+	}
+	return (vector);
+}
+
+
+/// @brief Split line by sep, return in a string list.
+/// @param line content to split
+/// @param sep separator to split by
+/// @return std::list<std::string>
+std::list<std::string>	split_to_list(std::string line, char sep)
+{
+	std::list<std::string>	list;
+
+	while (!line.empty())
+	{
+		if (line.find(sep) != std::string::npos)
+		{
+			list.push_back(line.substr(0, line.find(sep)));
+			line.erase(0, line.find(sep) + 1);
+		}
+		else
+		{
+			list.push_back(line.substr(0, line.length()));
+			line.erase(0, line.length());
+		}
+	}
+	return (list);
+}
+
 /// @brief transform a string in lower case
 void    ft_toLower(std::string &str)
 {
@@ -73,6 +123,18 @@ void fix_spaces_in_line(std::string &line)
 		i++;
 	}
 	line = parsedLine;
+}
+
+void	print_map_content(std::map<int, std::string> map, std::string title)
+{
+	size_t i = 1;
+		std::cout << "\n<<<   "<< title << "   >>>" << std::endl;
+	for (std::map<int, std::string>::iterator it = map.begin(); it != map.end(); it++)
+		{
+			std::cout << "--- Item " << i++ << " value: ";
+			std::cout << it->first << " " << it->second << "\n";
+		}
+	std::cout << std::endl;
 }
 
 void	print_list_content(std::list<std::string> list, std::string title)

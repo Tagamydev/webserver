@@ -30,6 +30,7 @@
 # include "serverFd.hpp"
 # include "webserver.hpp"
 # include "assets.hpp"
+# include "defaults.hpp"
 # include <algorithm>    // std::count
 
 std::string get_actual_date();

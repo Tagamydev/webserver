@@ -35,14 +35,14 @@ class	server{
 
 
 		// parser
-		void	check_save_parameters(std::stringstream &contentStream);
-		void	check_location(std::string line);
-		void	process_parameters(std::string line);
-		void 	trim_semicolon(std::string &line);
-		bool	is_valid_port(int port);
-		
+		void		check_save_parameters(std::stringstream &contentStream);
+		void		check_location(std::string line);
+		void		process_parameters(std::stringstream &contentStream, std::string line);
+		void 		trim_semicolon(std::string &line);
+		bool		is_valid_port(int port);
+		location	process_location(std::string line);
 		//Seters
-		void	set_error_pages(std::string value);
+		void		set_error_pages(std::string value);
 };
 
 #endif

@@ -9,13 +9,6 @@ bool	check_if_fd_match(std::list<int> &_serversFD, int value)
 	return (true);
 }
 
-void send_response(int socket_fd, const std::string &response_str)
-{
-	size_t response_length = response_str.length();
-
-	send(socket_fd, response_str.c_str(), response_length, 0);
-}
-
 loopHandler::loopHandler(webserver &server)
 {
 	this->_webserver = &server;
@@ -49,7 +42,7 @@ void	loopHandler::send_response_client(int n_client, request *tmp_req)
 	bool		_keeep_alive;
 
 	_keeep_alive = _response._keep_alive;
-	send_response(this->_fdsList[n_client].fd, _response.str());
+	utils::send_response(this->_fdsList[n_client].fd, _response.str());
 	delete tmp_req;
 	if (_keeep_alive)
 		close(this->_fdsList[n_client].fd);

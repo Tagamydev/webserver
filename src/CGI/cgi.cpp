@@ -88,6 +88,12 @@ void cgi::read_from_cgi()
 	this->_is_ready = true;
 }
 
+void cgi::send_request_to_cgi()
+{
+	// this need to be changed to the real body
+	utils::send_response(this->fd_pollIN, this->_request->_body);
+}
+
 bool cgi::check_cgi_timeout()
 {
 	return (true);

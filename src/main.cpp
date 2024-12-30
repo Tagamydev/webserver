@@ -46,10 +46,7 @@ int main_loop(webserver &server)
 			if (_loop.check_poll_in(i))
 			{
 				if (_loop.check_poll_in_server(i))
-				{
-					// new client
 					_loop.new_client(i);
-				}
 				else if (_loop.check_poll_in_cgi(i))
 				{
 					// cgi needs an input
@@ -68,17 +65,11 @@ int main_loop(webserver &server)
 					request	*tmp_req = _loop.get_request_from_client(i);
 
 					if (!tmp_req->_cgi)
-					{
 						_loop.send_response_client(i, tmp_req);
-						tmp_req = NULL;
-					}
 					else
 					{
 						if (tmp_req->_cgi->_is_ready)
-						{
 							_loop.send_response_client(i, tmp_req);
-							tmp_req = NULL;
-						}
 						else
 						{
 							if (tmp_req->_cgi->check_cgi_timeout())
@@ -96,8 +87,12 @@ int main_loop(webserver &server)
 			}
 			else if (_loop.check_poll_in_cgi(i))
 			{
-				// this means the cgi is doing an output
-				std::cout << "hello this is the cgi output" << std::endl;
+				cgi	*tmp;
+
+				tmp = _loop.get_cgi_from_client(i);
+				if (!tmp)
+					throw (std::runtime_error("get cgi fail. cgi is NULL"));
+				tmp->send_request_to_cgi();
 			}
 		}
 	}

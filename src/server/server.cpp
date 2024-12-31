@@ -31,17 +31,17 @@ void	server::process_parameters(std::stringstream &contentStream, std::string li
 	std::string tmp_str;
 	std::vector<std::string> tmp_vector;
 
-	trim_space_newline(line);
+	utils::trim_space_newline(line);
 	key = line.substr(0, line.find(' '));
 	value = line.substr(line.find(' '), line.length());
-	trim_space_newline(value);
+	utils::trim_space_newline(value);
 	// std::cout << "Key " << key << std::endl;
 	// std::cout << "value " << value << std::endl;
-	trim_semicolon(value);
+	utils::trim_semicolon(value);
 	//check has semicolon
 	if (key == "listen")
 	{
-		if (is_empty(value))
+		if (utils::is_empty(value))
 			throw std::runtime_error("Error reading config file. Wrong value in listen directive.");
 		if (!is_valid_port(atoi(value.c_str())))
 			throw std::runtime_error("Error reading config file. Invalid port, out of range.");
@@ -49,13 +49,13 @@ void	server::process_parameters(std::stringstream &contentStream, std::string li
 	}
 	else if (key == "server_name")
 	{
-		if (is_empty(value))
+		if (utils::is_empty(value))
 			throw std::runtime_error("Error reading config file. Wrong value in host directive.");
-		this->_names = split_to_list(value, ' ');
+		this->_names = utils::split_to_list(value, ' ');
 	}
 	else if (key == "client_max_body_size")
 	{
-		if (is_empty(value))
+		if (utils::is_empty(value))
 			throw std::runtime_error("Error reading config file. Wrong value in client_max_body_size directive.");
 		if (!atoi(value.c_str()) || atoi(value.c_str()) < 0)
 			throw std::runtime_error("Error reading config file. Client_max_body_size, invalid or out of range.");
@@ -63,9 +63,9 @@ void	server::process_parameters(std::stringstream &contentStream, std::string li
 	}
 	else if (key == "error_page")
 	{
-		if (is_empty(value))
+		if (utils::is_empty(value))
 			throw std::runtime_error("Error reading config file. Wrong value in host directive.");
-		tmp_vector = split_to_vector(value, ' ');
+		tmp_vector = utils::split_to_vector(value, ' ');
 		tmp_str = tmp_vector[tmp_vector.size() - 1];
 		for (size_t i = 0; i < tmp_vector.size() - 1; i++)
 		{
@@ -83,7 +83,7 @@ void	server::process_parameters(std::stringstream &contentStream, std::string li
 		location += line+ '\n';
 		while (getline(contentStream, line))
 		{
-			if (is_empty(line))
+			if (utils::is_empty(line))
 				continue;
 			else if (line.find('{') != std::string::npos)
 			{
@@ -144,7 +144,7 @@ void	server::check_save_parameters(std::stringstream &contentStream)
 
 	while (getline(contentStream, line))
 	{
-		if (is_empty(line))
+		if (utils::is_empty(line))
 			continue;
 		else if (line.find('{') != std::string::npos)
 		{

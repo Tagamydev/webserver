@@ -160,7 +160,7 @@ webserver::webserver(std::string &path)
 	this->get_file_info(path);
 	this->_config_file = save_config_file(path);
 	remove_comments(_config_file);
-	fix_spaces_in_line(_config_file);
+	utils::fix_spaces_in_line(_config_file);
 	check_brackets(_config_file);
 	// print_config_info (_config_file);
 	check_save_server_vector(_config_file);

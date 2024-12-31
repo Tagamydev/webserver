@@ -15,7 +15,7 @@ void	location::print_location_content()
 	std::cout << "cgi " << _cgi << std::endl;
 	std::cout << "return_code " << _return_code << std::endl;
 	std::cout << "return_path " << _return_path << std::endl;
-	print_vector_content(_allowed_methods, "allowed methods");
+	utils::print_vector_content(_allowed_methods, "allowed methods");
 
 }
 	
@@ -41,7 +41,7 @@ void	location::set_priv_attribute(std::string line)
 	}
 	else if (key == "allowed_methods" || key == "allow")
 	{
-		this->_allowed_methods = split_to_vector(value, ' ');
+		this->_allowed_methods = utils::split_to_vector(value, ' ');
 	}
 	else if (key == "index")
 	{
@@ -94,20 +94,20 @@ location::location(std::string content) : _path(""), _index_file(DEFAULT_INDEX),
 	contentStream << content;
 	contentStream.seekg(0);
 	getline(contentStream, line);
-	trim_space_newline(line);
-	trim_curly_brackets(line);
+	utils::trim_space_newline(line);
+	utils::trim_curly_brackets(line);
 	if (line.find("location") != std::string::npos)
 			line.erase(0, line.find(' ') + 1);
 	this->_path = line.substr(0, line.find(' '));
 	while (getline(contentStream, line))
 	{
-		trim_space_newline(line);
-		trim_semicolon(line);
+		utils::trim_space_newline(line);
+		utils::trim_semicolon(line);
 		if (line.find('}') != std::string::npos)
 		{
 			if (line.length() == 1)
 				break;
-			trim_curly_brackets(line);
+			utils::trim_curly_brackets(line);
 		}
 		set_priv_attribute(line);	
 

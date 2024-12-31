@@ -18,21 +18,19 @@ class	server{
 		// mandatory
 		std::list<int>			_ports;
 		std::list<std::string>	_hosts;
-
-		std::string				_path;
-		bool					_is_relative;
-
 		std::list<std::string>	_names;
 
 		int			_max_body_size;
-
-		std::string	_default_file;
-		std::string	_cgi_extention;
+		bool					_is_relative;
 
 		// error pages example: error_page 500 502 503 504 /50x.html;
 		std::map<int, std::string>		_error_pages;
 
 		std::map<std::string, location>	locations;
+		//std::string				_path;
+		//std::string	_default_file;
+
+		//std::string	_cgi_extention;
 
 		// init vars
 /* init error page by default */

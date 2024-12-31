@@ -26,14 +26,10 @@ class webserver
 		size_t	find_end_server(size_t start, std::string _config_file);
 		void	print_list_content(std::list<std::string> list);
 
-
-
 		std::string	status_message(int code);
 		std::string	mime_types(std::string &extention);
 		std::map<std::string, std::string>	_mime_types;
 		loopHandler							*_loop;
-
-
 
 	private:
 		std::list<server>	_servers;

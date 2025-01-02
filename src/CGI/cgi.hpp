@@ -7,12 +7,13 @@
 # define CGI_TIMEOUT 7
 
 class webserver;
+class loopHandler;
 class request;
 
 class	cgi
 {
 	public:
-		cgi(webserver &webserver);
+		cgi(webserver &webserver, loopHandler &_loop, request &_request);
 		~cgi();
 
 		bool		_is_ready;

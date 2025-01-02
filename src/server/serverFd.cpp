@@ -37,7 +37,5 @@ serverFd::serverFd(int port)
 
 serverFd::~serverFd()
 {
-    if (this->_fd != -1)
-        close(this->_fd);
     this->_port = 0;
 }

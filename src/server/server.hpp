@@ -45,6 +45,8 @@ class	server{
 		location	process_location(std::string line);
 		//Seters
 		void		set_error_pages(std::string value);
+		//utils
+		void	print_config_file(server server);
 };
 
 #endif

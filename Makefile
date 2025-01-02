@@ -44,7 +44,7 @@ SRCS		= ./src/response/response.cpp \
 		./src/server/webserver.cpp \
 		./src/server/serverFd.cpp \
 		./src/server/location.cpp \
-		./src/main.cpp ./src/assets.cpp 
+		./src/main.cpp 
 
 O_DIR		=	./objects/
 OBJS		=	$(addprefix $(O_DIR)/, $(SRCS:.cpp=.o))

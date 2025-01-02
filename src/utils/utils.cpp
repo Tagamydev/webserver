@@ -100,9 +100,12 @@ void	utils::trim_curly_brackets(std::string &line)
 
 	while (line[i] != '\0' && line[i] == '{')
 		i++;
-	while (line[j] != '\0' && line[j] == '}')
+	while (line[j] != '\0' && line[j] == '}' || line[i] == '{')
 		j--;
-	line = line.substr(i,j - i +1);
+	if (i >= j || i == line.length())
+		line = "";
+	else
+		line = line.substr(i,j - i +1);
 }
 
 /// @brief Trim semicolon from the end on a string. Used to clean values on parameters.

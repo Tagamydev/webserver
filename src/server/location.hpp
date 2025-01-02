@@ -16,7 +16,7 @@ class	location{
 
 		// std::map<int, std::string>	_return;
 
-		bool		_index;
+		// bool		_index;
 		bool		_auto_index;
 		bool		_cgi_enabled;
 		// bool		_get_enabled;
@@ -33,7 +33,7 @@ class	location{
 		std::string	_index_file;
 		std::string	_save_file;
 		std::vector<std::string> _allowed_methods;
-		std::string _cgi;
+		std::string _cgi_path;
 		std::string	_return_code;
 		std::string	_return_path;
 };

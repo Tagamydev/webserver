@@ -121,7 +121,7 @@ int main(int argc, char **argv)
 		std::string	config_file = path_config_file(argc, argv);
 		webserver	server(config_file);	
 		
-		main_loop(server);
+		// main_loop(server);
 	}
 	catch (const std::exception &e)
 	{

@@ -1,6 +1,17 @@
 #include "server.hpp"
 
 
+void	server::print_config_file(server server)
+{
+	//general
+	utils::print_list_content(this->_ports, "Ports");
+	utils::print_list_content(this->_names, "Server_name");
+	std::cout << "_max_body_size: " << this->_max_body_size << std::endl;
+	utils::print_map_content(this->_error_pages, "Error pages");
+	//location
+	
+}
+
 location server::process_location(std::string line)
 {
 	location	loc(line);
@@ -38,7 +49,7 @@ void	server::process_parameters(std::stringstream &contentStream, std::string li
 	// std::cout << "Key " << key << std::endl;
 	// std::cout << "value " << value << std::endl;
 	utils::trim_semicolon(value);
-	//check has semicolon
+	//check has semicolon?
 	if (key == "listen")
 	{
 		if (utils::is_empty(value))
@@ -105,7 +116,7 @@ void	server::process_parameters(std::stringstream &contentStream, std::string li
 		}
 		// std::cout << "location in parameter" << location << std::endl;
 		// std::cout << "process_location"<< std::endl;
-		// process_location(line);		
+		process_location(location);		
 		location.clear();	
 	}
 	else
@@ -156,8 +167,6 @@ void	server::check_save_parameters(std::stringstream &contentStream)
 				if (line.find('}') != std::string::npos)
 				break ;
 			}
-			// std::cout << "location WELL " << location << std::endl;
-			// std::cout << "process_location"<< std::endl;
 			process_location(location);		
 			location.clear();	
 		}
@@ -170,10 +179,7 @@ void	server::check_save_parameters(std::stringstream &contentStream)
 		// getline(contentStream, line);
 
 	}
-	// print_list_content(_ports, "Ports");
-	// print_list_content(_names, "Server_name");
-	// std::cout << "_max_body_size: " << this->_max_body_size << std::endl;
-	// print_map_content(this->_error_pages, "Error pages");
+
 
 }
 // Init default

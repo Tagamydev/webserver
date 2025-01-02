@@ -15,7 +15,8 @@ size_t	webserver::find_end_server(size_t start, std::string configFile)
 	size_t brackets = 0;
 	size_t end = start;
 
-	while (configFile[++end])
+	//while (configFile[++end])
+	for (; end < configFile.length(); end++)
 	{
 		if (configFile[end] == '{')
 			brackets++;

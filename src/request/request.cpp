@@ -70,7 +70,7 @@ bool	request::check_if_cgi()
 {
 	// tmp we assume all is a cgi!
 
-	return (false);
+	return (true);
 }
 
 void	request::clear()

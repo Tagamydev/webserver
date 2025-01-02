@@ -1,7 +1,7 @@
 #include "server.hpp"
 
 
-void	server::print_config_file(server server)
+void	server::print_config_file()
 {
 	//general
 	utils::print_list_content(this->_ports, "Ports");
@@ -9,6 +9,19 @@ void	server::print_config_file(server server)
 	std::cout << "_max_body_size: " << this->_max_body_size << std::endl;
 	utils::print_map_content(this->_error_pages, "Error pages");
 	//location
+	//recorrer mapa
+	// this->locations->print_location_content();
+	size_t i = 1;
+		std::cout << "\n<<<   "<< "locations" << "   >>>" << std::endl;
+	for (std::map<std::string, location>::iterator it = _locations.begin(); it != _locations.end(); it++)
+		{
+			std::cout << "--- Item " << i++;
+			it->second;
+			std::cout  << std::endl;
+			// it->second->print_location_content();
+			// std::cout << it->first << " " << it->second << "\n";
+		}
+	std::cout << std::endl;
 	
 }
 
@@ -46,10 +59,7 @@ void	server::process_parameters(std::stringstream &contentStream, std::string li
 	key = line.substr(0, line.find(' '));
 	value = line.substr(line.find(' '), line.length());
 	utils::trim_space_newline(value);
-	// std::cout << "Key " << key << std::endl;
-	// std::cout << "value " << value << std::endl;
 	utils::trim_semicolon(value);
-	//check has semicolon?
 	if (key == "listen")
 	{
 		if (utils::is_empty(value))
@@ -88,20 +98,20 @@ void	server::process_parameters(std::stringstream &contentStream, std::string li
 	}
 	else if (key == "location")
 	{
-		std::string location;
+		std::string loc_str;
 
 		check_location(line);
-		location += line+ '\n';
+		loc_str += line+ '\n';
 		while (getline(contentStream, line))
 		{
 			if (utils::is_empty(line))
 				continue;
 			else if (line.find('{') != std::string::npos)
 			{
-				location += line + '\n';
+				loc_str += line + '\n';
 				while (getline(contentStream, line))
 				{
-					location += line + '\n';
+					loc_str += line + '\n';
 					if (line.find('}') != std::string::npos)
 					{
 						line.clear();
@@ -114,10 +124,9 @@ void	server::process_parameters(std::stringstream &contentStream, std::string li
 			if (line.empty())
 				break ;		
 		}
-		// std::cout << "location in parameter" << location << std::endl;
-		// std::cout << "process_location"<< std::endl;
-		process_location(location);		
-		location.clear();	
+		location	new_location(loc_str);
+		_locations[new_location.get_path()] = new_location;
+		loc_str.clear();	
 	}
 	else
 		throw std::runtime_error("Error reading config file. Unknown directive.");
@@ -151,7 +160,7 @@ void	server::check_location(std::string line)
 void	server::check_save_parameters(std::stringstream &contentStream)
 {
 	std::string line;
-	std::string location;
+	std::string loc_str;
 
 	while (getline(contentStream, line))
 	{
@@ -160,27 +169,20 @@ void	server::check_save_parameters(std::stringstream &contentStream)
 		else if (line.find('{') != std::string::npos)
 		{
 			check_location(line);
-			location += line+ '\n';
+			loc_str += line+ '\n';
 			while (getline(contentStream, line))
 			{
-				location += line + '\n';
+				loc_str += line + '\n';
 				if (line.find('}') != std::string::npos)
 				break ;
 			}
-			process_location(location);		
-			location.clear();	
+			location	new_location(loc_str);
+			_locations[new_location.get_path()] = new_location;
+			loc_str.clear();	
 		}
 		else
-		{
 			process_parameters(contentStream, line);
-			// std::cout << "Parameter" << line << std::endl;
-		}
-		// std::cout << "LINE" << line << std::endl;
-		// getline(contentStream, line);
-
 	}
-
-
 }
 // Init default
 void server::initErrorPages(void)
@@ -203,20 +205,15 @@ void server::initErrorPages(void)
 }
 
 
-server::server(std::string &content)
+server::server(std::string &content):_max_body_size (MAX_BODY_SIZE)
 {
-	// std::string line;
-	// std::string location;
-	initErrorPages();
 	std::stringstream contentStream;
 
+	initErrorPages();
 	contentStream << content;
 	contentStream.seekg(0);
 	check_save_parameters(contentStream);
-	
-	//get line
-	//loop until location or brackets
-	//split first parameters
+	print_config_file();
 }
 server::server()
 {

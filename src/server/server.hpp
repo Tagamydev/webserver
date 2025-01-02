@@ -6,8 +6,6 @@
 
 class location;
 
-class location;
-
 class	server{
 	//this need a location class diferent from config to make a map with that!!
 	public:
@@ -26,7 +24,7 @@ class	server{
 		// error pages example: error_page 500 502 503 504 /50x.html;
 		std::map<int, std::string>		_error_pages;
 
-		std::map<std::string, location>	locations;
+		std::map<std::string, location>	_locations;
 		//std::string				_path;
 		//std::string	_default_file;
 
@@ -46,7 +44,7 @@ class	server{
 		//Seters
 		void		set_error_pages(std::string value);
 		//utils
-		void	print_config_file(server server);
+		void	print_config_file();
 };
 
 #endif

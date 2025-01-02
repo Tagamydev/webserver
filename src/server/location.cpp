@@ -37,25 +37,15 @@ void	location::set_priv_attribute(std::string line)
 		return ;
 	}
 	if (key == "root")
-	{
 		this->_root = value;
-	}
 	else if (key == "alias")
-	{
 		this->_alias = value;
-	}
 	else if (key == "allowed_methods" || key == "allow")
-	{
 		this->_allowed_methods = utils::split_to_vector(value, ' ');
-	}
 	else if (key == "index")
-	{
 		this->_index_file = value;
-	}
 	else if (key == "save_file")
-	{
 		this->_save_file = value;
-	}
 	else if (key == "autoindex")
 	{
 		if (value == "on")
@@ -76,10 +66,11 @@ void	location::set_priv_attribute(std::string line)
 		this->_return_path = value;
 	}
 	else
-	{
 		throw std::runtime_error("Error reading config file. Unknown directive error. (" + key + ")");
-	}
 }
+
+//getters
+const std::string &location::get_path() const { return this->_path; }
 
 
 
@@ -101,7 +92,6 @@ location::location(std::string content) : _path(""), _index_file(DEFAULT_INDEX),
 	getline(contentStream, line);
 	utils::trim_space_newline(line);
 	utils::trim_curly_brackets(line);
-	// std::cout << "Content  " << content << std::endl;
 	if (line.find("location") != std::string::npos)
 			line.erase(0, line.find(' ') + 1);
 	this->_path = line.substr(0, line.find(' '));
@@ -118,9 +108,6 @@ location::location(std::string content) : _path(""), _index_file(DEFAULT_INDEX),
 			utils::trim_curly_brackets(line);
 		}
 		set_priv_attribute(line);	
-
 	}
-	print_location_content();
-		
-
+	// print_location_content();
 }

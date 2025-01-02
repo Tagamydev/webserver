@@ -165,13 +165,15 @@ webserver::webserver(std::string &path)
 	// print_config_info (_config_file);
 	check_save_server_vector(_config_file);
 	// print_list_content(_server_block_list, title));
+
 	//bucle creando servers
 	for (std::list<std::string>::iterator it = _server_block_list.begin(); it != _server_block_list.end(); it++)
 	{
-		// std::cout << "Create Server" << std::endl;
+		server newServer(*it);
+		std::cout << "Create Server"  << std::endl;
 		//add to list of servers
+		_servers.push_back(newServer);
 	}
-	server newServer(*_server_block_list.begin());
 
 }
 

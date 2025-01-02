@@ -11,5 +11,7 @@
 # define DEFAULT_CGI ""
 # define DEFAULT_PYTHON_ROUTE "/usr/bin/python3"
 # define DEFAULT_CGI_TIMEOUT 5
+# define MAX_BODY_SIZE 2000
+
 
 #endif // __DEFAULTS_HPP__

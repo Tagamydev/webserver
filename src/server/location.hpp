@@ -25,7 +25,10 @@ class	location{
 
 		void	set_priv_attribute(std::string line);	
 		void	print_location_content();
-		
+
+		const std::string &get_path() const;
+		// const std::string &get_root() const;
+
 	private:
 		std::string	_path;
 		std::string _root;

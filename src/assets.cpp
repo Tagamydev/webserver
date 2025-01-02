@@ -101,11 +101,17 @@ void trim_space_newline(std::string &line)
 {
 	int i = 0;
 	int j = line.length() - 1;
+	int	result;
 
-	while (line[i] != '\0' && line[i] == ' ' || line[i] == '\t' || line[i] == '\r' || line[i] == '\f' || line[i] == '\n')
+	while (line[i] != '\0' && (line[i] == ' ' || line[i] == '\t' || line[i] == '\r' || line[i] == '\f' || line[i] == '\n'))
 		i++;
-	while (line[j] != '\0' && line[j] == ' ' || line[j] == '\t' || line[j] == '\r' || line[j] == '\f' || line[j] == '\n')
+	// this line needs to be added, j = -1 in one case
+	if (j == -1)
+		j = 0;
+	while (line[j] != '\0' && (line[j] == ' ' || line[j] == '\t' || line[j] == '\r' || line[j] == '\f' || line[j] == '\n'))
+	{
 		j--;
+	}
 	line = line.substr(i,j - i +1);
 }
 

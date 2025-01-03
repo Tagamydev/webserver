@@ -35,7 +35,31 @@ std::string	utils::read_file(int fd)
 }
 
 
+/// @brief Takes a vector and populate it with the keys of a map. Used for location duplicated check.
+/// @param inputMap map<string, string>
+/// @param outputVector vector<std::string>
+void utils::map_to_vector_populate_keys(const std::map<std::string, location>& inputMap, std::vector<std::string>& outputVector)
+{
+    outputVector.clear(); // Ensure the vector is empty before populating
+    for (typename std::map<std::string, location>::const_iterator it = inputMap.begin(); it != inputMap.end(); ++it)
+    {
+        outputVector.push_back(it->first);
+    }
+}
 
+// Populate vector with values
+
+/// @brief Takes a vector and populate it with the values of a map.
+/// @param inputMap map<string, string>
+/// @param outputVector vector<std::string>
+void utils::map_to_vector_populate_values(const std::map<std::string, std::string>& inputMap, std::vector<std::string>& outputVector)
+{
+    outputVector.clear(); // Ensure the vector is empty before populating
+    for (typename std::map<std::string, std::string>::const_iterator it = inputMap.begin(); it != inputMap.end(); ++it)
+    {
+        outputVector.push_back(it->second);
+    }
+}
 
 /// @brief Split line by sep, return in a string vector.
 /// @param line content to split

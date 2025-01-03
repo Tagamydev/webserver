@@ -29,6 +29,9 @@ class	utils
 		static std::vector<std::string>	split_to_vector(std::string line, char sep);
 		static std::list<std::string>	split_to_list(std::string line, char sep);
 
+		static void map_to_vector_populate_keys(const std::map<std::string, location>& inputMap, std::vector<std::string>& outputVector);
+		static void map_to_vector_populate_values(const std::map<std::string, std::string>& inputMap, std::vector<std::string>& outputVector);
+		
 	private:
 		utils();
 

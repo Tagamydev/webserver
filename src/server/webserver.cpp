@@ -11,54 +11,16 @@ void	print_config_info(std::string configFile)
 /// Parsing 
 
 /// @brief checking if at least one of the three mandatory parameters of servers is different.
-// void webserver::check_servers()
-// {
-// 	std::vector<server>::iterator itServer1;
-// 	std::vector<server>::iterator itServer2;
-// 	std::vector<std::string>::iterator itNames1;
-// 	std::vector<std::string>::iterator itNames2;
-// 	std::vector<int>::iterator itPorts;
-// 	std::vector<int> ports;
-// 	std::vector<std::string> names1;
-// 	std::vector<std::string> names2;
-
-// 	if (_servers.size() == 1)
-// 		return ;
-// 	for (itServer1 = this->_servers.begin(); itServer1 != this->_servers.end() - 1; itServer1++)
-// 	{
-// 		for (itServer2 = itServer1 + 1; itServer2 != this->_servers.end(); itServer2++)
-// 		{
-// 			names1 = itServer1->get_names();
-// 			names2 = itServer2->get_names();
-// 			for (itNames1 = names1.begin(); itNames1 != names1.end(); itNames1++)
-// 			{
-// 				for (itNames2 = names2.begin(); itNames2 != names2.end(); itNames2++)
-// 				{
-// 					if ( *itNames1 == *itNames2 && itServer1->get_first_port() == itServer2->get_first_port())
-// 						throw std::runtime_error("Error in config file. Failed server validation.");
-// 				}
-// 			}
-
-
-
-// 			// if (itServer1->get_first_port() == itServer2->get_first_port() && itServer1->get_first_name() == itServer2->get_first_name())
-// 			// 	throw std::runtime_error("Error in config file. Failed server validation.");
-
-// 		}
-// 	}
-// }
-
 void webserver::check_servers()
 {
     if (_servers.size() <= 1)
         return;
 
-    // Store all <port, server_name> pairs for validation
     std::set<std::pair<int, std::string> > seenConfigurations;
 
     for (std::vector<server>::iterator itServer = _servers.begin(); itServer != _servers.end(); ++itServer)
     {
-        const std::vector<int>& ports = itServer->get_ports(); // Assuming this gives all ports
+        const std::vector<int>& ports = itServer->get_ports();
         const std::vector<std::string>& names = itServer->get_names();
 
         for (std::vector<int>::const_iterator itPort = ports.begin(); itPort != ports.end(); ++itPort)
@@ -67,10 +29,8 @@ void webserver::check_servers()
             {
                 std::pair<int, std::string> config = std::make_pair(*itPort, *itName);
 
-                // Check for duplicates
                 if (seenConfigurations.find(config) != seenConfigurations.end())
                 {
-                    // Create error message using stringstream
                     std::ostringstream errorMessage;
                     errorMessage << "Error in config file: Duplicate port and server name combination ("
                                  << *itPort << ", " << *itName << ").";
@@ -81,9 +41,6 @@ void webserver::check_servers()
         }
     }
 }
-
-
-
 
 size_t	webserver::find_end_server(size_t start, std::string configFile)
 {
@@ -247,11 +204,9 @@ webserver::webserver(std::string &path)
 		server newServer(*it);
 		//add to list of servers
 		_servers.push_back(newServer);
-		std::cout << "Create Server "  << newServer.get_first_name() << std::endl;
+		// std::cout << "Create Server "  << newServer.get_first_name() << std::endl;
 	}
 	check_servers();
-	
-
 }
 
 void	webserver::set_mime_types()

@@ -18,7 +18,7 @@ class	server{
 		// std::vector<std::string>	_hosts; not used
 		std::vector<std::string>	_names;
 
-		int			_max_body_size;
+		int						_max_body_size;
 		bool					_is_relative;
 
 		// error pages example: error_page 500 502 503 504 /50x.html;
@@ -36,6 +36,8 @@ class	server{
 		void		check_location(std::string line);
 		void		process_parameters(std::stringstream &contentStream, std::string line);
 		bool		is_valid_port(std::string port);
+		void		check_location_list();
+		void 		check_empty_set_default();
 		//utils
 		void	print_config_file();
 

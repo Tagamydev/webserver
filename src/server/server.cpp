@@ -48,7 +48,38 @@ bool	server::is_valid_port(std::string port)
 	return (true);
 }
 
+/// @brief check if mandatory parameters are empty. Throw error for now in case of empty.
+void server::check_empty_set_default()
+{
+	if (this->_names.empty())
+	{
+		// _names.push_back("");
+		throw std::runtime_error("Error reading config file. Server name can't be empty.");
+	}
+	if (this->_ports.empty())
+	{
+		// _names.push_back("");
+		throw std::runtime_error("Error reading config file. You must insert a port to liten to.");
+	}
+}
 
+/// @brief check if there's duplicated location. It wont, its a map xD
+void server::check_location_list() 
+{
+	if (this->_locations.size() < 2)
+		return ;
+	std::vector<std::string>::const_iterator it1;
+	std::vector<std::string>::const_iterator it2;
+	std::vector<std::string> paths;
+	utils::map_to_vector_populate_keys(_locations, paths);
+	for (it1 = paths.begin(); it1 != paths.end() - 1; it1++) {
+		for (it2 = it1 + 1; it2 != paths.end(); it2++) {
+			if (*it1 == *it2)
+				throw std::runtime_error("Error reading config file. Duplicated Location path.");
+		}
+	}
+	return ;
+}
 
 void	server::process_parameters(std::stringstream &contentStream, std::string line)
 {
@@ -208,7 +239,7 @@ void server::initErrorPages(void)
 }
 
 
-server::server(std::string &content):_max_body_size (MAX_BODY_SIZE)
+server::server(std::string &content):_max_body_size (MAX_BODY_SIZE), _is_relative(false)
 {
 	std::stringstream contentStream;
 
@@ -216,6 +247,8 @@ server::server(std::string &content):_max_body_size (MAX_BODY_SIZE)
 	contentStream << content;
 	contentStream.seekg(0);
 	check_save_parameters(contentStream);
+	check_location_list();	
+	check_empty_set_default();
 	// print_config_file();
 }
 server::server()

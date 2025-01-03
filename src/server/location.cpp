@@ -20,7 +20,19 @@ void	location::print_location_content()
 		utils::print_vector_content(_allowed_methods, "allowed methods");
 
 }
+/// @brief Returns true if the method passed as parameter is found on _allowed_methods
+bool		location::is_allowed_method(std::string method)
+{
+	if (method.empty())
+		return (false);
+	for (std::vector<std::string>::iterator it = this->_allowed_methods.begin(); it != this->_allowed_methods.end(); it++)
+	{
+		if (*it == method)
+			return (true);
+	}
+	return (false);
 	
+}
 
 void	location::set_priv_attribute(std::string line)
 {
@@ -111,4 +123,6 @@ location::location(std::string content) : _path(""), _index_file(DEFAULT_INDEX),
 		set_priv_attribute(line);	
 	}
 	// print_location_content();
+	if (this->is_allowed_method("GET"))
+		std::cout << "GET" << std::endl;
 }

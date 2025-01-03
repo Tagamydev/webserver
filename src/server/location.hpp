@@ -3,6 +3,8 @@
 # define LOCATION_HPP
 # include "main.hpp"
 
+class request;
+
 class	location{
 
 	public:
@@ -27,6 +29,7 @@ class	location{
 		void	print_location_content();
 
 		const std::string &get_path() const;
+		bool		is_allowed_method(std::string method);
 		// const std::string &get_root() const;
 
 	private:

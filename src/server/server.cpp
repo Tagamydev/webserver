@@ -249,6 +249,8 @@ server::server(std::string &content):_max_body_size (MAX_BODY_SIZE), _is_relativ
 	check_save_parameters(contentStream);
 	check_location_list();	
 	check_empty_set_default();
+
+		
 	// print_config_file();
 }
 server::server()

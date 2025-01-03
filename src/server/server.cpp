@@ -61,6 +61,12 @@ void server::check_empty_set_default()
 		// _names.push_back("");
 		throw std::runtime_error("Error reading config file. You must insert a port to liten to.");
 	}
+	//set default root
+	// if (this->_root.empty())
+	// {
+	// 	// _names.push_back("");
+	// }
+
 }
 
 /// @brief check if there's duplicated location. It wont, its a map xD

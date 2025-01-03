@@ -14,9 +14,9 @@ class	server{
 		~server();
 
 		// mandatory
-		std::list<int>			_ports;
-		std::list<std::string>	_hosts;
-		std::list<std::string>	_names;
+		std::vector<int>			_ports;
+		// std::vector<std::string>	_hosts; not used
+		std::vector<std::string>	_names;
 
 		int			_max_body_size;
 		bool					_is_relative;
@@ -25,13 +25,9 @@ class	server{
 		std::map<int, std::string>		_error_pages;
 
 		std::map<std::string, location>	_locations;
-		//std::string				_path;
-		//std::string	_default_file;
-
-		//std::string	_cgi_extention;
 
 		// init vars
-/* init error page by default */
+		/* init error page by default */
 		void initErrorPages(void);
 
 
@@ -39,12 +35,16 @@ class	server{
 		void		check_save_parameters(std::stringstream &contentStream);
 		void		check_location(std::string line);
 		void		process_parameters(std::stringstream &contentStream, std::string line);
-		bool		is_valid_port(int port);
-		location	process_location(std::string line);
-		//Seters
-		void		set_error_pages(std::string value);
+		bool		is_valid_port(std::string port);
 		//utils
 		void	print_config_file();
+
+		//getter
+		const int &get_first_port() const;
+		const std::vector<int> &get_ports() const;
+		const std::string &get_first_name() const;
+		const std::vector<std::string> &get_names() const;
+
 };
 
 #endif

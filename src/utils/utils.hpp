@@ -21,6 +21,7 @@ class	utils
 		static int		is_empty(std::string &line);
 		static void	fix_spaces_in_line(std::string &line);
 		static void	print_vector_content(std::vector<std::string> vector, std::string title);
+		static void	print_vector_content(std::vector<int> vector, std::string title);
 		static void	print_list_content(std::list<std::string> list, std::string title);
 		static void	print_list_content(std::list<int> list, std::string title);
 		static void	print_map_content(std::map<int, std::string> map, std::string title);

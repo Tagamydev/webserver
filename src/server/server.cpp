@@ -1,48 +1,50 @@
 #include "server.hpp"
 
-
+/// @brief print config files parameters saved in server.
 void	server::print_config_file()
 {
+	location tmp_loc;
 	//general
-	utils::print_list_content(this->_ports, "Ports");
-	utils::print_list_content(this->_names, "Server_name");
+	utils::print_vector_content(this->_ports, "Ports");
+	utils::print_vector_content(this->_names, "Server_name");
 	std::cout << "_max_body_size: " << this->_max_body_size << std::endl;
 	utils::print_map_content(this->_error_pages, "Error pages");
 	//location
-	//recorrer mapa
-	// this->locations->print_location_content();
 	size_t i = 1;
 		std::cout << "\n<<<   "<< "locations" << "   >>>" << std::endl;
 	for (std::map<std::string, location>::iterator it = _locations.begin(); it != _locations.end(); it++)
 		{
+			tmp_loc = it->second;
 			std::cout << "--- Item " << i++;
 			it->second;
 			std::cout  << std::endl;
-			// it->second->print_location_content();
-			// std::cout << it->first << " " << it->second << "\n";
+			tmp_loc.print_location_content();
 		}
 	std::cout << std::endl;
 	
 }
 
-location server::process_location(std::string line)
+const int &server::get_first_port() const { return *this->_ports.begin(); }
+
+const std::string &server::get_first_name() const { return *this->_names.begin(); }
+
+const std::vector<int> &server::get_ports() const { 	return this->_ports; }
+
+const std::vector<std::string> &server::get_names() const { 	return this->_names; }
+
+/// @brief chec if is a number in a valid range. Also check if is an ip or localhost to print invalid message
+bool	server::is_valid_port(std::string port)
 {
-	location	loc(line);
-
-
-	return (loc);
-}
-
-void	server::set_error_pages(std::string value)
-{
-
-}
-
-bool	server::is_valid_port(int port)
-{
-	//check for ips? localhost?
-	if (port < 0 || port > 65535)
+	size_t tmp = atoi(port.c_str());
+	
+	if (port.find('.') != std::string::npos)
+		throw std::runtime_error("Error reading config file. IP address on listen directive is not supported.");
+	else if (port.find("localhost") != std::string::npos)
+		throw std::runtime_error("Error reading config file. Localhost on listen directive is not supported.");
+	if (tmp < 0 || tmp > 65535)
+	{
 		return (false);
+	}
 	return (true);
 }
 
@@ -64,15 +66,16 @@ void	server::process_parameters(std::stringstream &contentStream, std::string li
 	{
 		if (utils::is_empty(value))
 			throw std::runtime_error("Error reading config file. Wrong value in listen directive.");
-		if (!is_valid_port(atoi(value.c_str())))
+		if (!is_valid_port(value))
 			throw std::runtime_error("Error reading config file. Invalid port, out of range.");
 		this->_ports.push_back(atoi(value.c_str()));
 	}
 	else if (key == "server_name")
 	{
 		if (utils::is_empty(value))
-			throw std::runtime_error("Error reading config file. Wrong value in host directive.");
-		this->_names = utils::split_to_list(value, ' ');
+			throw std::runtime_error("Error reading config file. Wrong value in server_name directive.");
+		utils::ft_toLower(value);
+		this->_names = utils::split_to_vector(value, ' ');
 	}
 	else if (key == "client_max_body_size")
 	{
@@ -85,7 +88,7 @@ void	server::process_parameters(std::stringstream &contentStream, std::string li
 	else if (key == "error_page")
 	{
 		if (utils::is_empty(value))
-			throw std::runtime_error("Error reading config file. Wrong value in host directive.");
+			throw std::runtime_error("Error reading config file. Wrong value in error_page directive.");
 		tmp_vector = utils::split_to_vector(value, ' ');
 		tmp_str = tmp_vector[tmp_vector.size() - 1];
 		for (size_t i = 0; i < tmp_vector.size() - 1; i++)
@@ -93,7 +96,7 @@ void	server::process_parameters(std::stringstream &contentStream, std::string li
 			if (atoi(tmp_vector[i].c_str()) >= 100 && atoi(tmp_vector[i].c_str()) <= 600 )
 				this->_error_pages[atoi(tmp_vector[i].c_str())] = tmp_str;
 			else
-				throw std::runtime_error("Error reading config file. Wrong or invalid error code directive.");
+				throw std::runtime_error("Error reading config file. Wrong or invalid error page directive.");
 		}
 	}
 	else if (key == "location")
@@ -184,7 +187,7 @@ void	server::check_save_parameters(std::stringstream &contentStream)
 			process_parameters(contentStream, line);
 	}
 }
-// Init default
+/// @brief  Init server vector with default error pages
 void server::initErrorPages(void)
 {
 	_error_pages[301] = "";
@@ -213,7 +216,7 @@ server::server(std::string &content):_max_body_size (MAX_BODY_SIZE)
 	contentStream << content;
 	contentStream.seekg(0);
 	check_save_parameters(contentStream);
-	print_config_file();
+	// print_config_file();
 }
 server::server()
 {

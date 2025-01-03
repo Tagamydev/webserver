@@ -16,7 +16,8 @@ void	location::print_location_content()
 	std::cout << "cgi path: " << _cgi_path << std::endl;
 	std::cout << "return code: " << _return_code << std::endl;
 	std::cout << "return path: " << _return_path << std::endl;
-	utils::print_vector_content(_allowed_methods, "allowed methods");
+	if (!_allowed_methods.empty())
+		utils::print_vector_content(_allowed_methods, "allowed methods");
 
 }
 	

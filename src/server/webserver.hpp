@@ -25,6 +25,8 @@ class webserver
 		size_t					find_start_server(size_t start, std::string _config_file);
 		size_t					find_end_server(size_t start, std::string _config_file);
 		void					print_list_content(std::list<std::string> list);
+		void 					check_servers();
+
 		// init
 		std::string				status_message(int code);
 		std::string				mime_types(std::string &extention);
@@ -33,7 +35,7 @@ class webserver
 		loopHandler							*_loop;
 
 	private:
-		std::list<server>			_servers;
+		std::vector<server>			_servers;
 		std::string					_config_file;
 		// parser
 		std::list<std::string>		_server_block_list;

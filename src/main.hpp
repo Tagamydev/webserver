@@ -34,6 +34,7 @@
 # include "defaults.hpp"
 # include "loopHandler.hpp"
 # include <algorithm>    // std::count
+# include <set>
 
 std::string get_actual_date();
 

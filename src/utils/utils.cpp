@@ -225,3 +225,15 @@ void	utils::print_vector_content(std::vector<std::string> vector, std::string ti
 		}
 	std::cout << std::endl;
 }
+
+void	utils::print_vector_content(std::vector<int> vector, std::string title)
+{
+	size_t i = 1;
+		std::cout << "\n<<<   "<< title << "   >>>" << std::endl;
+	for (std::vector<int>::iterator it = vector.begin(); it != vector.end(); it++)
+		{
+			std::cout << "--- Item " << i++ << "  value: ";
+			std::cout << *it << "\n";
+		}
+	std::cout << std::endl;
+}

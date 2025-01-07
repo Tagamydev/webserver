@@ -25,16 +25,36 @@ loopHandler::~loopHandler()
 
 }
 
-void	loopHandler::delete_cgiFD_from_cgiFD_list(int fd)
+void	loopHandler::delete_FD_from_FD_list(int fd, std::list<int> &list)
 {
-	std::list<int>::iterator	i = this->_cgiFD.begin();
+	std::list<int>::iterator	i = list.begin();
+	std::list<int>::iterator	ie = list.end();
 
-	for (; i != this->_cgiFD.end(); i++)
+	for (; i != ie; i++)
 	{
 		if (*i == fd)
-			this->_cgiFD.erase(i);
+		{
+			list.erase(i);
+			break ;
+		}
 	}
 }
+
+void	loopHandler::delete_FD_from_pollFD_list(int fd, std::vector<struct pollfd> &list)
+{
+	std::vector<struct pollfd>::iterator	i = list.begin();
+	std::vector<struct pollfd>::iterator	ie = list.end();
+
+	for (; i != ie; i++)
+	{
+		if (i->fd == fd)
+		{
+			list.erase(i);
+			break ;
+		}
+	}
+}
+
 
 void	loopHandler::send_response_client(int n_client, request *tmp_req)
 {
@@ -60,12 +80,11 @@ cgi	*loopHandler::get_cgi_from_client(int n_client)
 
 void loopHandler::new_server(int port)
 {
-	serverFd*	server_fd;
+	serverFd server_fd(port);
 
-	server_fd = new serverFd(port);
-	this->_fdsList.push_back(utils::pollfd_from_fd(server_fd->_fd, POLLIN));
-	this->_serverFD_port[server_fd->_fd] = port;
-	this->_serversFD.push_back(server_fd->_fd);
+	this->_fdsList.push_back(utils::pollfd_from_fd(server_fd._fd, POLLIN));
+	this->_serverFD_port[server_fd._fd] = port;
+	this->_serversFD.push_back(server_fd._fd);
 }
 
 void	loopHandler::do_poll()
@@ -138,7 +157,7 @@ void	loopHandler::new_client(int number)
 
 void	loopHandler::new_request(int number)
 {
-	this->_client_and_request[number] = new request(this->_fdsList[number].fd, *this->_webserver, number);
+	this->_client_and_request[number] = new request(this->_fdsList[number].fd, *this->_webserver, number, *this);
 }
 
 request	*loopHandler::get_request_from_client(int n_client)

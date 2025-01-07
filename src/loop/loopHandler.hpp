@@ -41,7 +41,8 @@ struct loopHandler{
 		// number of cgi (relative to the fds list), and the  request assosiated to that cgi;
 		std::map<int, int>			_cgi_request;
 		std::list<int>				_cgiFD;
-		void						delete_cgiFD_from_cgiFD_list(int fd);
+		void						delete_FD_from_FD_list(int fd, std::list<int> &list);
+		void						delete_FD_from_pollFD_list(int fd, std::vector<struct pollfd> &list);
 
 	private:
 		std::map<int, request*>		_client_and_request;
@@ -57,7 +58,6 @@ struct loopHandler{
 
 		webserver					*_webserver;
 
-		//Utils
 };
 
 

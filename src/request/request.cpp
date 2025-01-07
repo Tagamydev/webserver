@@ -2,29 +2,10 @@
 #include "utils.hpp"
 #include <string>
 
-/*
-@brief read_file version to test parser.
-*/
-// std::string	read_file(int fd)
-// {
-//     const std::size_t bufferSize = 1024;
-//     char buffer[bufferSize];
-//     std::string result;
-
-//     ssize_t bytesRead;
-//     while ((bytesRead = read(fd, buffer, bufferSize)) > 0) {
-//         result.append(buffer, bytesRead);
-//     }
-
-//     if (bytesRead == -1) {
-//         std::cerr << "Error reading file descriptor." << std::strerror(errno) << std::endl;
-//     }
-// 	return (result);
-// }
 
 /* while on reqFile to skip new lines at the begining of the request.
 */
-request::request(int fd, webserver &webservear, int client)
+request::request(int fd, webserver &webserver, int client, loopHandler &loop)
 {
 	std::string			file;
 	std::stringstream	reqFile;
@@ -33,6 +14,8 @@ request::request(int fd, webserver &webservear, int client)
 	this->_cgi = NULL;
 	this->clear();
 	this->_request_number = client;
+	this->_webserver = &webserver;
+
 	file = utils::read_file(fd);
 	std::cout << file << std::endl;
 	reqFile << file;
@@ -57,7 +40,7 @@ request::request(int fd, webserver &webservear, int client)
 
 	std::cout << "CGI" << std::endl;
 	if (this->check_if_cgi())
-		this->_cgi = new cgi(*this->_webserver);
+		this->_cgi = new cgi(*this->_webserver, loop, *this);
 }
 
 request::~request()

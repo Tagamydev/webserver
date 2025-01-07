@@ -10,13 +10,14 @@
 # define MAX_BUFFER_LENGTH 2048
 
 class webserver;
+class loopHandler;
 class cgi;
 
 class   request{
 	public:
 
 		// con/destructor
-		request(int fd, webserver &webserver, int client);
+		request(int fd, webserver &webserver, int client, loopHandler &loop);
 		~request(void);
 
 	// FIRST LINE

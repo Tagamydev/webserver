@@ -19,7 +19,7 @@ INC_DIR		=	-I ./src/ \
 				-I ./src/loop/ \
 				-I ./src/response/ 
 
-CXXFLAGS	=	#-Wall -Wextra -Werror -I ./
+CXXFLAGS	=	#-fsanitize=address -g3#-Wall -Wextra -Werror -I ./
 CXXFLAGS	+= $(INC_DIR)
 CXXFLAGS	+=	-std=c++98
 CXX		=	c++ $(CXXFLAGS)

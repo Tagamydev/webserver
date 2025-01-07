@@ -26,11 +26,10 @@ std::string	utils::read_file(int fd)
     ssize_t bytesRead;
 
 	bytesRead = recv(fd, buffer, bufferSize, 0);
-	result.append(buffer, bytesRead);
-
-	std::cout << "buffer" << std::endl;
+	std::cout << "[Log]: " << "fd value: " << fd << std::endl;
     if (bytesRead == -1)
 		throw std::runtime_error("Error reading file descriptor.");
+	result.append(buffer, bytesRead);
 	return (result);
 }
 

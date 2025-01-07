@@ -6,8 +6,6 @@
 
 class location;
 
-class location;
-
 class	server{
 	//this need a location class diferent from config to make a map with that!!
 	public:
@@ -16,26 +14,20 @@ class	server{
 		~server();
 
 		// mandatory
-		std::list<int>			_ports;
-		std::list<std::string>	_hosts;
+		std::vector<int>			_ports;
+		// std::vector<std::string>	_hosts; not used
+		std::vector<std::string>	_names;
 
-		std::string				_path;
+		int						_max_body_size;
 		bool					_is_relative;
-
-		std::list<std::string>	_names;
-
-		int			_max_body_size;
-
-		std::string	_default_file;
-		std::string	_cgi_extention;
 
 		// error pages example: error_page 500 502 503 504 /50x.html;
 		std::map<int, std::string>		_error_pages;
 
-		std::map<std::string, location>	locations;
+		std::map<std::string, location>	_locations;
 
 		// init vars
-/* init error page by default */
+		/* init error page by default */
 		void initErrorPages(void);
 
 
@@ -43,10 +35,18 @@ class	server{
 		void		check_save_parameters(std::stringstream &contentStream);
 		void		check_location(std::string line);
 		void		process_parameters(std::stringstream &contentStream, std::string line);
-		bool		is_valid_port(int port);
-		location	process_location(std::string line);
-		//Seters
-		void		set_error_pages(std::string value);
+		bool		is_valid_port(std::string port);
+		void		check_location_list();
+		void 		check_empty_set_default();
+		//utils
+		void	print_config_file();
+
+		//getter
+		const int &get_first_port() const;
+		const std::vector<int> &get_ports() const;
+		const std::string &get_first_name() const;
+		const std::vector<std::string> &get_names() const;
+
 };
 
 #endif

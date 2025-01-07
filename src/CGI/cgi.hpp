@@ -22,13 +22,14 @@ class	cgi
 		void		read_from_cgi(int fd);
 		bool		check_cgi_timeout();
 
+		request		*_request;
 	private:
 		webserver	*_webserver;
-		request		*_request;
 		char		**_env;
 
-		int			read_fd;
-		int			write_fd;
+		int			_read_fd;
+		int			_write_fd;
+		int			_id;
 };
 
 #endif

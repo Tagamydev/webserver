@@ -36,40 +36,74 @@ std::string get_actual_date()
 int main_loop(webserver &server)
 {
 	loopHandler		_loop(server);
+	bool			_cgi_hand;
 
+	std::cout << "------------- Starting loop -------------" << std::endl;
 	while (true)
 	{
 		_loop.do_poll();
 
 		for (int i = 0; i < _loop.total_fds() ; ++i)
 		{
+			_cgi_hand = false;
+			//std::cout << "[Log]: " << "---- making client number: " << i << " ----" << std::endl;
+			//std::cout << "[Log]: " << "---- client fd: " << _loop._fdsList[i].fd << " ----" << std::endl;
 			if (_loop.check_poll_in(i))
 			{
+				std::cout << "start...";
 				if (_loop.check_poll_in_server(i))
+				{
+					std::cout << "[Log]: " << "new client..." << std::endl;
 					_loop.new_client(i);
+				}
 				else if (_loop.check_poll_in_cgi(i))
 				{
-					// cgi needs an input
+					std::cout << "[Log]: before: "<<  _loop.total_fds() << std::endl;
+					std::cout << "[Log]: " << "reading from cgi output..." << std::endl;
 					cgi	*tmp;
+					request	*tmp_r;
 
 					tmp = _loop.get_cgi_from_client(i);
+					tmp_r = tmp->_request;
 					if (!tmp)
 						throw (std::runtime_error("get cgi fail. cgi is NULL"));
+
+					/*
 					tmp->read_from_cgi(_loop._fdsList[i].fd);
+					std::cout << "[Log]: " << "after read..." << std::endl;
+					delete tmp;
+					tmp_r->_cgi = NULL;
+					std::cout << "[Log]: after: "<<  _loop.total_fds() << std::endl;
+					_cgi_hand = true;
+					//exit(-1);
+					*/
 				}
 				else
-					_loop.new_request(i);
-
-				if (_loop.check_poll_out(i))
 				{
+					std::cout << "[Log]: " << "new request from client: "<< i << std::endl;
+					_loop.new_request(i);
+				}
+
+				if (_loop.check_poll_out(i) && !_cgi_hand)
+				{
+					std::cout << "[Log]: " << "---- poll out event in: " << _loop._fdsList[i].fd << " ----" << std::endl;
+
 					request	*tmp_req = _loop.get_request_from_client(i);
 
-					if (!tmp_req->_cgi)
+					if (!tmp_req)
+						std::cout << "error " << std::endl;
+					else if (!tmp_req->_cgi)
+					{
+						std::cout << "[Log]: " << "sending response..." << std::endl;
 						_loop.send_response_client(i, tmp_req);
+					}
 					else
 					{
 						if (tmp_req->_cgi->_is_ready)
+						{
+							std::cout << "[Log]: " << "sending response with client with cgi..." << std::endl;
 							_loop.send_response_client(i, tmp_req);
+						}
 						else
 						{
 							std::cout << "[Log]: " << "making cgi response..." << std::endl;
@@ -84,10 +118,13 @@ int main_loop(webserver &server)
 							}
 						}
 					}
+					std::cout << "[Log]: " << "---- end of poll out event in: " << i << " ----" << std::endl;
 				}
+				std::cout << "...end" << std::endl ;
 			}
 			else if (_loop.check_poll_in_cgi(i))
 			{
+				//std::cout << "[Log]: " << "sending request to cgi..." << std::endl;
 				cgi	*tmp;
 
 				tmp = _loop.get_cgi_from_client(i);

@@ -15,6 +15,7 @@ request::request(int fd, webserver &webserver, int client, loopHandler &loop)
 	this->clear();
 	this->_request_number = client;
 	this->_webserver = &webserver;
+	this->_has_cgi = false;
 
 	file = utils::read_file(fd);
 	std::cout << file << std::endl;
@@ -40,7 +41,10 @@ request::request(int fd, webserver &webserver, int client, loopHandler &loop)
 
 	std::cout << "CGI" << std::endl;
 	if (this->check_if_cgi())
+	{
+		this->_has_cgi = true;
 		this->_cgi = new cgi(*this->_webserver, loop, *this);
+	}
 }
 
 request::~request()

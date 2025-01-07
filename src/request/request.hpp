@@ -68,7 +68,9 @@ class   request{
 		void	print_body();
 		void	print_others();
 
-		cgi		*_cgi;
+		cgi			*_cgi;
+		bool		_has_cgi;
+		std::string	_cgi_response;
 	
 	private:
 		webserver	*_webserver;

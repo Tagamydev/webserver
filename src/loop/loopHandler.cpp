@@ -49,12 +49,13 @@ void	loopHandler::delete_FD_from_FD_list(int fd, std::list<int> &list)
 
 void	loopHandler::delete_FD_from_pollFD_list(int fd, std::vector<struct pollfd> &list)
 {
+	std::cout << "deleting fd number: "<< fd << std::endl;
 	std::vector<struct pollfd>::iterator	i = list.begin();
 	std::vector<struct pollfd>::iterator	ie = list.end();
 
 	for (; i != ie; i++)
 	{
-		if (i->fd == fd)
+		if ((*i).fd == fd)
 		{
 			list.erase(i);
 			break ;

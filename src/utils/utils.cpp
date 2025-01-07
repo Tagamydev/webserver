@@ -19,20 +19,20 @@ void utils::send_response(int socket_fd, const std::string &response_str)
 
 std::string	utils::read_file(int fd)
 {
+	std::cout << "[Log]: " << "reading from fd: " << fd << std::endl;
     const std::size_t bufferSize = MAX_BUFFER_LENGTH;
     char buffer[bufferSize];
     std::string result;
 
+	memset(buffer, 0, sizeof(char) * (bufferSize));
     ssize_t bytesRead;
-
-	bytesRead = recv(fd, buffer, bufferSize, 0);
-	std::cout << "[Log]: " << "fd value: " << fd << std::endl;
+	bytesRead = read(fd, buffer, (bufferSize - 1));//recv(fd, buffer, (bufferSize - 1), 0);
     if (bytesRead == -1)
 		throw std::runtime_error("Error reading file descriptor.");
+	buffer[bufferSize - 1] = '\0';
 	result.append(buffer, bytesRead);
 	return (result);
 }
-
 
 /// @brief Takes a vector and populate it with the keys of a map. Used for location duplicated check.
 /// @param inputMap map<string, string>

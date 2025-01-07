@@ -55,7 +55,7 @@ int main_loop(webserver &server)
 					tmp = _loop.get_cgi_from_client(i);
 					if (!tmp)
 						throw (std::runtime_error("get cgi fail. cgi is NULL"));
-					tmp->read_from_cgi();
+					tmp->read_from_cgi(_loop._fdsList[i].fd);
 				}
 				else
 					_loop.new_request(i);
@@ -72,6 +72,7 @@ int main_loop(webserver &server)
 							_loop.send_response_client(i, tmp_req);
 						else
 						{
+							std::cout << "[Log]: " << "making cgi response..." << std::endl;
 							if (tmp_req->_cgi->check_cgi_timeout())
 							{
 								delete tmp_req->_cgi;

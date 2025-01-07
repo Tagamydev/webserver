@@ -32,7 +32,9 @@ cgi::cgi(webserver &webserver, loopHandler &_loop, request &_request)
 			std::cerr << "[FATAL]: dup2 fail inside fork!." << std::endl;
 			exit(-1);
 		}
-		error = execle("/bin/python3 ./www/cgi/simple-cgi.py", "/bin/python3 ./www/cgi/simple-cgi.py", (char *)NULL, this->_env);
+	//	error = execle("/bin/python3 ./www/cgi/simple-cgi.py", "./www/cgi/simple-cgi.py", (char *)NULL, this->_env);
+		error = execle("/bin/python3", "/bin/python3", "./www/cgi/simple-cgi.py", (char *)NULL, this->_env);
+
 		std::cerr << "[FATAL]: execle fail inside fork, log[" << error << "]" << std::endl;
 		exit(-1);
 	}
@@ -50,12 +52,14 @@ cgi::cgi(webserver &webserver, loopHandler &_loop, request &_request)
 	this->pos_pollIN = _loop.total_fds();
 	_loop._fdsList.push_back(utils::pollfd_from_fd(pipeIN[0], POLLIN));
 	_loop._cgi_request[this->fd_pollIN] = this->_request->_request_number;
+	std::cout << "[Log]: " << "fd IN: "<< this->fd_pollIN << std::endl;
 
 	this->fd_pollOUT = pipeOUT[1];
 	_loop._cgiFD.push_back(fd_pollOUT);
 	this->pos_pollOUT = _loop.total_fds();
 	_loop._fdsList.push_back(utils::pollfd_from_fd(pipeOUT[1], POLLOUT));
 	_loop._cgi_request[this->fd_pollOUT] = this->_request->_request_number;
+	std::cout << "[Log]: " << "fd OUT: "<< this->fd_pollOUT << std::endl;
 
 }
 
@@ -83,7 +87,7 @@ cgi::~cgi()
 
 void cgi::read_from_cgi()
 {
-	this->_cgi_response = utils::read_file(this->fd_pollOUT);
+	this->_cgi_response = utils::read_file(this->fd_pollIN);
 	this->_is_ready = true;
 }
 
@@ -95,5 +99,5 @@ void cgi::send_request_to_cgi()
 
 bool cgi::check_cgi_timeout()
 {
-	return (true);
+	return (false);
 }

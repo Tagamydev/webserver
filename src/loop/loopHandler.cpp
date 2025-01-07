@@ -22,7 +22,14 @@ loopHandler::loopHandler(webserver &server)
 loopHandler::~loopHandler()
 {
 	// close all fds from fdList
+	std::map<int, request*>::iterator	i = this->_client_and_request.begin();
+	std::map<int, request*>::iterator	ie = this->_client_and_request.end();
 
+	for (; i != ie; i++)
+	{
+		delete i->second;
+	}
+	this->_client_and_request.clear();
 }
 
 void	loopHandler::delete_FD_from_FD_list(int fd, std::list<int> &list)
@@ -65,8 +72,10 @@ void	loopHandler::send_response_client(int n_client, request *tmp_req)
 	utils::send_response(this->_fdsList[n_client].fd, _response.str());
 	delete tmp_req;
 	if (!_keep_alive)
+	{
 		close(this->_fdsList[n_client].fd);
 		this->_fdsList.erase(this->_fdsList.begin() + n_client);
+	}
 }
 
 cgi	*loopHandler::get_cgi_from_client(int n_client)

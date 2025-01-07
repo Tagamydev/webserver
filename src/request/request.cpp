@@ -53,7 +53,7 @@ bool	request::check_if_cgi()
 {
 	// tmp we assume all is a cgi!
 
-	return (false);
+	return (true);
 }
 
 void	request::clear()
@@ -166,6 +166,8 @@ void request::save_headers(std::string &line)
 		line.erase(0, line.find('\n') + 1);
 		i = 0;
 	}
+	/*
+	*/
 }
 
 

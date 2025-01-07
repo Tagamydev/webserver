@@ -154,6 +154,11 @@ void utils::trim_space_newline(std::string &line)
 
 	while (line[i] != '\0' && line[i] == ' ' || line[i] == '\t' || line[i] == '\r' || line[i] == '\f' || line[i] == '\n')
 		i++;
+	
+	// in some cases j gives -1 idkw
+	if (j < 0)
+		j = 0;
+
 	while (line[j] != '\0' && line[j] == ' ' || line[j] == '\t' || line[j] == '\r' || line[j] == '\f' || line[j] == '\n')
 		j--;
 	line = line.substr(i,j - i +1);

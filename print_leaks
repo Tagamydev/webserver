@@ -1,0 +1,1 @@
+./valgrind/utils/linecutt ./valgrind/valgrind-out.txt 100 | grep '^=' | cat

@@ -19,7 +19,7 @@ INC_DIR		=	-I ./src/ \
 				-I ./src/loop/ \
 				-I ./src/response/ 
 
-CXXFLAGS	=	-fsanitize=address -g3#-Wall -Wextra -Werror -I ./
+CXXFLAGS	=	#-fsanitize=address -g3#-Wall -Wextra -Werror -I ./
 CXXFLAGS	+= $(INC_DIR)
 CXXFLAGS	+=	-std=c++98
 CXX		=	c++ $(CXXFLAGS)
@@ -44,7 +44,7 @@ SRCS		= ./src/response/response.cpp \
 		./src/server/webserver.cpp \
 		./src/server/serverFd.cpp \
 		./src/server/location.cpp \
-		./src/main.cpp ./src/assets.cpp 
+		./src/main.cpp 
 
 O_DIR		=	./objects/
 OBJS		=	$(addprefix $(O_DIR)/, $(SRCS:.cpp=.o))

@@ -10,6 +10,38 @@ void	print_config_info(std::string configFile)
 
 /// Parsing 
 
+/// @brief checking if at least one of the three mandatory parameters of servers is different.
+void webserver::check_servers()
+{
+    if (_servers.size() <= 1)
+        return;
+
+    std::set<std::pair<int, std::string> > seenConfigurations;
+
+    for (std::vector<server>::iterator itServer = _servers.begin(); itServer != _servers.end(); ++itServer)
+    {
+        const std::vector<int>& ports = itServer->get_ports();
+        const std::vector<std::string>& names = itServer->get_names();
+
+        for (std::vector<int>::const_iterator itPort = ports.begin(); itPort != ports.end(); ++itPort)
+        {
+            for (std::vector<std::string>::const_iterator itName = names.begin(); itName != names.end(); ++itName)
+            {
+                std::pair<int, std::string> config = std::make_pair(*itPort, *itName);
+
+                if (seenConfigurations.find(config) != seenConfigurations.end())
+                {
+                    std::ostringstream errorMessage;
+                    errorMessage << "Error in config file: Duplicate port and server name combination ("
+                                 << *itPort << ", " << *itName << ").";
+                    throw std::runtime_error(errorMessage.str());
+                }
+                seenConfigurations.insert(config);
+            }
+        }
+    }
+}
+
 size_t	webserver::find_end_server(size_t start, std::string configFile)
 {
 	size_t brackets = 0;
@@ -161,19 +193,21 @@ webserver::webserver(std::string &path)
 	this->get_file_info(path);
 	this->_config_file = save_config_file(path);
 	remove_comments(_config_file);
-	fix_spaces_in_line(_config_file);
+	utils::fix_spaces_in_line(_config_file);
 	check_brackets(_config_file);
 	// print_config_info (_config_file);
 	check_save_server_vector(_config_file);
 	// print_list_content(_server_block_list, title));
+
 	//bucle creando servers
 	for (std::list<std::string>::iterator it = _server_block_list.begin(); it != _server_block_list.end(); it++)
 	{
-		// std::cout << "Create Server" << std::endl;
+		server newServer(*it);
 		//add to list of servers
+		_servers.push_back(newServer);
+		// std::cout << "Create Server "  << newServer.get_first_name() << std::endl;
 	}
-	server newServer(*_server_block_list.begin());
-
+	check_servers();
 }
 
 void	webserver::set_mime_types()

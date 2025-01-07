@@ -2,25 +2,6 @@
 #include "utils.hpp"
 #include <string>
 
-/*
-@brief read_file version to test parser.
-*/
-// std::string	read_file(int fd)
-// {
-//     const std::size_t bufferSize = 1024;
-//     char buffer[bufferSize];
-//     std::string result;
-
-//     ssize_t bytesRead;
-//     while ((bytesRead = read(fd, buffer, bufferSize)) > 0) {
-//         result.append(buffer, bytesRead);
-//     }
-
-//     if (bytesRead == -1) {
-//         std::cerr << "Error reading file descriptor." << std::strerror(errno) << std::endl;
-//     }
-// 	return (result);
-// }
 
 /* while on reqFile to skip new lines at the begining of the request.
 */
@@ -72,7 +53,7 @@ bool	request::check_if_cgi()
 {
 	// tmp we assume all is a cgi!
 
-	return (true);
+	return (false);
 }
 
 void	request::clear()
@@ -104,8 +85,8 @@ void request::process_body(std::stringstream &reqFile, std::string line)
 		getline(reqFile, tmp);
 	}
 	line += tmp;
-	trim_space_newline(line);
-	if (is_empty(line))
+	utils::trim_space_newline(line);
+	if (utils::is_empty(line))
 	{
 		this->_has_body = 0;
 		return ;
@@ -168,7 +149,7 @@ void request::save_headers(std::string &line)
 			tmp = line.substr(i, (line.find(':') - i));
 			if(space_in_header_name(tmp))
 				return (set_error_code(400, "Found space on header name."));
-			ft_toLower(tmp);
+			utils::ft_toLower(tmp);
 			i = line.find(':');
 			while (line[i] == ' ' || line[i] == ':')
 				i++;
@@ -179,7 +160,7 @@ void request::save_headers(std::string &line)
 			tmp = line.substr(i, (line.find('\n') - i));
 			if(space_in_header_name(tmp))
 				return (set_error_code(400, "Found space on header name."));
-			ft_toLower(tmp);
+			utils::ft_toLower(tmp);
 			this->_headers[tmp] = "";
 		}
 		line.erase(0, line.find('\n') + 1);
@@ -205,7 +186,7 @@ void    request::process_headers(std::stringstream &reqFile, std::string line)
 			break;
 		}
 	}
-	fix_spaces_in_line(line);
+	utils::fix_spaces_in_line(line);
 	// check if line is empty?
 	save_headers(line);
 }
@@ -294,7 +275,7 @@ void request::check_save_request_line(std::string line)
 	
 	if (line[0] == ' ')
 		return (set_error_code(400, "Found spaces before method."));
-	fix_spaces_in_line(line);
+	utils::fix_spaces_in_line(line);
 	//check method
 	if (line.find(" ") != std::string::npos)
 		key = line.substr(0, line.find(" "));

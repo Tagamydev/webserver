@@ -10,6 +10,13 @@ class webserver;
 class loopHandler;
 class request;
 
+enum	cgi_status
+{
+	NONE,
+	WAITING,
+	DONE
+};
+
 class	cgi
 {
 	public:

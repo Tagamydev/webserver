@@ -15,7 +15,7 @@ request::request(int fd, webserver &webserver, int client, loopHandler &loop)
 	this->clear();
 	this->_request_number = client;
 	this->_webserver = &webserver;
-	this->_has_cgi = false;
+	this->_cgi_status = NONE;
 
 	file = utils::read_file(fd);
 	std::cout << file << std::endl;

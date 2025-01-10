@@ -4,21 +4,25 @@
 # include "main.hpp"
 # include "webserver.hpp"
 # include "request.hpp"
+# include "client.hpp"
 
 class webserver;
 class request;
+class client;
 
 struct loopHandler{
 	public:
 
-		std::map<int, struct pollfd>		_port_serverFd;
-		std::map<request *, struct pollfd>	_request_clientFd;
-		std::map<int, struct pollfd>		_clientFd_cgiFd;
-
-		// OLD
 		loopHandler(webserver &server);
 		~loopHandler();
 
+	private:
+
+		std::map<int, struct pollfd>		_port_serverFd;
+		std::map<client *, struct pollfd>	_client_clientFd;
+		std::map<int, struct pollfd>		_clientFd_cgiFd;
+
+		/*
 		std::vector<struct pollfd>	_fdsList;
 
 		void			do_poll();
@@ -63,6 +67,7 @@ struct loopHandler{
 		std::list<int>				_serversFD;
 
 		webserver					*_webserver;
+		*/
 
 };
 

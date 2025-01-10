@@ -1,6 +1,7 @@
 #include "loopHandler.hpp"
 #include "utils.hpp"
 
+/*
 bool	check_if_fd_match(std::list<int> &_serversFD, int value)
 {
 	std::list<int>::iterator i = std::find(_serversFD.begin(), _serversFD.end(), value);
@@ -8,6 +9,7 @@ bool	check_if_fd_match(std::list<int> &_serversFD, int value)
 		return (false);
 	return (true);
 }
+
 
 loopHandler::loopHandler(webserver &server)
 {
@@ -175,3 +177,4 @@ request	*loopHandler::get_request_from_client(int n_client)
 	return (this->_client_and_request[n_client]);
 }
 
+*/

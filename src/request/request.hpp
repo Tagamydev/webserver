@@ -20,6 +20,9 @@ class   request{
 		request(int fd, webserver &webserver, int client, loopHandler &loop);
 		~request(void);
 
+		cgi_status	_cgi_status;
+		void		close_cgi();
+
 	// FIRST LINE
 
 		// QUERY
@@ -69,7 +72,6 @@ class   request{
 		void	print_others();
 
 		cgi			*_cgi;
-		bool		_has_cgi;
 		std::string	_cgi_response;
 	
 	private:

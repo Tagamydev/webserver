@@ -33,6 +33,7 @@
 # include "webserver.hpp"
 # include "utils.hpp"
 # include "defaults.hpp"
+# include "client.hpp"
 # include "loopHandler.hpp"
 # include <algorithm>    // std::count
 # include <set>

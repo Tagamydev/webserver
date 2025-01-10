@@ -31,7 +31,148 @@ std::string get_actual_date()
 	return (result);
 }
 
+void	make_poll()
+{
 
+}
+
+void	add_server_fds_to_list(std::vector<struct pollfd> &result, 
+std::map<int, struct pollfd> &_list)
+{
+	std::map<int, struct pollfd>::iterator	i;
+	std::map<int, struct pollfd>::iterator	ie;
+
+	i = _list.begin();
+	ie = _list.end();
+	for (; i != ie ; i++)
+	{
+		result.push_back(i->second);
+	}
+}
+
+void	add_client_fds_to_list(std::vector<struct pollfd> &result, 
+std::map<request *, struct pollfd> &_list)
+{
+	std::map<request *, struct pollfd>::iterator	i;
+	std::map<request *, struct pollfd>::iterator	ie;
+
+	i = _list.begin();
+	ie = _list.end();
+	for (; i != ie ; i++)
+	{
+		result.push_back(i->second);
+	}
+}
+
+void	add_cgi_fds_to_list(std::vector<struct pollfd> &result, 
+std::map<int, struct pollfd> &_list)
+{
+	std::map<int, struct pollfd>::iterator	i;
+	std::map<int, struct pollfd>::iterator	ie;
+
+	i = _list.begin();
+	ie = _list.end();
+	for (; i != ie ; i++)
+	{
+		result.push_back(i->second);
+	}
+}
+
+std::vector<int>	make_fd_list()
+{
+	std::vector<struct pollfd>	result;
+
+	add_server_fds_to_list(result, _loop._port_serverFd);
+	add_client_fds_to_list(result, _loop._request_clientFd);
+	add_cgi_fds_to_list(result, _loop._clientFd_cgiFd);
+	return (result);
+}
+
+unsigned int length_list(std::vector<int> &list)
+{
+	return (static_cast<unsigned int>(list.size()));
+}
+
+void	make_poll(std::vector<int> &list)
+{
+	int	result;
+
+	result = poll(list.data(), length_list(list), 0);
+	if (result < 0)
+		throw (std::runtime_error("Poll fail."));
+}
+
+int	server_loop()
+{
+	std::vector<int>	list = make_fd_list();
+	int	i = 0;
+
+	make_poll(list);
+	for (; i < length_list(list); i++)
+	{
+		if (check poll IN)
+		{
+			if (check server)
+			{
+
+			}
+			else if (check cgi)
+			{
+
+			}
+			else
+			{
+
+			}
+
+			if (check poll OUT)
+			{
+				if (response && !cgi)
+				{
+
+					send response
+					close client
+					--i;
+					list = make_fd_list();
+				}
+				else if (response && cgi)
+				{
+					if (cgi is ready)
+					{
+
+						close cgi
+						send response
+						close client
+						--i;
+						list = make_fd_list();
+					}
+					else
+					{
+						if (check timeout)
+						{
+
+							close cgi
+							send response
+							close client
+							--i;
+							list = make_fd_list();
+						}
+					}
+
+				}
+				else
+					throw (std::runtime_error("idk what is this"));
+			}
+		}
+		else if (check poll OUT)
+		{
+
+		}
+		else
+			throw (std::runtime_error("idk what is this"));
+
+	}
+}
 
 int main_loop(webserver &server)
 {

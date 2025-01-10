@@ -10,6 +10,12 @@ class request;
 
 struct loopHandler{
 	public:
+
+		std::map<int, struct pollfd>		_port_serverFd;
+		std::map<request *, struct pollfd>	_request_clientFd;
+		std::map<int, struct pollfd>		_clientFd_cgiFd;
+
+		// OLD
 		loopHandler(webserver &server);
 		~loopHandler();
 

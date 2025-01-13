@@ -34,8 +34,8 @@ class	cgi
 		webserver	*_webserver;
 		char		**_env;
 
-		int			_read_fd;
-		int			_write_fd;
+		struct pollfd	_read_fd;
+		struct pollfd	_write_fd;
 		int			_id;
 };
 

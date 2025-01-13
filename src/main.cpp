@@ -194,13 +194,23 @@ bool	loophandler::is_cgi(int fd)
 	return (false);
 }
 
-void	delete_cgi_from_list()
-{
-	/*
-	find_both_cgi_pollfd_structs
-	blast!!!;
-	*/
 
+void loophandler::delete_fd_from_cgi_list(int fd)
+{
+	std::<int, struct pollfd>::iterator	i;
+	std::<int, struct pollfd>::iterator	ie;
+
+	for (; i != ie ; i++)
+	{
+		if (i->second.fd == fd)
+			this->_client_Fd_cgiFd.erase(i);
+	}
+}
+
+void	loophandler::delete_cgi_from_list(cgi *_cgi)
+{
+	this->delete_fd_from_cgi_list(_cgi->read_fd.fd);
+	this->delete_fd_from_cgi_list(_cgi->write_fd.fd);
 }
 
 void	loophandler::read_from_cgi(int &i, std::vector<struct pollfd> &list)
@@ -234,10 +244,9 @@ void	loophandler::new_request(int fd)
 
 	_client = this->find_client_from_clientFd(fd);
 	_client->_request = new request(_client);
-
 }
 
-void	check_additions(int &i, std::vector<struct pollfd> &list)
+void	loophandler::check_additions(int &i, std::vector<struct pollfd> &list)
 {
 	struct pollfd socket = list[i];
 
@@ -249,12 +258,12 @@ void	check_additions(int &i, std::vector<struct pollfd> &list)
 		this->new_request(socket.fd);
 }
 
-
-bool	check_poll_in()
+void	loophandler::send_to_cgi(int &i, std::vector<struct pollfd> &list)
 {
-	if (_fdsList[number].revents & POLLIN)
-		return (true);
-	return (false);
+	std::cout << "this is a message for the cgi" << std::endl;
+	this->delete_fd_from_cgi_list(_cgi->write_fd.fd);
+	list = make_fd_list(list);
+	--i;
 }
 
 void	server_loop(webserver &server)
@@ -272,9 +281,7 @@ void	server_loop(webserver &server)
 				server._loop->handle_client(i, list);
 		}
 		if (list[i].revents & POLLOUT)
-		{
-
-		}
+			server.loop->send_to_cgi(i, list);
 		else
 			throw (std::runtime_error("idk what is this"));
 
@@ -286,104 +293,6 @@ int main_loop(webserver &server)
 	while (true)
 		server_loop(server);
 }
-/*
-int main_loop(webserver &server)
-{
-	loopHandler		_loop(server);
-	bool			_cgi_hand;
-
-	std::cout << "------------- Starting loop -------------" << std::endl;
-	while (true)
-	{
-
-		_loop.do_poll();
-
-		for (int i = 0; i < _loop.total_fds() ; ++i)
-		{
-			_cgi_hand = false;
-			//std::cout << "[Log]: " << "---- making client number: " << i << " ----" << std::endl;
-			//std::cout << "[Log]: " << "---- client fd: " << _loop._fdsList[i].fd << " ----" << std::endl;
-			if (_loop.check_poll_in(i))
-			{
-				std::cout << "start...";
-				if (_loop.check_poll_in_server(i))
-				{
-					std::cout << "[Log]: " << "new client..." << std::endl;
-					_loop.new_client(i);
-				}
-				else if (_loop.check_poll_in_cgi(i))
-				{
-					std::cout << "[Log]: before: "<<  _loop.total_fds() << std::endl;
-					std::cout << "[Log]: " << "reading from cgi output..." << std::endl;
-					cgi	*tmp;
-					request	*tmp_r;
-
-					tmp = _loop.get_cgi_from_client(i);
-					tmp_r = tmp->_request;
-					if (!tmp)
-						throw (std::runtime_error("get cgi fail. cgi is NULL"));
-
-				}
-				else
-				{
-					std::cout << "[Log]: " << "new request from client: "<< i << std::endl;
-					_loop.new_request(i);
-				}
-
-				if (_loop.check_poll_out(i) && !_cgi_hand)
-				{
-					std::cout << "[Log]: " << "---- poll out event in: " << _loop._fdsList[i].fd << " ----" << std::endl;
-
-					request	*tmp_req = _loop.get_request_from_client(i);
-
-					if (!tmp_req)
-						std::cout << "error " << std::endl;
-					else if (!tmp_req->_cgi)
-					{
-						std::cout << "[Log]: " << "sending response..." << std::endl;
-						_loop.send_response_client(i, tmp_req);
-					}
-					else
-					{
-						if (tmp_req->_cgi->_is_ready)
-						{
-							std::cout << "[Log]: " << "sending response with client with cgi..." << std::endl;
-							_loop.send_response_client(i, tmp_req);
-						}
-						else
-						{
-							std::cout << "[Log]: " << "making cgi response..." << std::endl;
-							if (tmp_req->_cgi->check_cgi_timeout())
-							{
-								delete tmp_req->_cgi;
-								tmp_req->_cgi = NULL;
-								tmp_req->_error_code = 408;
-
-								_loop.send_response_client(i, tmp_req);
-								tmp_req = NULL;
-							}
-						}
-					}
-					std::cout << "[Log]: " << "---- end of poll out event in: " << i << " ----" << std::endl;
-				}
-				std::cout << "...end" << std::endl ;
-			}
-			else if (_loop.check_poll_in_cgi(i))
-			{
-				//std::cout << "[Log]: " << "sending request to cgi..." << std::endl;
-				cgi	*tmp;
-
-				tmp = _loop.get_cgi_from_client(i);
-				if (!tmp)
-					throw (std::runtime_error("get cgi fail. cgi is NULL"));
-				tmp->send_request_to_cgi();
-			}
-		}
-	}
-
-	return 0;
-}
-*/
 
 std::string	path_config_file(int argc, char **argv)
 {

@@ -48,6 +48,13 @@ cgi::cgi(webserver &webserver, loopHandler &_loop, request &_request)
 	fcntl(pipeOUT[1], F_SETFL, O_NONBLOCK);
 
 	std::cout << "[Log]: " << "starting fds addition to vector list..." << std::endl;
+	// the write fd go first, because this way you
+	// can send first the info to the cgi and then read the cgi response
+	this->_write_fd = pipeOUT[1];
+	_loop._cgiFD.push_back(_write_fd);
+	_loop._fdsList.push_back(utils::pollfd_from_fd(pipeOUT[1], POLLOUT));
+	_loop._cgi_request[this->_write_fd] = this->_request->_request_number;
+	std::cout << "[Log]: " << "fd OUT: "<< this->_write_fd << std::endl;
 
 	this->_read_fd = pipeIN[0];
 	_loop._cgiFD.push_back(_read_fd);
@@ -55,11 +62,6 @@ cgi::cgi(webserver &webserver, loopHandler &_loop, request &_request)
 	_loop._cgi_request[this->_read_fd] = this->_request->_request_number;
 	std::cout << "[Log]: " << "fd IN: "<< this->_read_fd << std::endl;
 
-	this->_write_fd = pipeOUT[1];
-	_loop._cgiFD.push_back(_write_fd);
-	_loop._fdsList.push_back(utils::pollfd_from_fd(pipeOUT[1], POLLOUT));
-	_loop._cgi_request[this->_write_fd] = this->_request->_request_number;
-	std::cout << "[Log]: " << "fd OUT: "<< this->_write_fd << std::endl;
 
 }
 

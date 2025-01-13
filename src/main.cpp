@@ -139,11 +139,20 @@ void	cgi_timeout(client *_client)
 	(_client->get_request())->_cgi_status = DONE;
 }
 
-void	loophandler::handle_client(int &i, client *_client, 
-std::vector<struct pollfd> &list)
+client	*get_client_from_clientFd(int fd)
 {
-	if (!_client)
-		throw (std::runtime_error("this client is not a client?"));
+
+	if (!result)
+		throw (std::runtime_error("client not found from fd"));
+}
+
+void	loophandler::handle_client(int &i, std::vector<struct pollfd> &list)
+{
+	client			*_client;
+	struct pollfd	socket;
+
+	socket = list[i];
+	client = this->get_client_from_clientFd(socket.fd);
 
 	if (_client->cgi_status() == WAITING)
 	{
@@ -185,23 +194,67 @@ bool	loophandler::is_cgi(int fd)
 	return (false);
 }
 
-void	read_from_cgi()
+void	delete_cgi_from_list()
 {
-	cgi = find cgi;
+	/*
+	find_both_cgi_pollfd_structs
+	blast!!!;
+	*/
 
-	cgi.read();
-	delete cgi from cgi list();
-	cgi.close();
 }
 
-void	check_additions(int fd)
+void	loophandler::read_from_cgi(int &i, std::vector<struct pollfd> &list)
 {
-	if (is_server(fd))
-		add client to list = new client(port from fd);
-	else if (is_cgi(fd))
-		read_from_cgi();
+	struct pollfd socket = list[i];
+	client	*_client;
+	cgi		*_cgi;
+
+	_client = this->get_client_from_clientFd(this->find_clientFd_from_cgiFd(fd));
+	_cgi = _client->get_cgi();
+	_cgi.read();
+	this->delete_cgi_from_list(_cgi);
+	_client->close_cgi();
+	list = make_fd_list(list);
+	--i;
+}
+
+void	loophandler::new_client(struct pollfd socket)
+{
+	client	*_client;
+
+	_client = new client(socket);
+	if (!_client)
+		throw (std::runtime_error("error making client"));
+	this->_client_clientFd[_client] = socket;
+}
+
+void	loophandler::new_request(int fd)
+{
+	client	*_client;
+
+	_client = this->find_client_from_clientFd(fd);
+	_client->_request = new request(_client);
+
+}
+
+void	check_additions(int &i, std::vector<struct pollfd> &list)
+{
+	struct pollfd socket = list[i];
+
+	if (is_server(socket.fd))
+		this->new_client(socket);
+	else if (is_cgi(socket.fd))
+		this->read_from_cgi(i, list);
 	else
-		client = new request(client)
+		this->new_request(socket.fd);
+}
+
+
+bool	check_poll_in()
+{
+	if (_fdsList[number].revents & POLLIN)
+		return (true);
+	return (false);
 }
 
 void	server_loop(webserver &server)
@@ -212,13 +265,13 @@ void	server_loop(webserver &server)
 	make_poll(list);
 	for (; i < length_list(list); i++)
 	{
-		if (check poll IN)
+		if (list[i].revents & POLLIN)
 		{
-			server._loop->check_additions(list[i].fd);
-			if (check poll OUT)
-				server._loop->handle_client();
+			server._loop->check_additions(i, list);
+			if (list[i].revents & POLLOUT)
+				server._loop->handle_client(i, list);
 		}
-		else if (check poll OUT)
+		if (list[i].revents & POLLOUT)
 		{
 
 		}

@@ -2,20 +2,16 @@
 #include "utils.hpp"
 #include <signal.h>
 
-cgi::cgi(webserver &webserver, loopHandler &_loop, request &_request)
+cgi::cgi(request &_request, client *_client)
 {
-	this->_webserver = &webserver;
-	this->_is_ready = false;
 	this->_env = NULL;
 	this->_request = &_request;
+	this->_request->cgi_status = WAITING;
 
 	int pid;
 	int	pipeIN[2];
 	int	pipeOUT[2];
 	
-	this->_read_fd = -1;
-	this->_write_fd = -1;
-
 	if (pipe(pipeIN) == -1 || pipe(pipeOUT) == -1)
 		throw std::runtime_error("Pipe fail!.");
 
@@ -48,57 +44,37 @@ cgi::cgi(webserver &webserver, loopHandler &_loop, request &_request)
 	fcntl(pipeOUT[1], F_SETFL, O_NONBLOCK);
 
 	std::cout << "[Log]: " << "starting fds addition to vector list..." << std::endl;
+
 	// the write fd go first, because this way you
 	// can send first the info to the cgi and then read the cgi response
 	this->_write_fd = pipeOUT[1];
-	_loop._cgiFD.push_back(_write_fd);
-	_loop._fdsList.push_back(utils::pollfd_from_fd(pipeOUT[1], POLLOUT));
-	_loop._cgi_request[this->_write_fd] = this->_request->_request_number;
-	std::cout << "[Log]: " << "fd OUT: "<< this->_write_fd << std::endl;
+	this->_write_fd = utils::pollfd_from_fd(pipeOUT[1], POLLOUT);
+	std::cout << "[Log]: " << "fd to write to cgi: "<< this->_write_fd << std::endl;
 
 	this->_read_fd = pipeIN[0];
-	_loop._cgiFD.push_back(_read_fd);
-	_loop._fdsList.push_back(utils::pollfd_from_fd(pipeIN[0], POLLIN));
-	_loop._cgi_request[this->_read_fd] = this->_request->_request_number;
-	std::cout << "[Log]: " << "fd IN: "<< this->_read_fd << std::endl;
-
-
+	this->_read_fd = utils::pollfd_from_fd(pipeIN[0], POLLIN);
+	std::cout << "[Log]: " << "fd to read from cgi: "<< this->_write_fd << std::endl;
 }
 
 cgi::~cgi()
 {
-
-	loopHandler	*_loop;
-
-	_loop = this->_webserver->_loop;
-
-	if (this->_read_fd != -1)
-	{
-		_loop->delete_FD_from_FD_list(this->_read_fd, _loop->_cgiFD);
-		_loop->delete_FD_from_pollFD_list(this->_read_fd, _loop->_fdsList);
-		close(this->_read_fd);
-	}
-	if (this->_write_fd != -1)
-	{
-		_loop->delete_FD_from_FD_list(this->_write_fd, _loop->_cgiFD);
-		_loop->delete_FD_from_pollFD_list(this->_write_fd, _loop->_fdsList);
-		close(this->_write_fd);
-	}
+	// i need to close the cgi???
 	kill(this->_id, SIGKILL);
 }
 
-void cgi::read_from_cgi(int fd)
+void cgi::read()
 {
-	this->_cgi_response = utils::read_file(this->_read_fd);
-	this->_is_ready = true;
-	this->_request->_has_cgi = true;
-	this->_request->_cgi_response = this->_cgi_response;
+	std::string	result;
+
+	result = utils::read_file(this->_read_fd.fd);
+	this->_request->cgi_status = DONE;
+	this->_request->_cgi_response = result;
 }
 
-void cgi::send_request_to_cgi()
+void cgi::wirte(std::string content)
 {
 	// this need to be changed to the real body
-	utils::send_response(this->_write_fd, this->_request->_body);
+	utils::send_response(this->_write_fd.fd, this->_request->_body);
 }
 
 bool cgi::check_cgi_timeout()

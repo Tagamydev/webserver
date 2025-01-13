@@ -25,6 +25,7 @@
 # include <sys/stat.h>
 # include <signal.h>
 # include "cgi.hpp"
+# include "client.hpp"
 # include "location.hpp"
 # include "server.hpp"
 # include "request.hpp"

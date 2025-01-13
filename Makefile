@@ -13,11 +13,11 @@
 NAME		=	result
 INC_DIR		=	-I ./src/ \
 				-I ./src/server/ \
+				-I ./src/client/ \
+				-I ./src/cgi/ \
 				-I ./src/request/ \
-				-I ./src/CGI/ \
 				-I ./src/utils/ \
 				-I ./src/loop/ \
-				-I ./src/client/ \
 				-I ./src/response/ 
 
 CXXFLAGS	=	-fsanitize=address -g3#-Wall -Wextra -Werror -I ./
@@ -26,9 +26,9 @@ CXXFLAGS	+=	-std=c++98
 CXX		=	c++ $(CXXFLAGS)
 MAIN		=	./main.cpp
 INC		= ./src/main.hpp \
-		./src/CGI/cgi.hpp \
-		./src/utils/utils.hpp \
+		./src/cgi/cgi.hpp \
 		./src/client/client.hpp \
+		./src/utils/utils.hpp \
 		./src/loop/loopHandler.hpp \
 		./src/response/response.hpp \
 		./src/request/request.hpp \
@@ -39,9 +39,9 @@ INC		= ./src/main.hpp \
 
 SRCS		= ./src/response/response.cpp \
 		./src/request/request.cpp \
-		./src/loop/loopHandler.cpp \
 		./src/client/client.cpp \
-		./src/CGI/cgi.cpp \
+		./src/loop/loopHandler.cpp \
+		./src/cgi/cgi.cpp \
 		./src/utils/utils.cpp \
 		./src/server/server.cpp \
 		./src/server/webserver.cpp \

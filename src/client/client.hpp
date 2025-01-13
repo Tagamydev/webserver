@@ -15,7 +15,7 @@ class	client
 
 		bool		compare_fd();
 		request		*get_request();
-		cgi_status	cgi_status();
+		cgi_status	_cgi_status();
 		int			get_fd();
 		void		free_request();
 

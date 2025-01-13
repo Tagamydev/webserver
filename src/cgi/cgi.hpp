@@ -3,12 +3,11 @@
 # define CGI_HPP
 # include "main.hpp"
 # include "webserver.hpp"
-# include "request.hpp"
 # define CGI_TIMEOUT 7
 
 class webserver;
 class loopHandler;
-class request;
+class client;
 
 enum	cgi_status
 {
@@ -17,26 +16,26 @@ enum	cgi_status
 	DONE
 };
 
+// this is included here because the enum of cgi_status has Circular Dependencies conflicts
+# include "request.hpp"
+class request;
+
 class	cgi
 {
 	public:
-		cgi(webserver &webserver, loopHandler &_loop, request &_request);
+
+		cgi(request &_request, client *_client);
 		~cgi();
 
-		bool		_is_ready;
-		std::string	_cgi_response;
-		void		send_request_to_cgi();
-		void		read_from_cgi(int fd);
+		void		write(std::string &content);
+		void		read();
 		bool		check_cgi_timeout();
-
-		request		*_request;
 	private:
-		webserver	*_webserver;
-		char		**_env;
-
+		request			*_request;
+		char			**_env;
 		struct pollfd	_read_fd;
 		struct pollfd	_write_fd;
-		int			_id;
+		int				_id;
 };
 
 #endif

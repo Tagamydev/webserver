@@ -5,16 +5,17 @@
 
 /* while on reqFile to skip new lines at the begining of the request.
 */
-request::request(int fd, webserver &webserver, int client, loopHandler &loop)
+request::request(client *_client, webserver &webserver)
 {
 	std::string			file;
 	std::stringstream	reqFile;
 	std::string			line;
+	int					fd;
+
+	fd = _client->get_fd();
 
 	this->_cgi = NULL;
 	this->clear();
-	this->_request_number = client;
-	this->_webserver = &webserver;
 	this->_cgi_status = NONE;
 
 	file = utils::read_file(fd);
@@ -37,13 +38,10 @@ request::request(int fd, webserver &webserver, int client, loopHandler &loop)
 	print_body();
 	print_others();
 
-	// cgi
-
-	std::cout << "CGI" << std::endl;
 	if (this->check_if_cgi())
 	{
-		this->_has_cgi = true;
-		this->_cgi = new cgi(*this->_webserver, loop, *this);
+		// add a new cgi class
+	//	this->_cgi = new cgi(*this->_webserver, loop, *this);
 	}
 }
 

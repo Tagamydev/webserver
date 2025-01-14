@@ -6,7 +6,7 @@
 /*   By: samusanc <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/11 08:36:52 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/14 10:25:38 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/14 18:13:41 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ std::string get_actual_date()
 		result.erase(pos, 1); // Elimina el carácter '\n'
 	return (result);
 }
+
 void	server_loop(webserver &server)
 {
 	std::vector<struct pollfd>	list = server._loop->make_fd_list();

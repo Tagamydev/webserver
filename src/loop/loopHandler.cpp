@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 10:40:56 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/14 11:08:05 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/14 18:41:07 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -241,13 +241,28 @@ void	loopHandler::delete_cgi_from_list(cgi *_cgi)
 	this->delete_fd_from_cgi_list(_cgi->_write_fd.fd);
 }
 
+int	loopHandler::get_clientFd_from_cgiFd(int fd)
+{
+	std::map<int, struct pollfd>::iterator	i;
+	std::map<int, struct pollfd>::iterator	ie;
+
+	i = this->_clientFd_cgiFd.begin();
+	ie = this->_clientFd_cgiFd.end();
+	for (; i != ie ; i++)
+	{
+		if (this->second.fd == fd)
+			return (this->first);
+	}
+	throw (std::runtime_error("this file descriptor is not asociated with a client"));
+}
+
 void	loopHandler::read_from_cgi(int &i, std::vector<struct pollfd> &list)
 {
 	struct pollfd socket = list[i];
 	client	*_client;
 	cgi		*_cgi;
 
-	_client = this->get_client_from_clientFd(this->get_clientFd_from_cgiFd(fd));
+	_client = this->get_client_from_clientFd(this->get_clientFd_from_cgiFd(socket.fd));
 	_cgi = _client->get_request()->_cgi;
 	_cgi->read();
 	this->delete_cgi_from_list(_cgi);

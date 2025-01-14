@@ -15,9 +15,12 @@ class	client
 
 		bool		compare_fd();
 		request		*get_request();
-		cgi_status	_cgi_status();
 		int			get_fd();
 		void		free_request();
+
+		bool		check_cgi_timeout();
+		void		cgi_timeout();
+		cgi_status	_cgi_status();
 
 	private:
 		request			*_request;

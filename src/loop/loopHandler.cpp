@@ -1,5 +1,304 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   loopHandler.cpp                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/14 10:40:56 by samusanc          #+#    #+#             */
+/*   Updated: 2025/01/14 11:08:05 by samusanc         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "loopHandler.hpp"
 #include "utils.hpp"
+
+loopHandler::loopHandler(webserver &webserver)
+{
+	this->_webserver = &webserver;
+
+	this->new_server(1234);
+	this->new_server(4321);
+	this->new_server(7777);
+}
+
+loopHandler::~loopHandler()
+{
+
+}
+
+void loopHandler::new_server(int port)
+{
+	serverFd server_fd(port);
+
+	this->_port_serverFd[port] = utils::pollfd_from_fd(server_fd._fd, POLLIN);
+}
+
+void	add_server_fds_to_list(std::vector<struct pollfd> &result, 
+std::map<int, struct pollfd> &_list)
+{
+	std::map<int, struct pollfd>::iterator	i;
+	std::map<int, struct pollfd>::iterator	ie;
+
+	i = _list.begin();
+	ie = _list.end();
+	for (; i != ie ; i++)
+	{
+		result.push_back(i->second);
+	}
+}
+
+void	add_client_fds_to_list(std::vector<struct pollfd> &result, 
+std::map<client *, struct pollfd> &_list)
+{
+	std::map<client *, struct pollfd>::iterator	i;
+	std::map<client *, struct pollfd>::iterator	ie;
+
+	i = _list.begin();
+	ie = _list.end();
+	for (; i != ie ; i++)
+	{
+		result.push_back(i->second);
+	}
+}
+
+void	add_cgi_fds_to_list(std::vector<struct pollfd> &result, 
+std::map<int, struct pollfd> &_list)
+{
+	std::map<int, struct pollfd>::iterator	i;
+	std::map<int, struct pollfd>::iterator	ie;
+
+	i = _list.begin();
+	ie = _list.end();
+	for (; i != ie ; i++)
+	{
+		result.push_back(i->second);
+	}
+}
+
+std::vector<struct pollfd>	loopHandler::make_fd_list()
+{
+	std::vector<struct pollfd>	result;
+
+	add_server_fds_to_list(result, this->_port_serverFd);
+	add_client_fds_to_list(result, this->_client_clientFd);
+	add_cgi_fds_to_list(result, this->_clientFd_cgiFd);
+	return (result);
+}
+
+unsigned int length_list(std::vector<struct pollfd> &list)
+{
+	return (static_cast<unsigned int>(list.size()));
+}
+
+void	make_poll(std::vector<struct pollfd> &list)
+{
+	int	result;
+
+	result = poll(list.data(), length_list(list), 0);
+	if (result < 0)
+		throw (std::runtime_error("Poll fail."));
+}
+
+void	loopHandler::delete_client(client *_client)
+{
+	std::map<client *, struct pollfd>	&_list = this->_client_clientFd;
+	std::map<client *, struct pollfd>::iterator i;
+
+	i = _list.find(_client);
+	if (i == _list.end())
+	{
+		delete _client;
+		return ;
+	}
+	_list.erase(i);
+	delete _client;
+}
+
+client	*loopHandler::get_client_from_clientFd(int fd)
+{
+	std::map<client *, struct pollfd>::iterator i;
+	std::map<client *, struct pollfd>::iterator ie;
+	client	*result = NULL;
+
+	i = this->_client_clientFd.begin();
+	ie = this->_client_clientFd.end();
+	for (; i != ie ; i++)
+	{
+		if (i->second.fd == fd)
+		{
+			result = i->first;
+			break ;
+		}
+	}
+	if (!result)
+		throw (std::runtime_error("client not found from fd"));
+	return (result);
+}
+
+void	loopHandler::send_response(int &i, std::vector<struct pollfd> &list)
+{
+	client *_client;
+	struct pollfd	socket;
+
+	socket = list[i];
+	_client = this->get_client_from_clientFd(socket.fd);
+	if (_client->get_request())
+	{
+		response	_response = response(_client->get_request(), *this->_webserver);
+		bool		_keep_alive;
+	
+		_keep_alive = _response._keep_alive;
+		utils::send_response(_client->get_fd(), _response.str());
+		_client->free_request();
+		if (!_keep_alive)
+		{
+			delete_client(_client);
+			list = this->make_fd_list();
+			--i;
+		}
+	}
+}
+
+bool	client::check_cgi_timeout()
+{
+	this->_request->_cgi->cgi_timeout();
+}
+
+void	client::cgi_timeout()
+{
+	(this->get_request())->close_cgi();
+	(this->get_request())->_error_code = 408;
+	(this->get_request())->_cgi_status = DONE;
+}
+
+void	loopHandler::handle_client(int &i, std::vector<struct pollfd> &list)
+{
+	client			*_client;
+	struct pollfd	socket;
+
+	socket = list[i];
+	client = this->get_client_from_clientFd(socket.fd);
+
+	if (_client->_cgi_status() == WAITING)
+	{
+		if (_client->check_cgi_timeout())
+			_client->cgi_timeout();
+		else
+			return ;
+	}
+	send_response(i, list);
+}
+
+bool	loopHandler::is_server(int fd)
+{
+	std::map<int, struct pollfd>::iterator	i;
+	std::map<int, struct pollfd>::iterator	ie;
+
+	i = this->_port_serverFd.begin();
+	ie = this->_port_serverFd.end();
+	for (; i != ie ; i++)
+	{
+		if (i->second.fd == fd)
+			return (true);
+	}
+	return (false);
+}
+
+bool	loopHandler::is_cgi(int fd)
+{
+	std::map<int, struct pollfd>::iterator	i;
+	std::map<int, struct pollfd>::iterator	ie;
+
+	i = this->_clientFd_cgiFd.begin();
+	ie = this->_clientFd_cgiFd.end();
+	for (; i != ie ; i++)
+	{
+		if (i->second.fd == fd)
+			return (true);
+	}
+	return (false);
+}
+
+
+void	loopHandler::delete_fd_from_cgi_list(int fd)
+{
+	std::map<int, struct pollfd>::iterator	i;
+	std::map<int, struct pollfd>::iterator	ie;
+
+	i = this->_clientFd_cgiFd.begin();
+	ie = this->_clientFd_cgiFd.end();
+	for (; i != ie ; i++)
+	{
+		if (i->second.fd == fd)
+			this->_clientFd_cgiFd.erase(i);
+	}
+}
+
+void	loopHandler::delete_cgi_from_list(cgi *_cgi)
+{
+	this->delete_fd_from_cgi_list(_cgi->_read_fd.fd);
+	this->delete_fd_from_cgi_list(_cgi->_write_fd.fd);
+}
+
+void	loopHandler::read_from_cgi(int &i, std::vector<struct pollfd> &list)
+{
+	struct pollfd socket = list[i];
+	client	*_client;
+	cgi		*_cgi;
+
+	_client = this->get_client_from_clientFd(this->get_clientFd_from_cgiFd(fd));
+	_cgi = _client->get_request()->_cgi;
+	_cgi->read();
+	this->delete_cgi_from_list(_cgi);
+	_client->close_cgi();
+	list = this->make_fd_list();
+	--i;
+}
+
+void	loopHandler::new_client(struct pollfd socket)
+{
+	client	*_client;
+
+	_client = new client(socket);
+	if (!_client)
+		throw (std::runtime_error("error making client"));
+	this->_client_clientFd[_client] = socket;
+}
+
+void	loopHandler::new_request(int fd)
+{
+	client	*_client;
+
+	_client = this->get_client_from_clientFd(fd);
+	_client->_request = new request(_client);
+}
+
+void	loopHandler::check_additions(int &i, std::vector<struct pollfd> &list)
+{
+	struct pollfd socket = list[i];
+
+	if (is_server(socket.fd))
+		this->new_client(socket);
+	else if (is_cgi(socket.fd))
+		this->read_from_cgi(i, list);
+	else
+		this->new_request(socket.fd);
+}
+
+void	loopHandler::send_to_cgi(int &i, std::vector<struct pollfd> &list)
+{
+	client *_client;
+	struct pollfd	socket;
+
+	socket = list[i];
+	_client = this->get_client_from_clientFd(socket.fd);
+	std::cout << "this is a message for the cgi" << std::endl;
+	this->delete_fd_from_cgi_list(_client->get_request()->_cgi->_write_fd.fd);
+	list = this->make_fd_list();
+	--i;
+}
+
 
 /*
 bool	check_if_fd_match(std::list<int> &_serversFD, int value)
@@ -10,29 +309,6 @@ bool	check_if_fd_match(std::list<int> &_serversFD, int value)
 	return (true);
 }
 
-
-loopHandler::loopHandler(webserver &server)
-{
-	this->_webserver = &server;
-	this->_webserver->_loop = this;
-
-	this->new_server(1234);
-	this->new_server(4321);
-	this->new_server(7777);
-}
-
-loopHandler::~loopHandler()
-{
-	// close all fds from fdList
-	std::map<int, request*>::iterator	i = this->_client_and_request.begin();
-	std::map<int, request*>::iterator	ie = this->_client_and_request.end();
-
-	for (; i != ie; i++)
-	{
-		delete i->second;
-	}
-	this->_client_and_request.clear();
-}
 
 void	loopHandler::delete_FD_from_FD_list(int fd, std::list<int> &list)
 {
@@ -90,14 +366,7 @@ cgi	*loopHandler::get_cgi_from_client(int n_client)
 	return (tmp_req->_cgi);
 }
 
-void loopHandler::new_server(int port)
-{
-	serverFd server_fd(port);
 
-	this->_fdsList.push_back(utils::pollfd_from_fd(server_fd._fd, POLLIN));
-	this->_serverFD_port[server_fd._fd] = port;
-	this->_serversFD.push_back(server_fd._fd);
-}
 
 void	loopHandler::do_poll()
 {

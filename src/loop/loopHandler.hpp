@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   loopHandler.hpp                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/14 09:24:16 by samusanc          #+#    #+#             */
+/*   Updated: 2025/01/14 10:48:50 by samusanc         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #pragma once
 #ifndef	LOOPHANDLER_HPP
 # define LOOPHANDLER_HPP
@@ -16,60 +28,31 @@ struct loopHandler{
 		loopHandler(webserver &server);
 		~loopHandler();
 
+		void	new_server(int port);
+		std::vector<struct pollfd>	make_fd_list();
+
 	private:
+		webserver							*_webserver;
 
 		std::map<int, struct pollfd>		_port_serverFd;
 		std::map<client *, struct pollfd>	_client_clientFd;
 		std::map<int, struct pollfd>		_clientFd_cgiFd;
+		
+		void						delete_client(client *_client);
+		client						*get_client_from_clientFd(int fd);
+		void						send_response(int &i, std::vector<struct pollfd> &list);
+		void						handle_client(int &i, std::vector<struct pollfd> &list);
+		bool						is_server(int fd);
+		bool						is_cgi(int fd);
+		void						delete_fd_from_cgi_list(int fd);
+		void						delete_cgi_from_list(cgi *_cgi);
+		void						read_from_cgi(int &i, std::vector<struct pollfd> &list);
+		void						new_client(struct pollfd socket);
+		void						new_request(int fd);
+		void						check_additions(int &i, std::vector<struct pollfd> &list);
+		void						send_to_cgi(int &i, std::vector<struct pollfd> &list);
 
-		/*
-		std::vector<struct pollfd>	_fdsList;
-
-		void			do_poll();
-		unsigned int	total_fds();
-
-		int				port_from_client_fd(int fd);
-
-		void			new_client(int number);
-		void			new_request(int number);
-		void			new_server(int port);
-
-		bool			check_poll_in(int number);
-		bool			check_poll_in_server(int number);
-		bool			check_poll_in_cgi(int number);
-
-		bool			check_poll_out(int number);
-		bool			check_poll_out_cgi(int number);
-
-
-		cgi				*get_cgi_from_client(int n_client);
-		request			*get_request_from_client(int n_client);
-
-
-		void			send_response_client(int n_client, request *tmp_req);
-
-		// number of cgi (relative to the fds list), and the  request assosiated to that cgi;
-		std::map<int, int>			_cgi_request;
-		std::list<int>				_cgiFD;
-		void						delete_FD_from_FD_list(int fd, std::list<int> &list);
-		void						delete_FD_from_pollFD_list(int fd, std::vector<struct pollfd> &list);
-
-	private:
-		std::map<int, request*>		_client_and_request;
-
-		// this is saved to find the port by the server FD along with the _clientFD_serverFD
-		// this allow us to find the port of a client from the client fd
-		std::map<int, int>			_serverFD_port;
-		std::map<int, int>			_clientFD_serverFD;
-
-
-		// list of all servers fd's for loop check
-		std::list<int>				_serversFD;
-
-		webserver					*_webserver;
-		*/
 
 };
-
 
 #endif

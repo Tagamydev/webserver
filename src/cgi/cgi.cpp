@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   cgi.cpp                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/14 07:46:33 by samusanc          #+#    #+#             */
+/*   Updated: 2025/01/14 10:13:33 by samusanc         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "cgi.hpp"
 #include "utils.hpp"
 #include <signal.h>
@@ -6,7 +18,7 @@ cgi::cgi(request &_request, client *_client)
 {
 	this->_env = NULL;
 	this->_request = &_request;
-	this->_request->cgi_status = WAITING;
+	this->_request->_cgi_status = WAITING;
 
 	int pid;
 	int	pipeIN[2];
@@ -47,13 +59,11 @@ cgi::cgi(request &_request, client *_client)
 
 	// the write fd go first, because this way you
 	// can send first the info to the cgi and then read the cgi response
-	this->_write_fd = pipeOUT[1];
-	this->_write_fd = utils::pollfd_from_fd(pipeOUT[1], POLLOUT);
-	std::cout << "[Log]: " << "fd to write to cgi: "<< this->_write_fd << std::endl;
+	this->_write_fd = utils::pollfd_from_fd(pipeOUT[1], pipeOUT[1]);
+	std::cout << "[Log]: " << "fd to write to cgi: "<< this->_write_fd.fd << std::endl;
 
-	this->_read_fd = pipeIN[0];
-	this->_read_fd = utils::pollfd_from_fd(pipeIN[0], POLLIN);
-	std::cout << "[Log]: " << "fd to read from cgi: "<< this->_write_fd << std::endl;
+	this->_read_fd = utils::pollfd_from_fd(pipeIN[0], pipeIN[0]);
+	std::cout << "[Log]: " << "fd to read from cgi: "<< this->_read_fd.fd << std::endl;
 }
 
 cgi::~cgi()
@@ -67,17 +77,17 @@ void cgi::read()
 	std::string	result;
 
 	result = utils::read_file(this->_read_fd.fd);
-	this->_request->cgi_status = DONE;
+	this->_request->_cgi_status = DONE;
 	this->_request->_cgi_response = result;
 }
 
-void cgi::wirte(std::string content)
+void cgi::write(std::string &content)
 {
 	// this need to be changed to the real body
 	utils::send_response(this->_write_fd.fd, this->_request->_body);
 }
 
-bool cgi::check_cgi_timeout()
+bool cgi::cgi_timeout()
 {
 	return (false);
 }

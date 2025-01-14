@@ -10,22 +10,24 @@ class request;
 class	client
 {
 	public:
-		client();
+		client(struct pollfd socket, int port);
 		~client();
 
-		bool		compare_fd();
-		request		*get_request();
-		int			get_fd();
-		void		free_request();
+		request			*_request;
+		int				port;
+		struct	pollfd	_pollfd_server;
 
-		bool		check_cgi_timeout();
-		void		cgi_timeout();
-		cgi_status	_cgi_status();
+		request			*get_request();
+		int				get_fd();
+		struct pollfd	get_pollfd();
+		void			free_request();
+		bool			check_cgi_timeout();
+		void			close_cgi();
+		void			cgi_timeout();
+		cgi_status		_cgi_status();
 
 	private:
-		request			*_request;
-		struct	pollfd	_pollfd;
-		int				port;
+		struct	pollfd	_pollfd_client;
 };
 
 #endif

@@ -5,7 +5,7 @@
 
 /* while on reqFile to skip new lines at the begining of the request.
 */
-request::request(client *_client, webserver &webserver)
+request::request(client *_client, webserver *_webserver)
 {
 	std::string			file;
 	std::stringstream	reqFile;
@@ -40,8 +40,7 @@ request::request(client *_client, webserver &webserver)
 
 	if (this->check_if_cgi())
 	{
-		// add a new cgi class
-	//	this->_cgi = new cgi(*this->_webserver, loop, *this);
+		this->_cgi = new cgi(*this, _client);
 	}
 }
 
@@ -54,8 +53,13 @@ request::~request()
 bool	request::check_if_cgi()
 {
 	// tmp we assume all is a cgi!
+	return (false);
+}
 
-	return (true);
+void	request::close_cgi()
+{
+	delete this->_cgi;
+	this->_cgi_status = NONE;
 }
 
 void	request::clear()

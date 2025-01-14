@@ -1,9 +1,9 @@
 #include "response.hpp"
 
-response::response(request &req, webserver &global_struct)
+response::response(request *_request, webserver *_webserver)
 {
-	this->_webserver = &global_struct;
-	this->_request_form = &req;
+	this->_webserver = _webserver;
+	this->_request = _request;
 
 	this->_http_version = "1.1";
 	this->_headers["Server"] = "42 Samusanc/Daviles simple webserver";
@@ -12,14 +12,14 @@ response::response(request &req, webserver &global_struct)
 
 	this->_error = false;
 	this->_keep_alive = false;
-	if (req._error_code != -1)
-		this->do_error_page(req._error_code);
+	if (this->_request->_error_code != -1)
+		this->do_error_page(this->_request->_error_code);
 
-	if (req._method == "GET")
+	if (this->_request->_method == "GET")
 		this->do_get();
-	else if (req._method == "POST")
+	else if (this->_request->_method == "POST")
 		this->do_post();
-	else if (req._method == "DELETE")
+	else if (this->_request->_method == "DELETE")
 		this->do_delete();
 	else if (!_error)
 		this->do_error_page(405);
@@ -189,7 +189,7 @@ void	response::get_dir(std::string &path)
 
 	//if (autoindex == true)
 	this->_status_code = 200;
-	this->_body = make_autoindex(entries, path, this->_request_form->_uri);
+	this->_body = make_autoindex(entries, path, this->_request->_uri);
 
 	//else
 	// search index file
@@ -224,7 +224,7 @@ void	response::do_redirection(int code, std::string location)
 
 void	response::do_get()
 {
-	if (!this->_request_form || this->_error)
+	if (!this->_request || this->_error)
 		return ;
 	// check if this location have get!! permissions
 	// to do ^
@@ -232,7 +232,7 @@ void	response::do_get()
 	std::string	path;
 	struct stat pathStat;
 
-	path = "." + this->_request_form->_uri;
+	path = "." + this->_request->_uri;
 	if (stat(path.c_str(), &pathStat) == 0)
 	{
 		if (S_ISREG(pathStat.st_mode))
@@ -251,7 +251,7 @@ void	response::do_get()
 			if (c == '/')
 				this->get_dir(path);
 			else
-				this->do_redirection(301, std::string(cut_spaces(this->_request_form->_uri) + "/"));
+				this->do_redirection(301, std::string(cut_spaces(this->_request->_uri) + "/"));
 		}
 		else
 		{
@@ -270,10 +270,10 @@ void	response::do_get()
 void	response::do_post()
 {
 	std::string	path;
-	if (!this->_request_form || this->_error)
+	if (!this->_request || this->_error)
 		return ;
 
-	path = "." + this->_request_form->_uri;
+	path = "." + this->_request->_uri;
 
 	// this method is cgi's deppendant, so the response came from the cgi
 	// not from this, this webserver is not a cgi is a webserver cgi dependant
@@ -331,7 +331,7 @@ void	response::delete_file(std::string &path)
 
 void	response::do_delete()
 {
-	if (!this->_request_form || this->_error)
+	if (!this->_request || this->_error)
 		return ;
 
 	// check if this location have delete permissions
@@ -339,7 +339,7 @@ void	response::do_delete()
 	std::string	path;
 	struct stat pathStat;
 
-	path = "." + this->_request_form->_uri;
+	path = "." + this->_request->_uri;
 	if (stat(path.c_str(), &pathStat) == 0)
 	{
 		if (S_ISREG(pathStat.st_mode))

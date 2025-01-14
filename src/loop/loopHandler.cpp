@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 10:40:56 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/14 18:41:07 by marvin           ###   ########.fr       */
+/*   Updated: 2025/01/14 22:02:12 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,20 +86,6 @@ std::vector<struct pollfd>	loopHandler::make_fd_list()
 	return (result);
 }
 
-unsigned int length_list(std::vector<struct pollfd> &list)
-{
-	return (static_cast<unsigned int>(list.size()));
-}
-
-void	make_poll(std::vector<struct pollfd> &list)
-{
-	int	result;
-
-	result = poll(list.data(), length_list(list), 0);
-	if (result < 0)
-		throw (std::runtime_error("Poll fail."));
-}
-
 void	loopHandler::delete_client(client *_client)
 {
 	std::map<client *, struct pollfd>	&_list = this->_client_clientFd;
@@ -145,7 +131,7 @@ void	loopHandler::send_response(int &i, std::vector<struct pollfd> &list)
 	_client = this->get_client_from_clientFd(socket.fd);
 	if (_client->get_request())
 	{
-		response	_response = response(_client->get_request(), *this->_webserver);
+		response	_response = response(_client->get_request(), this->_webserver);
 		bool		_keep_alive;
 	
 		_keep_alive = _response._keep_alive;
@@ -160,25 +146,13 @@ void	loopHandler::send_response(int &i, std::vector<struct pollfd> &list)
 	}
 }
 
-bool	client::check_cgi_timeout()
-{
-	this->_request->_cgi->cgi_timeout();
-}
-
-void	client::cgi_timeout()
-{
-	(this->get_request())->close_cgi();
-	(this->get_request())->_error_code = 408;
-	(this->get_request())->_cgi_status = DONE;
-}
-
 void	loopHandler::handle_client(int &i, std::vector<struct pollfd> &list)
 {
 	client			*_client;
 	struct pollfd	socket;
 
 	socket = list[i];
-	client = this->get_client_from_clientFd(socket.fd);
+	_client = this->get_client_from_clientFd(socket.fd);
 
 	if (_client->_cgi_status() == WAITING)
 	{
@@ -250,8 +224,8 @@ int	loopHandler::get_clientFd_from_cgiFd(int fd)
 	ie = this->_clientFd_cgiFd.end();
 	for (; i != ie ; i++)
 	{
-		if (this->second.fd == fd)
-			return (this->first);
+		if (i->second.fd == fd)
+			return (i->first);
 	}
 	throw (std::runtime_error("this file descriptor is not asociated with a client"));
 }
@@ -262,7 +236,8 @@ void	loopHandler::read_from_cgi(int &i, std::vector<struct pollfd> &list)
 	client	*_client;
 	cgi		*_cgi;
 
-	_client = this->get_client_from_clientFd(this->get_clientFd_from_cgiFd(socket.fd));
+	_client = this->get_client_from_clientFd(
+	this->get_clientFd_from_cgiFd(socket.fd));
 	_cgi = _client->get_request()->_cgi;
 	_cgi->read();
 	this->delete_cgi_from_list(_cgi);
@@ -271,14 +246,29 @@ void	loopHandler::read_from_cgi(int &i, std::vector<struct pollfd> &list)
 	--i;
 }
 
+int	loopHandler::get_port_from_fd(int fd)
+{
+	std::map<int, struct pollfd>::iterator	i;
+	std::map<int, struct pollfd>::iterator	ie;
+
+	i = this->_port_serverFd.begin();
+	ie = this->_port_serverFd.end();
+	for (; i != ie ; i++)
+	{
+		if (i->second.fd == fd)
+			return (i->first);
+	}
+	throw (std::runtime_error("invalid server, the fd does not match with any port"));
+}
+
 void	loopHandler::new_client(struct pollfd socket)
 {
 	client	*_client;
 
-	_client = new client(socket);
+	_client = new client(socket, this->get_port_from_fd(socket.fd));
 	if (!_client)
 		throw (std::runtime_error("error making client"));
-	this->_client_clientFd[_client] = socket;
+	this->_client_clientFd[_client] = _client->get_pollfd();
 }
 
 void	loopHandler::new_request(int fd)
@@ -286,7 +276,7 @@ void	loopHandler::new_request(int fd)
 	client	*_client;
 
 	_client = this->get_client_from_clientFd(fd);
-	_client->_request = new request(_client);
+	_client->_request = new request(_client, this->_webserver);
 }
 
 void	loopHandler::check_additions(int &i, std::vector<struct pollfd> &list)

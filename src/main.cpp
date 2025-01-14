@@ -6,7 +6,7 @@
 /*   By: samusanc <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/11 08:36:52 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/14 18:13:41 by marvin           ###   ########.fr       */
+/*   Updated: 2025/01/14 21:28:01 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,21 @@ std::string get_actual_date()
 	return (result);
 }
 
+unsigned int length_list(std::vector<struct pollfd> &list)
+{
+	return (static_cast<unsigned int>(list.size()));
+}
+
+void	make_poll(std::vector<struct pollfd> &list)
+{
+	int	result;
+
+	result = poll(list.data(), length_list(list), 0);
+	if (result < 0)
+		throw (std::runtime_error("Poll fail."));
+}
+
+
 void	server_loop(webserver &server)
 {
 	std::vector<struct pollfd>	list = server._loop->make_fd_list();
@@ -48,10 +63,9 @@ void	server_loop(webserver &server)
 				server._loop->handle_client(i, list);
 		}
 		if (list[i].revents & POLLOUT)
-			server.loop->send_to_cgi(i, list);
+			server._loop->send_to_cgi(i, list);
 		else
 			throw (std::runtime_error("idk what is this"));
-
 	}
 }
 
@@ -77,8 +91,6 @@ int main(int argc, char **argv)
 {
 	try
 	{
-		//start config file arser here
-		// server	server_parsed(path);
 		std::string	config_file = path_config_file(argc, argv);
 		webserver	server(config_file);	
 		

@@ -12,7 +12,7 @@ class   response{
 	public:
 
 		// con/destructor
-		response(request &rq, webserver &global_struct);
+		response(request *_request, webserver *_webserver);
 		~response(void);
 
 	// STATUS LINE
@@ -58,7 +58,7 @@ class   response{
 		std::string print_headers();
 
 		webserver	*_webserver;
-		request		*_request_form;
+		request		*_request;
 		
 };
 

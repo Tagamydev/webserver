@@ -6,15 +6,22 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 21:17:39 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/14 22:04:10 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/15 09:47:04 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "client.hpp"
 client::client(struct pollfd socket, int port)
 {
+	int new_socket;
+
+	if ((new_socket = accept(socket.fd, NULL, NULL)) == -1)
+		throw (std::runtime_error("Accept fail."));
+
+	this->_pollfd_client = utils::pollfd_from_fd(new_socket, POLLIN | POLLOUT);
 	this->_pollfd_server = socket;
-	this->_pollfd_client = utils::pollfd_from_fd(socket.fd, POLLIN | POLLOUT);
+	this->port = port;
+	std::cout << "[Info]: New client in port: " << port << std::endl;
 }
 
 client::~client(){}

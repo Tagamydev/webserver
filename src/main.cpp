@@ -6,7 +6,7 @@
 /*   By: samusanc <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/11 08:36:52 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/15 08:32:53 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/15 09:49:44 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,8 +63,10 @@ void	server_loop(webserver &server)
 			if (list[i].revents & POLLOUT)
 				server._loop->handle_client(i, list);
 		}
+		/*
 		else if (list[i].revents & POLLOUT)
 			server._loop->send_to_cgi(i, list);
+			*/
 	}
 }
 

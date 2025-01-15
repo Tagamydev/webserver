@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 10:40:56 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/15 08:44:48 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/15 09:40:11 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,8 @@ loopHandler::loopHandler(webserver &webserver)
 	this->_webserver = &webserver;
 
 	this->new_server(1234);
-	this->new_server(4321);
-	this->new_server(7777);
+//	this->new_server(4321);
+//	this->new_server(7777);
 }
 
 void	clear_server_cgi_Fd(std::map<int, struct pollfd> &_list)
@@ -292,6 +292,7 @@ int	loopHandler::get_port_from_fd(int fd)
 
 void	loopHandler::new_client(struct pollfd socket)
 {
+	std::cout << "new client" << std::endl;
 	client	*_client;
 
 	_client = new client(socket, this->get_port_from_fd(socket.fd));
@@ -313,7 +314,10 @@ void	loopHandler::check_additions(int &i, std::vector<struct pollfd> &list)
 	struct pollfd socket = list[i];
 
 	if (is_server(socket.fd))
+	{
 		this->new_client(socket);
+		this->make_fd_list(list);
+	}
 	else if (is_cgi(socket.fd))
 		this->read_from_cgi(i, list);
 	else

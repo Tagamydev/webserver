@@ -1,5 +1,16 @@
-#include "webserver.hpp"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   webserver.cpp                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/15 08:00:16 by samusanc          #+#    #+#             */
+/*   Updated: 2025/01/15 08:00:19 by samusanc         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
+#include "webserver.hpp"
 
 /// Parsing Utils
 void	print_config_info(std::string configFile)

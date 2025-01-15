@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 09:24:16 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/14 22:04:48 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/15 08:20:15 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ struct loopHandler{
 		~loopHandler();
 
 		void	new_server(int port);
-		std::vector<struct pollfd>	make_fd_list();
+		void	make_fd_list(std::vector<struct pollfd> &result);
 
 		void	handle_client(int &i, std::vector<struct pollfd> &list);
 		void	check_additions(int &i, std::vector<struct pollfd> &list);

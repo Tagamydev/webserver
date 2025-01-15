@@ -6,7 +6,7 @@
 /*   By: samusanc <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/11 08:36:52 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/15 07:43:46 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/15 08:32:53 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,9 +50,10 @@ void	make_poll(std::vector<struct pollfd> &list)
 
 void	server_loop(webserver &server)
 {
-	std::vector<struct pollfd>	list = server._loop->make_fd_list();
+	std::vector<struct pollfd>	list;
 	int	i = 0;
 
+	server._loop->make_fd_list(list);
 	make_poll(list);
 	for (; i < length_list(list); i++)
 	{
@@ -62,10 +63,8 @@ void	server_loop(webserver &server)
 			if (list[i].revents & POLLOUT)
 				server._loop->handle_client(i, list);
 		}
-		if (list[i].revents & POLLOUT)
+		else if (list[i].revents & POLLOUT)
 			server._loop->send_to_cgi(i, list);
-		else
-			throw (std::runtime_error("idk what is this"));
 	}
 }
 

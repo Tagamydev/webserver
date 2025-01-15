@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   webserver.hpp                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/15 08:03:15 by samusanc          #+#    #+#             */
+/*   Updated: 2025/01/15 08:08:19 by samusanc         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #pragma once
 #ifndef WEBSERVER_HPP
 # define WEBSERVER_HPP
@@ -7,8 +19,8 @@
 
 class server;
 class cgi;
-
 class loopHandler;
+
 class webserver
 {
 	public:

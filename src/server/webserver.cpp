@@ -5,12 +5,45 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/01/15 08:00:16 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/15 08:00:19 by samusanc         ###   ########.fr       */
+/*   Created: 2025/01/15 08:03:12 by samusanc          #+#    #+#             */
+/*   Updated: 2025/01/15 08:34:33 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserver.hpp"
+
+webserver::webserver(std::string &path)
+{
+	// set init
+	this->set_status_codes();
+	this->set_mime_types();
+
+	// parser
+	this->get_file_info(path);
+	this->_config_file = save_config_file(path);
+	remove_comments(_config_file);
+	utils::fix_spaces_in_line(_config_file);
+	check_brackets(_config_file);
+	// print_config_info (_config_file);
+	check_save_server_vector(_config_file);
+	// print_list_content(_server_block_list, title));
+
+	//bucle creando servers
+	for (std::list<std::string>::iterator it = _server_block_list.begin(); it != _server_block_list.end(); it++)
+	{
+		server newServer(*it);
+		//add to list of servers
+		_servers.push_back(newServer);
+		// std::cout << "Create Server "  << newServer.get_first_name() << std::endl;
+	}
+	check_servers();
+	this->_loop = new loopHandler(*this);
+}
+
+webserver::~webserver()
+{
+	delete this->_loop;
+}
 
 /// Parsing Utils
 void	print_config_info(std::string configFile)
@@ -194,33 +227,6 @@ std::string	webserver::save_config_file(std::string &path)
 	return (result);
 }
 
-webserver::webserver(std::string &path)
-{
-	// set init
-	this->set_status_codes();
-	this->set_mime_types();
-
-	// parser
-	this->get_file_info(path);
-	this->_config_file = save_config_file(path);
-	remove_comments(_config_file);
-	utils::fix_spaces_in_line(_config_file);
-	check_brackets(_config_file);
-	// print_config_info (_config_file);
-	check_save_server_vector(_config_file);
-	// print_list_content(_server_block_list, title));
-
-	//bucle creando servers
-	for (std::list<std::string>::iterator it = _server_block_list.begin(); it != _server_block_list.end(); it++)
-	{
-		server newServer(*it);
-		//add to list of servers
-		_servers.push_back(newServer);
-		// std::cout << "Create Server "  << newServer.get_first_name() << std::endl;
-	}
-	check_servers();
-}
-
 void	webserver::set_mime_types()
 {
     this->_mime_types[".html"] = "text/html";
@@ -349,4 +355,3 @@ std::string webserver::mime_types(std::string &extention)
 	return (result);
 }
 
-webserver::~webserver() {}

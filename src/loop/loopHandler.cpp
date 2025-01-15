@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 10:40:56 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/14 22:02:12 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/15 08:44:48 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,9 +22,40 @@ loopHandler::loopHandler(webserver &webserver)
 	this->new_server(7777);
 }
 
+void	clear_server_cgi_Fd(std::map<int, struct pollfd> &_list)
+{
+	std::map<int, struct pollfd>::iterator	i;
+	std::map<int, struct pollfd>::iterator	ie;
+
+	i = _list.begin();
+	ie = _list.end();
+	for (; i != ie ; i++)
+	{
+		close(i->second.fd);
+	}
+	_list.clear();
+}
+
+void	clear_clientFd(std::map<client *, struct pollfd> &_list)
+{
+	std::map<client *, struct pollfd>::iterator	i;
+	std::map<client *, struct pollfd>::iterator	ie;
+
+	i = _list.begin();
+	ie = _list.end();
+	for (; i != ie ; i++)
+	{
+		close(i->second.fd);
+		delete i->first;
+	}
+	_list.clear();
+}
+
 loopHandler::~loopHandler()
 {
-
+	clear_server_cgi_Fd(this->_port_serverFd);
+	clear_clientFd(this->_client_clientFd);
+	clear_server_cgi_Fd(this->_clientFd_cgiFd);
 }
 
 void loopHandler::new_server(int port)
@@ -76,14 +107,12 @@ std::map<int, struct pollfd> &_list)
 	}
 }
 
-std::vector<struct pollfd>	loopHandler::make_fd_list()
+void loopHandler::make_fd_list(std::vector<struct pollfd> &result)
 {
-	std::vector<struct pollfd>	result;
-
+	result.clear();
 	add_server_fds_to_list(result, this->_port_serverFd);
 	add_client_fds_to_list(result, this->_client_clientFd);
 	add_cgi_fds_to_list(result, this->_clientFd_cgiFd);
-	return (result);
 }
 
 void	loopHandler::delete_client(client *_client)
@@ -140,7 +169,7 @@ void	loopHandler::send_response(int &i, std::vector<struct pollfd> &list)
 		if (!_keep_alive)
 		{
 			delete_client(_client);
-			list = this->make_fd_list();
+			this->make_fd_list(list);
 			--i;
 		}
 	}
@@ -242,7 +271,7 @@ void	loopHandler::read_from_cgi(int &i, std::vector<struct pollfd> &list)
 	_cgi->read();
 	this->delete_cgi_from_list(_cgi);
 	_client->close_cgi();
-	list = this->make_fd_list();
+	this->make_fd_list(list);
 	--i;
 }
 
@@ -300,7 +329,7 @@ void	loopHandler::send_to_cgi(int &i, std::vector<struct pollfd> &list)
 	_client = this->get_client_from_clientFd(socket.fd);
 	std::cout << "this is a message for the cgi" << std::endl;
 	this->delete_fd_from_cgi_list(_client->get_request()->_cgi->_write_fd.fd);
-	list = this->make_fd_list();
+	this->make_fd_list(list);
 	--i;
 }
 

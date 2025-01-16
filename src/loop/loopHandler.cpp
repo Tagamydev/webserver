@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 10:40:56 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/16 12:20:39 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/16 18:18:41 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,7 @@ void loopHandler::make_fd_list(std::vector<struct pollfd> &result)
 	add_cgi_fds_to_list(result, this->_clientFd_cgiFd);
 }
 
-void	loopHandler::delete_client(client *_client)
+void	loopHandler::delete_client(client *_client, int &_it)
 {
 	std::map<client *, struct pollfd>	&_list = this->_client_clientFd;
 	std::map<client *, struct pollfd>::iterator i;
@@ -128,6 +128,26 @@ void	loopHandler::delete_client(client *_client)
 	}
 	_list.erase(i);
 	delete _client;
+	i--;
+}
+
+bool	loopHandler::fd_is_client(int fd)
+{
+	std::map<client *, struct pollfd>::iterator i;
+	std::map<client *, struct pollfd>::iterator ie;
+	client	*result = NULL;
+
+	i = this->_client_clientFd.begin();
+	ie = this->_client_clientFd.end();
+	for (; i != ie ; i++)
+	{
+		if (i->second.fd == fd)
+		{
+			result = i->first;
+			return (true);
+		}
+	}
+	return (false);
 }
 
 client	*loopHandler::get_client_from_clientFd(int fd)
@@ -158,6 +178,8 @@ void	loopHandler::send_response(int &i, std::vector<struct pollfd> &list)
 
 	socket = list[i];
 	_client = this->get_client_from_clientFd(socket.fd);
+	if (!_client->_request)
+		return ;
 	if (_client->get_request())
 	{
 		response	_response = response(_client->get_request(), this->_webserver);
@@ -168,9 +190,8 @@ void	loopHandler::send_response(int &i, std::vector<struct pollfd> &list)
 		_client->free_request();
 		if (!_keep_alive)
 		{
-			delete_client(_client);
+			delete_client(_client, i);
 			this->make_fd_list(list);
-			--i;
 		}
 	}
 }
@@ -182,7 +203,8 @@ void	loopHandler::handle_client(int &i, std::vector<struct pollfd> &list)
 
 	socket = list[i];
 	_client = this->get_client_from_clientFd(socket.fd);
-
+	if (!_client->_request)
+		return ;
 	if (_client->_cgi_status() == WAITING)
 	{
 		if (_client->check_cgi_timeout())
@@ -224,7 +246,7 @@ bool	loopHandler::is_cgi(int fd)
 }
 
 
-void	loopHandler::delete_fd_from_cgi_list(int fd)
+void	loopHandler::delete_fd_from_cgi_list(int fd, int &_it)
 {
 	std::map<int, struct pollfd>::iterator	i;
 	std::map<int, struct pollfd>::iterator	ie;
@@ -234,14 +256,20 @@ void	loopHandler::delete_fd_from_cgi_list(int fd)
 	for (; i != ie ; i++)
 	{
 		if (i->second.fd == fd)
+		{
 			this->_clientFd_cgiFd.erase(i);
+			_it--;
+			return ;
+		}
 	}
 }
 
-void	loopHandler::delete_cgi_from_list(cgi *_cgi)
+void	loopHandler::delete_cgi_from_list(cgi *_cgi, int &i)
 {
-	this->delete_fd_from_cgi_list(_cgi->_read_fd.fd);
-	this->delete_fd_from_cgi_list(_cgi->_write_fd.fd);
+	utils::print_debug("deleting cgi from list");
+	this->delete_fd_from_cgi_list(_cgi->_read_fd.fd, i);
+	this->delete_fd_from_cgi_list(_cgi->_write_fd.fd, i);
+	//exit(-1);
 }
 
 int	loopHandler::get_clientFd_from_cgiFd(int fd)
@@ -270,10 +298,9 @@ void	loopHandler::read_from_cgi(int &i, std::vector<struct pollfd> &list)
 	this->get_clientFd_from_cgiFd(socket.fd));
 	_cgi = _client->get_request()->_cgi;
 	_cgi->read();
-	this->delete_cgi_from_list(_cgi);
+	this->delete_cgi_from_list(_cgi, i);
 	_client->close_cgi();
 	this->make_fd_list(list);
-	--i;
 }
 
 int	loopHandler::get_port_from_fd(int fd)
@@ -307,6 +334,7 @@ void	loopHandler::new_request(int fd, std::vector<struct pollfd> &list)
 	client	*_client;
 
 	_client = this->get_client_from_clientFd(fd);
+	utils::print_debug("assingning new request to client");
 	_client->_request = new request(_client, this->_webserver, list);
 }
 
@@ -338,9 +366,8 @@ void	loopHandler::send_to_cgi(int &i, std::vector<struct pollfd> &list)
 	socket = list[i];
 	_client = this->get_client_from_clientFd(socket.fd);
 	std::cout << "this is a message for the cgi" << std::endl;
-	this->delete_fd_from_cgi_list(_client->get_request()->_cgi->_write_fd.fd);
+	this->delete_fd_from_cgi_list(_client->get_request()->_cgi->_write_fd.fd, i);
 	this->make_fd_list(list);
-	--i;
 }
 
 

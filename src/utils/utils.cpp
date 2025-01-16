@@ -10,6 +10,21 @@ struct pollfd utils::pollfd_from_fd(int fd, short events)
 	return (tmp);
 }
 
+void utils::print_info(std::string message)
+{
+	std::cout << "[Info]: " << message << std::endl;
+}
+
+void utils::print_debug(std::string message)
+{
+	std::cout << "[Debug]: " << message << std::endl;
+}
+
+void utils::print_log(std::string message)
+{
+	std::cout << "[Log]: " << message << std::endl;
+}
+
 void utils::send_response(int socket_fd, const std::string &response_str)
 {
 	size_t response_length = response_str.length();

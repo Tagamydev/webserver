@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 07:46:33 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/16 12:31:03 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/16 16:54:04 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,6 +78,7 @@ cgi::~cgi()
 
 void cgi::read()
 {
+	utils::print_debug("reading from cgi");
 	std::string	result;
 
 	result = utils::read_file(this->_read_fd.fd);

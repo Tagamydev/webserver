@@ -32,6 +32,11 @@ class	utils
 		static void map_to_vector_populate_keys(const std::map<std::string, location>& inputMap, std::vector<std::string>& outputVector);
 		static void map_to_vector_populate_values(const std::map<std::string, std::string>& inputMap, std::vector<std::string>& outputVector);
 		
+
+		static void print_info(std::string message);
+		static void print_debug(std::string message);
+		static void print_log(std::string message);
+
 	private:
 		utils();
 

@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 21:17:39 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/15 09:47:04 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/16 18:11:35 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 client::client(struct pollfd socket, int port)
 {
 	int new_socket;
+	this->_request = NULL;
 
 	if ((new_socket = accept(socket.fd, NULL, NULL)) == -1)
 		throw (std::runtime_error("Accept fail."));
@@ -49,6 +50,8 @@ void		client::free_request()
 
 cgi_status	client::_cgi_status()
 {
+	if (!this->_request)
+		throw (std::runtime_error("Client dont have a request"));
 	return (this->_request->_cgi_status);
 }
 

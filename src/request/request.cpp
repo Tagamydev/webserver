@@ -41,6 +41,7 @@ std::vector<struct pollfd> &list)
 
 	if (this->check_if_cgi())
 	{
+		this->_cgi_status = WAITING;
 		this->_cgi = new cgi(*this, _client, list, _webserver);
 	}
 }
@@ -59,7 +60,9 @@ bool	request::check_if_cgi()
 
 void	request::close_cgi()
 {
-	delete this->_cgi;
+	if (this->_cgi)
+		delete this->_cgi;
+	this->_cgi = NULL;
 	this->_cgi_status = NONE;
 }
 

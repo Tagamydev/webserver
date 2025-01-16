@@ -6,7 +6,7 @@
 /*   By: samusanc <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/11 08:36:52 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/16 12:14:45 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/16 18:01:56 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,17 +57,17 @@ void	server_loop(webserver &server)
 	make_poll(list);
 	for (; i < length_list(list); i++)
 	{
-		std::cout << length_list(list);
 		if (list[i].revents & POLLIN)
 		{
 			server._loop->check_additions(i, list);
 			if (list[i].revents & POLLOUT)
 				server._loop->handle_client(i, list);
 		}
-		/*
 		else if (list[i].revents & POLLOUT)
-			server._loop->send_to_cgi(i, list);
-			*/
+		{
+			if(server._loop->fd_is_client(list[i].fd))
+				server._loop->handle_client(i, list);
+		}
 	}
 }
 

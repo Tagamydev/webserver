@@ -6,7 +6,7 @@
 /*   By: samusanc <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/11 08:36:52 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/15 09:49:44 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/16 12:14:45 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,7 @@ void	server_loop(webserver &server)
 	make_poll(list);
 	for (; i < length_list(list); i++)
 	{
+		std::cout << length_list(list);
 		if (list[i].revents & POLLIN)
 		{
 			server._loop->check_additions(i, list);

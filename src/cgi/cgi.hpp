@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 07:46:25 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/14 21:36:50 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/16 11:53:13 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ class	cgi
 {
 	public:
 
-		cgi(request &_request, client *_client);
+		cgi(request &_request, client *_client, std::vector<struct pollfd> &list, webserver *webserver);
 		~cgi();
 
 		void			write(std::string &content);

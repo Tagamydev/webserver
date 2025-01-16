@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 09:24:16 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/15 08:20:15 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/16 12:17:10 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ struct loopHandler{
 		void	handle_client(int &i, std::vector<struct pollfd> &list);
 		void	check_additions(int &i, std::vector<struct pollfd> &list);
 		void	send_to_cgi(int &i, std::vector<struct pollfd> &list);
+		void	add_cgi(int clientFd, struct pollfd cgiFd);
 
 	private:
 		webserver							*_webserver;
@@ -59,7 +60,7 @@ struct loopHandler{
 
 		void	read_from_cgi(int &i, std::vector<struct pollfd> &list);
 		void	new_client(struct pollfd socket);
-		void	new_request(int fd);
+		void	new_request(int fd, std::vector<struct pollfd> &list);
 
 
 };

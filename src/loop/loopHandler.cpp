@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 10:40:56 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/15 09:40:11 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/16 12:20:39 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -261,6 +261,7 @@ int	loopHandler::get_clientFd_from_cgiFd(int fd)
 
 void	loopHandler::read_from_cgi(int &i, std::vector<struct pollfd> &list)
 {
+	std::cout << "[Debug]: Reading from cgi" << std::endl;
 	struct pollfd socket = list[i];
 	client	*_client;
 	cgi		*_cgi;
@@ -301,12 +302,17 @@ void	loopHandler::new_client(struct pollfd socket)
 	this->_client_clientFd[_client] = _client->get_pollfd();
 }
 
-void	loopHandler::new_request(int fd)
+void	loopHandler::new_request(int fd, std::vector<struct pollfd> &list)
 {
 	client	*_client;
 
 	_client = this->get_client_from_clientFd(fd);
-	_client->_request = new request(_client, this->_webserver);
+	_client->_request = new request(_client, this->_webserver, list);
+}
+
+void	loopHandler::add_cgi(int clientFd, struct pollfd cgiFd)
+{
+	this->_clientFd_cgiFd[clientFd] = cgiFd;
 }
 
 void	loopHandler::check_additions(int &i, std::vector<struct pollfd> &list)
@@ -321,7 +327,7 @@ void	loopHandler::check_additions(int &i, std::vector<struct pollfd> &list)
 	else if (is_cgi(socket.fd))
 		this->read_from_cgi(i, list);
 	else
-		this->new_request(socket.fd);
+		this->new_request(socket.fd, list);
 }
 
 void	loopHandler::send_to_cgi(int &i, std::vector<struct pollfd> &list)

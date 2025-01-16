@@ -17,7 +17,7 @@ class client;
 class   request
 {
 	public:
-		request(client *_client, webserver *_webserver);
+		request(client *_client, webserver *_webserver, std::vector<struct pollfd> &list);
 		~request(void);
 
 		// CGI

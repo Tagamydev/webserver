@@ -44,6 +44,8 @@ std::string	utils::read_file(int fd)
 	bytesRead = read(fd, buffer, (bufferSize - 1));//recv(fd, buffer, (bufferSize - 1), 0);
     if (bytesRead == -1)
 		throw std::runtime_error("Error reading file descriptor.");
+	if (bytesRead == 0)
+		return ("");
 	buffer[bufferSize - 1] = '\0';
 	result.append(buffer, bytesRead);
 	return (result);

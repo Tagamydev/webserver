@@ -8,6 +8,7 @@
 request::request(client *_client, webserver *_webserver, 
 std::vector<struct pollfd> &list)
 {
+	utils::print_debug("new request");
 	std::string			file;
 	std::stringstream	reqFile;
 	std::string			line;

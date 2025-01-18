@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 07:46:33 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/16 16:54:04 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/18 15:02:18 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 cgi::cgi(request &_request, client *_client,
 std::vector<struct pollfd> &list, webserver *_webserver)
 {
+	utils::print_debug("new cgi...");
 	this->_env = NULL;
 	this->_request = &_request;
 	this->_request->_cgi_status = WAITING;
@@ -60,18 +61,20 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 
 	// the write fd go first, because this way you
 	// can send first the info to the cgi and then read the cgi response
-	this->_write_fd = utils::pollfd_from_fd(pipeOUT[1], pipeOUT[1]);
+	this->_write_fd = utils::pollfd_from_fd(pipeOUT[1], POLLOUT);
 	_webserver->_loop->add_cgi(_client->get_fd(), this->_write_fd);
-	std::cout << "[Log]: " << "fd to write to cgi: "<< this->_write_fd.fd << std::endl;
+	std::cout << "[Debug]: " << "fd to write to cgi: "<< this->_write_fd.fd << std::endl;
 
-	this->_read_fd = utils::pollfd_from_fd(pipeIN[0], pipeIN[0]);
+	this->_read_fd = utils::pollfd_from_fd(pipeIN[0], POLLIN);
 	_webserver->_loop->add_cgi(_client->get_fd(), this->_read_fd);
-	std::cout << "[Log]: " << "fd to read from cgi: "<< this->_read_fd.fd << std::endl;
+	std::cout << "[Debug]: " << "fd to read from cgi: "<< this->_read_fd.fd << std::endl;
 	_webserver->_loop->make_fd_list(list);
 }
 
 cgi::~cgi()
 {
+	close(this->_read_fd.fd);
+	close(this->_write_fd.fd);
 	// i need to close the cgi???
 	kill(this->_id, SIGKILL);
 }

@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 10:40:56 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/16 18:18:41 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/18 14:48:26 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,13 +173,12 @@ client	*loopHandler::get_client_from_clientFd(int fd)
 
 void	loopHandler::send_response(int &i, std::vector<struct pollfd> &list)
 {
+	utils::print_debug("sending response");
 	client *_client;
 	struct pollfd	socket;
 
 	socket = list[i];
 	_client = this->get_client_from_clientFd(socket.fd);
-	if (!_client->_request)
-		return ;
 	if (_client->get_request())
 	{
 		response	_response = response(_client->get_request(), this->_webserver);
@@ -320,7 +319,7 @@ int	loopHandler::get_port_from_fd(int fd)
 
 void	loopHandler::new_client(struct pollfd socket)
 {
-	std::cout << "new client" << std::endl;
+	utils::print_debug("new client");
 	client	*_client;
 
 	_client = new client(socket, this->get_port_from_fd(socket.fd));
@@ -334,7 +333,7 @@ void	loopHandler::new_request(int fd, std::vector<struct pollfd> &list)
 	client	*_client;
 
 	_client = this->get_client_from_clientFd(fd);
-	utils::print_debug("assingning new request to client");
+	utils::print_debug("assigning new request to client");
 	_client->_request = new request(_client, this->_webserver, list);
 }
 

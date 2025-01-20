@@ -6,12 +6,13 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 10:40:56 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/18 14:48:26 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/20 07:29:34 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "loopHandler.hpp"
 #include "utils.hpp"
+#include <exception>
 
 loopHandler::loopHandler(webserver &webserver)
 {
@@ -185,7 +186,15 @@ void	loopHandler::send_response(int &i, std::vector<struct pollfd> &list)
 		bool		_keep_alive;
 	
 		_keep_alive = _response._keep_alive;
-		utils::send_response(_client->get_fd(), _response.str());
+		try
+		{
+			utils::send_response(_client->get_fd(), _response.str());
+		}
+		catch (std::exception &e)
+		{
+			utils::print_info("fail to read/write into client reason: " + std::string(e.what()));
+			_keep_alive = false;
+		}
 		_client->free_request();
 		if (!_keep_alive)
 		{
@@ -328,13 +337,21 @@ void	loopHandler::new_client(struct pollfd socket)
 	this->_client_clientFd[_client] = _client->get_pollfd();
 }
 
-void	loopHandler::new_request(int fd, std::vector<struct pollfd> &list)
+void	loopHandler::new_request(int fd, std::vector<struct pollfd> &list, int &i)
 {
 	client	*_client;
 
 	_client = this->get_client_from_clientFd(fd);
-	utils::print_debug("assigning new request to client");
-	_client->_request = new request(_client, this->_webserver, list);
+	try
+	{
+		utils::print_debug("assigning new request to client");
+		_client->_request = new request(_client, this->_webserver, list);
+	}
+	catch (std::exception &e)
+	{
+		utils::print_info("fail to read/write into client reason: " + std::string(e.what()));
+		this->delete_client(_client, i);
+	}
 }
 
 void	loopHandler::add_cgi(int clientFd, struct pollfd cgiFd)
@@ -354,7 +371,7 @@ void	loopHandler::check_additions(int &i, std::vector<struct pollfd> &list)
 	else if (is_cgi(socket.fd))
 		this->read_from_cgi(i, list);
 	else
-		this->new_request(socket.fd, list);
+		this->new_request(socket.fd, list, i);
 }
 
 void	loopHandler::send_to_cgi(int &i, std::vector<struct pollfd> &list)

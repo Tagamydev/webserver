@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 09:24:16 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/16 18:00:28 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/20 07:13:36 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ struct loopHandler{
 
 		void	read_from_cgi(int &i, std::vector<struct pollfd> &list);
 		void	new_client(struct pollfd socket);
-		void	new_request(int fd, std::vector<struct pollfd> &list);
+		void	new_request(int fd, std::vector<struct pollfd> &list, int &i);
 
 
 };

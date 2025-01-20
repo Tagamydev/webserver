@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 10:40:56 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/20 07:31:03 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/20 07:33:13 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -376,7 +376,7 @@ void	loopHandler::check_additions(int &i, std::vector<struct pollfd> &list)
 
 void	loopHandler::send_to_cgi(int &i, std::vector<struct pollfd> &list)
 {
-	client *_client;
+	client			*_client;
 	struct pollfd	socket;
 
 	socket = list[i];

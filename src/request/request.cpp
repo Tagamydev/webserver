@@ -1,7 +1,17 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   request.cpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/20 07:52:36 by samusanc          #+#    #+#             */
+/*   Updated: 2025/01/20 08:19:32 by samusanc         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 #include "request.hpp"
 #include "utils.hpp"
 #include <string>
-
 
 /* while on reqFile to skip new lines at the begining of the request.
 */
@@ -9,18 +19,39 @@ request::request(client *_client, webserver *_webserver,
 std::vector<struct pollfd> &list)
 {
 	utils::print_debug("new request");
+	this->clear();
+	this->_fd = _client->get_fd();
+	this->parsing();
+	this->debug();
+
+	if (this->check_if_cgi())
+	{
+		this->_cgi_status = WAITING;
+		this->_cgi = new cgi(*this, _client, list, _webserver);
+	}
+}
+
+request::~request()
+{
+	if (this->_cgi)
+		delete this->_cgi;
+}
+
+void	request::debug()
+{
+	print_request();
+	print_header();
+	print_body();
+	print_others();
+}
+
+void	request::parsing()
+{
 	std::string			file;
 	std::stringstream	reqFile;
 	std::string			line;
-	int					fd;
 
-	fd = _client->get_fd();
-
-	this->_cgi = NULL;
-	this->clear();
-	this->_cgi_status = NONE;
-
-	file = utils::read_file(fd);
+	file = utils::read_file(this->_fd);
 	std::cout << file << std::endl;
 	reqFile << file;
 	reqFile.seekg(0);
@@ -34,23 +65,6 @@ std::vector<struct pollfd> &list)
 		this->process_body(reqFile, line);
 	if (this->_error_code == -1)
 		this->parse_headers();
-
-	print_request();
-	print_header();
-	print_body();
-	print_others();
-
-	if (this->check_if_cgi())
-	{
-		this->_cgi_status = WAITING;
-		this->_cgi = new cgi(*this, _client, list, _webserver);
-	}
-}
-
-request::~request()
-{
-	if (this->_cgi)
-		delete this->_cgi;
 }
 
 bool	request::check_if_cgi()
@@ -80,6 +94,8 @@ void	request::clear()
 	this->_chunked_flag = false;
 	this->_error_code = -1;
 	this->_debug_msg.clear();
+	this->_cgi = NULL;
+	this->_cgi_status = NONE;
 }
 // Handle body
 
@@ -324,38 +340,46 @@ void request::set_error_code(int code, std::string msg)
 
 
 // Utils
-
 void	request::print_request()
 {
-	std::cout << "\n<<<<    Request    >>>>" << std::endl;
-	std::cout << "Method : " << this->_method << std::endl;
-	std::cout << "URI : " << this->_uri << std::endl;
-	std::cout << "HTTP V : " << this->_http_version << std::endl;
-	std::cout << "Uri_file : " << this->_uri_file << std::endl;
-	std::cout << "Uri_params : " << this->_uri_params << std::endl;
+	utils::print_debug("\n<<<<    Request    >>>>");
+	utils::print_debug("Method : " + this->_method);
+	utils::print_debug("URI : " + this->_uri);
+	utils::print_debug("HTTP V : " + this->_http_version);
+	utils::print_debug("Uri_file : " + this->_uri_file);
+	utils::print_debug("Uri_params : " + this->_uri_params);
 }
 
 void	request::print_header()
 {
-	std::cout << "\n<<<<    HEADER    >>>>" << std::endl;
+	utils::print_debug("\n<<<<    HEADER    >>>>");
 	for (std::map<std::string,std::string>::iterator it = this->_headers.begin(); it != this->_headers.end(); it++)
 	{
-		std::cout << "Key: " << it->first <<  std::endl;
-		std::cout << " Value: " << it->second << "" << std::endl;
+		utils::print_debug("Key: " + it->first);
+		utils::print_debug(" Value: " + it->second);
 	}
 }
 
 void	request::print_body()
 {
-	std::cout << "\n<<<<    BODY    >>>>" << std::endl;
-	std::cout << this->_body <<  std::endl;
+	utils::print_debug("\n<<<<    BODY    >>>>");
+	utils::print_debug(this->_body);
 }
 void	request::print_others()
 {
-std::cout << "\n<<<<    Control vars    >>>>" << std::endl;
-	std::cout << "body lenght: " << this->_body_length << std::endl;
-	std::cout << "Has body: " << this->_has_body << std::endl;
-	std::cout << "Is chunked: " << this->_chunked_flag << std::endl;
-	std::cout << "Error code: " << this->_error_code << std::endl;
-	std::cout << "Debug Message: " << this->_debug_msg << std::endl;
+	std::stringstream	body_length;
+	std::stringstream	has_body;
+	std::stringstream	chunked_flag;
+	std::stringstream	error_code;
+
+	body_length << this->_body_length;
+	has_body << this->_has_body;
+	chunked_flag << this->_chunked_flag;
+	error_code << this->_error_code;
+	utils::print_debug("\n<<<<    Control vars    >>>>");
+	utils::print_debug("body lenght: " + body_length.str());
+	utils::print_debug("Has body: " + has_body.str());
+	utils::print_debug("Is chunked: " + chunked_flag.str());
+	utils::print_debug("Error code: " + error_code.str());
+	utils::print_debug("Debug Message: " + this->_debug_msg);
 }

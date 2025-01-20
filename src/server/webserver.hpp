@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 08:03:15 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/15 08:08:19 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/20 07:48:02 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,8 @@ class webserver
 		std::map<std::string, std::string>	_mime_types;
 		std::map<int, std::string>			_status_codes;
 
-	private:
 		std::vector<server>			_servers;
+	private:
 		std::string					_config_file;
 		std::list<std::string>		_server_block_list;
 

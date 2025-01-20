@@ -28,29 +28,31 @@ class   request
 		bool		check_if_cgi();
 
 		// QUERY
-		std::string	_method;
-		std::string	_uri;
-		std::string	_uri_file;
-		std::string	_uri_params;
+		std::string		_method;
+		std::string		_uri;
+		std::string		_uri_file;
+		std::string		_uri_params;
 
 		// BODY
-		std::string	_body;
+		std::string		_body;
 
 		// STATES FOR RESPONSE
 		int				_error_code;
 		std::string		_debug_msg;
 
 	private:
-		int	_fd;
+		int				_fd;
 
-		int			_body_length;
-		int			_has_body;
-        bool        _chunked_flag;
+		int				_body_length;
+		int				_has_body;
+        bool			_chunked_flag;
+		std::string		_http_version;
 
-		std::string	_http_version;
 		std::map<std::string, std::string>	_query_str;	
 		std::map<std::string, std::string>	_headers;	
 
+		void	parsing();
+		void	debug();
 		void	clear();
 		void	set_error_code(int code, std::string msg);
 		void	print_request();

@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 07:52:36 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/21 18:24:42 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/21 18:48:27 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "request.hpp"
@@ -88,6 +88,8 @@ void	request::check_config_file(client *_client, webserver *_webserver)
 		set_error_code(404, "host not found");
 		return ;
 	}
+	std::cout << "Super: " << this->_uri << std::endl;
+	//_server->_locations[this->_uri];
 }
 
 request::~request()

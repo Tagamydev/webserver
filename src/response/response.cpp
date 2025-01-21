@@ -1,4 +1,5 @@
 #include "response.hpp"
+#include "cgi.hpp"
 
 response::response(request *_request, webserver *_webserver)
 {
@@ -15,14 +16,19 @@ response::response(request *_request, webserver *_webserver)
 	if (this->_request->_error_code != -1)
 		this->do_error_page(this->_request->_error_code);
 
-	if (this->_request->_method == "GET")
-		this->do_get();
-	else if (this->_request->_method == "POST")
-		this->do_post();
-	else if (this->_request->_method == "DELETE")
-		this->do_delete();
-	else if (!_error)
-		this->do_error_page(405);
+	if (this->_request->_cgi_status == NONE)
+	{
+		if (this->_request->_method == "GET")
+			this->do_get();
+		else if (this->_request->_method == "POST")
+			this->do_post();
+		else if (this->_request->_method == "DELETE")
+			this->do_delete();
+		else if (!_error)
+			this->do_error_page(405);
+	}
+	else
+		this->do_cgi_response();
 
 	this->set_length();
 	if (!this->_keep_alive)
@@ -32,6 +38,12 @@ response::response(request *_request, webserver *_webserver)
 }
 
 response::~response(){}
+
+void	response::do_cgi_response()
+{
+	std::cout << "[David!!]: " << this->_request->_cgi_response << std::endl;
+
+}
 
 void	response::set_length()
 {

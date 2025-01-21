@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 07:52:36 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/20 08:19:32 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/21 18:24:42 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "request.hpp"
@@ -23,11 +23,70 @@ std::vector<struct pollfd> &list)
 	this->_fd = _client->get_fd();
 	this->parsing();
 	this->debug();
+	this->check_config_file(_client, _webserver);
 
 	if (this->check_if_cgi())
 	{
 		this->_cgi_status = WAITING;
 		this->_cgi = new cgi(*this, _client, list, _webserver);
+	}
+}
+
+std::string split_hostname(const std::string& hostname)
+{
+	std::string	host;
+	std::size_t colonPos = hostname.find(':');
+	
+	if (colonPos != std::string::npos)
+		host = hostname.substr(0, colonPos);
+	else
+		host = hostname;
+	return (host);
+}
+
+server	*find_server_by_name(std::list<server*> list, std::string hostname)
+{
+	std::list<server*>::iterator i = list.begin();
+	std::list<server*>::iterator ie = list.end();
+	std::vector<std::string>	names_list;
+
+	for (; i != ie ; i++)
+	{
+		names_list = (*i)->_names;
+		std::vector<std::string>::iterator	j = names_list.begin();
+		std::vector<std::string>::iterator	je = names_list.end();
+		std::vector<std::string>::iterator	result;
+
+		result = std::find(j, je, hostname);
+		if (result != je)
+			return (*i);
+	}
+	return (NULL);
+}
+
+server	*find_server_by_hostname(std::list<server*> list, std::string hostname)
+{
+	server		*result;
+	std::string	hostname_without_port;
+
+	hostname_without_port = split_hostname(hostname);
+	result = find_server_by_name(list, hostname_without_port);
+	if (!result)
+		result = find_server_by_name(list, hostname);
+	return (result);
+}
+
+void	request::check_config_file(client *_client, webserver *_webserver)
+{
+	std::list<server*>	_servers_list = _webserver->_port_servers_list[_client->port];
+	std::string			hostname = this->_headers["host"];
+	server				*_server;
+
+	_server = find_server_by_hostname(_servers_list, hostname);
+	if (!_server)
+	{
+		set_error_code(404, "host not found");
+		return ;
 	}
 }
 
@@ -69,6 +128,8 @@ void	request::parsing()
 
 bool	request::check_if_cgi()
 {
+	if (this->_error_code != -1)
+		return (false);
 	// tmp we assume all is a cgi!
 	return (true);
 }

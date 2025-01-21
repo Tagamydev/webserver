@@ -59,6 +59,7 @@ class   request
 		void	print_header();
 		void	print_body();
 		void	print_others();
+		void	check_config_file(client *_client, webserver *_webserver);
         void	check_save_request_line(std::string line);
         void	is_valid_method(std::string line);
         void	is_valid_uri(std::string &line);

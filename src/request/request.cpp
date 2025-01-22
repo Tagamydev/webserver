@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 07:52:36 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/22 17:02:03 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/22 17:18:27 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "request.hpp"
@@ -170,6 +170,13 @@ void	request::get_location()
 		set_error_code(std::atoi(result->_return_code.c_str()), result->_return_path);
 		return ;
 	}
+
+	if (!result->is_allowed_method(this->_method))
+	{
+		set_error_code(405, "Method Not Allowed");
+		return ;
+	}
+
 	this->_location = result;
 }
 

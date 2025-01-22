@@ -13,7 +13,12 @@ response::response(request *_request, webserver *_webserver)
 	this->_error = false;
 	this->_keep_alive = false;
 	if (this->_request->_error_code != -1)
-		this->do_error_page(this->_request->_error_code);
+	{
+		if (this->_request->_error_code >= 300 && this->_request->_error_code <= 308)
+			this->do_redirection(this->_request->_error_code, this->_request->_debug_msg);
+		else
+			this->do_error_page(this->_request->_error_code);
+	}
 
 	if (this->_request->_method == "GET")
 		this->do_get();
@@ -64,7 +69,7 @@ std::string html_tail()
 	return (strm.str());
 }
 
-std::string	make_error_page_html(int error, std::string message)
+std::string	make_error_page_html(int error, std::string message, std::string debug)
 {
 	std::stringstream	strm;
 
@@ -72,7 +77,7 @@ std::string	make_error_page_html(int error, std::string message)
 	strm << "        <h1>Error response</h1>\r\n";
 	strm << "        <p>Error code: " << error << "</p>\r\n";
 	strm << "        <p>Message: " << message << "</p>\r\n";
-//	strm << "        <p>Error code explanation: 404 - Nothing matches the given URI.</p>";
+	strm << "        <p>Error code explanation: "<< error << " - " << debug << ".</p>";
 	strm << html_tail();
 	return (strm.str());
 }
@@ -84,7 +89,7 @@ void	response::do_error_page(int error)
 	std::cout << "Error page { " << error << " }: "; 
 	std::cout << this->status_message(error) << "!!" << std::endl;
 	this->_headers["Content-Type"] = "text/html;charset=utf-8";
-	this->_body = make_error_page_html(error, this->status_message(error));
+	this->_body = make_error_page_html(error, this->status_message(error), this->_request->_debug_msg);
 
 }
 

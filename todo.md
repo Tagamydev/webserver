@@ -1,6 +1,6 @@
 ## TODO
-- [ ] Choose the port and host of each server.
-- [ ] Setup the server_names or not.
+- [x] Choose the port and host of each server.
+- [x] Setup the server_names or not.
 - [ ] The first server for a host:port will be the default for this host:port (that means it will answer to all the requests that don’t belong to another server).
 - [ ] Setup default error pages.
 - [ ] Limit client body size.

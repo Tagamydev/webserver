@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 07:52:36 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/22 09:54:40 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/22 17:02:03 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "request.hpp"
@@ -46,6 +46,37 @@ std::string split_hostname(const std::string& hostname)
 	return (host);
 }
 
+server	*find_wildcard_name(std::list<server*> list, std::string hostname)
+{
+	std::list<server*>::iterator i = list.begin();
+	std::list<server*>::iterator ie = list.end();
+	std::vector<std::string>	names_list;
+
+	for (; i != ie ; i++)
+	{
+		names_list = (*i)->_names;
+		std::vector<std::string>::iterator	j = names_list.begin();
+		std::vector<std::string>::iterator	je = names_list.end();
+		std::vector<std::string>::iterator	result;
+
+		for (; j != je ; j++)
+		{
+			if (*j == "_" || *j == "*")
+				return (*i);
+		}
+	}
+	i = list.begin();
+	ie = list.end();
+
+	for (; i != ie ; i++)
+	{
+		names_list = (*i)->_names;
+		if (names_list.empty())
+			return (*i);
+	}
+	return (NULL);
+}
+
 server	*find_server_by_name(std::list<server*> list, std::string hostname)
 {
 	std::list<server*>::iterator i = list.begin();
@@ -76,7 +107,7 @@ server	*find_server_by_hostname(std::list<server*> list, std::string hostname)
 	if (!result)
 		result = find_server_by_name(list, hostname);
 	if (!result)
-		result = list.front();
+		result = find_wildcard_name(list, hostname);
 	return (result);
 }
 

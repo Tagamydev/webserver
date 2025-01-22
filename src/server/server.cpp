@@ -108,6 +108,7 @@ void	server::process_parameters(std::stringstream &contentStream, std::string li
 			throw std::runtime_error("Error reading config file. Wrong value in listen directive.");
 		if (!is_valid_port(value))
 			throw std::runtime_error("Error reading config file. Invalid port, out of range.");
+		std::cout << value << "vs." << atoi(value.c_str()) << std::endl;
 		this->_ports.push_back(atoi(value.c_str()));
 	}
 	else if (key == "server_name")
@@ -227,6 +228,7 @@ void	server::check_save_parameters(std::stringstream &contentStream)
 			process_parameters(contentStream, line);
 	}
 }
+
 /// @brief  Init server vector with default error pages
 void server::initErrorPages(void)
 {
@@ -258,9 +260,6 @@ server::server(std::string &content):_max_body_size (MAX_BODY_SIZE), _is_relativ
 	check_save_parameters(contentStream);
 	check_location_list();	
 	check_empty_set_default();
-
-		
-	// print_config_file();
 }
 server::server()
 {

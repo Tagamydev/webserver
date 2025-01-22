@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 07:52:36 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/21 18:48:27 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/21 19:28:37 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "request.hpp"
@@ -76,6 +76,30 @@ server	*find_server_by_hostname(std::list<server*> list, std::string hostname)
 	return (result);
 }
 
+std::string location_from_uri(const std::string& uri)
+{
+	std::string	result;
+	std::string	copy(uri.c_str() + 1);
+	std::size_t colonPos = copy.find('/');
+	
+	if (colonPos != std::string::npos)
+		result = uri.substr(0, colonPos + 1);
+	else
+		result = uri;
+	return (result);
+}
+
+
+location	*get_location_from_uri(server *_server, std::string uri)
+{
+	std::map<std::string, location>::iterator	i;
+
+	i = _server->_locations.find(location_from_uri(uri));
+	if (i != _server->_locations.end())
+		return (&(i->second));
+	return (NULL);
+}
+
 void	request::check_config_file(client *_client, webserver *_webserver)
 {
 	std::list<server*>	_servers_list = _webserver->_port_servers_list[_client->port];
@@ -89,7 +113,10 @@ void	request::check_config_file(client *_client, webserver *_webserver)
 		return ;
 	}
 	std::cout << "Super: " << this->_uri << std::endl;
-	//_server->_locations[this->_uri];
+	location			*_location;
+
+	_location = get_location_from_uri(_server, this->_uri);
+	_location->print_location_content();
 }
 
 request::~request()

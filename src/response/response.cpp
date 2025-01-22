@@ -192,15 +192,26 @@ void	response::get_dir(std::string &path)
 {
     std::list<std::string> entries = listDirectory(path);
 
-	//if (autoindex == true)
-	this->_status_code = 200;
-	this->_body = make_autoindex(entries, path, this->_request->_uri);
+	if (this->_request->_location->_index_file.empty())
+	{
+		if (this->_request->_location->_auto_index)
+		{
+			this->_status_code = 200;
+			this->_body = make_autoindex(entries, path, this->_request->_uri);
+		}
+		else
+		{
+			this->do_error_page(403);
+			return ;
+		}
 
-	//else
-	// search index file
-
-	// else
-	// return 403 forbidden
+	}
+	else
+	{
+		this->do_error_page(200);
+		return ;
+		// what happend if the index file is not found?
+	}
 }
 
 std::string	cut_spaces(std::string &string)

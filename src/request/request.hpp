@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   request.hpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: samusanc <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/22 09:08:35 by samusanc          #+#    #+#             */
+/*   Updated: 2025/01/22 09:50:21 by samusanc         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #pragma once
 #ifndef	REQUEST_HPP
 # define REQUEST_HPP
@@ -13,6 +25,8 @@ class webserver;
 class loopHandler;
 class cgi;
 class client;
+class server;
+class location;
 
 class   request
 {
@@ -40,6 +54,9 @@ class   request
 		int				_error_code;
 		std::string		_debug_msg;
 
+		server			*_server;
+		location		*_location;
+
 	private:
 		int				_fd;
 
@@ -54,6 +71,10 @@ class   request
 		void	parsing();
 		void	debug();
 		void	clear();
+
+		void	get_server(client *_client, webserver *_webserver);
+		void	get_location();
+
 		void	set_error_code(int code, std::string msg);
 		void	print_request();
 		void	print_header();

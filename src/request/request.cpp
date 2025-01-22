@@ -6,11 +6,13 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 07:52:36 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/21 19:28:37 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/22 09:54:40 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "request.hpp"
 #include "utils.hpp"
+#include "webserver.hpp"
+#include <cstddef>
 #include <string>
 
 /* while on reqFile to skip new lines at the begining of the request.
@@ -73,6 +75,8 @@ server	*find_server_by_hostname(std::list<server*> list, std::string hostname)
 	result = find_server_by_name(list, hostname_without_port);
 	if (!result)
 		result = find_server_by_name(list, hostname);
+	if (!result)
+		result = list.front();
 	return (result);
 }
 
@@ -89,7 +93,6 @@ std::string location_from_uri(const std::string& uri)
 	return (result);
 }
 
-
 location	*get_location_from_uri(server *_server, std::string uri)
 {
 	std::map<std::string, location>::iterator	i;
@@ -100,23 +103,51 @@ location	*get_location_from_uri(server *_server, std::string uri)
 	return (NULL);
 }
 
-void	request::check_config_file(client *_client, webserver *_webserver)
+void	request::get_server(client *_client, webserver *_webserver)
 {
+	if (this->_error_code != -1)
+		return ;
 	std::list<server*>	_servers_list = _webserver->_port_servers_list[_client->port];
 	std::string			hostname = this->_headers["host"];
-	server				*_server;
+	server				*result;
 
-	_server = find_server_by_hostname(_servers_list, hostname);
-	if (!_server)
+	result = find_server_by_hostname(_servers_list, hostname);
+	if (!result)
 	{
 		set_error_code(404, "host not found");
 		return ;
 	}
-	std::cout << "Super: " << this->_uri << std::endl;
-	location			*_location;
+	this->_server = result;
+}
 
-	_location = get_location_from_uri(_server, this->_uri);
-	_location->print_location_content();
+void	request::get_location()
+{
+	location			*result;
+
+	if (this->_error_code != -1)
+		return ;
+	result = get_location_from_uri(this->_server, this->_uri);
+	if (!result)
+	{
+		set_error_code(404, "location not found");
+		return ;
+	}
+	result->print_location_content();
+
+	if (result->_return)
+	{
+		set_error_code(std::atoi(result->_return_code.c_str()), result->_return_path);
+		return ;
+	}
+	this->_location = result;
+}
+
+void	request::check_config_file(client *_client, webserver *_webserver)
+{
+	if (this->_error_code != -1)
+		return ;
+	this->get_server(_client,_webserver);
+	this->get_location();
 }
 
 request::~request()
@@ -159,8 +190,14 @@ bool	request::check_if_cgi()
 {
 	if (this->_error_code != -1)
 		return (false);
-	// tmp we assume all is a cgi!
-	return (true);
+	if (this->_location || this->_method == "DELETE")
+	{
+		if (this->_location->_cgi_enabled)
+		{
+			return (true);
+		}
+	}
+	return (false);
 }
 
 void	request::close_cgi()
@@ -168,7 +205,7 @@ void	request::close_cgi()
 	if (this->_cgi)
 		delete this->_cgi;
 	this->_cgi = NULL;
-	this->_cgi_status = NONE;
+	this->_cgi_status = DONE;
 }
 
 void	request::clear()
@@ -186,6 +223,8 @@ void	request::clear()
 	this->_debug_msg.clear();
 	this->_cgi = NULL;
 	this->_cgi_status = NONE;
+	this->_location = NULL;
+	this->_server = NULL;
 }
 // Handle body
 

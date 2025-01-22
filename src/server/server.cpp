@@ -16,7 +16,8 @@ void	server::print_config_file()
 		{
 			tmp_loc = it->second;
 			std::cout << "--- Item " << i++;
-			it->second;
+		//	what is this???
+			//it->second;
 			std::cout  << std::endl;
 			tmp_loc.print_location_content();
 		}
@@ -51,11 +52,13 @@ bool	server::is_valid_port(std::string port)
 /// @brief check if mandatory parameters are empty. Throw error for now in case of empty.
 void server::check_empty_set_default()
 {
+	/*
 	if (this->_names.empty())
 	{
 		// _names.push_back("");
 		throw std::runtime_error("Error reading config file. Server name can't be empty.");
 	}
+	*/
 	if (this->_ports.empty())
 	{
 		// _names.push_back("");

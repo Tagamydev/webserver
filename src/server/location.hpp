@@ -21,6 +21,10 @@ class	location{
 		// bool		_index;
 		bool		_auto_index;
 		bool		_cgi_enabled;
+		bool		_return;
+		std::string	_return_code;
+		std::string	_return_path;
+
 		// bool		_get_enabled;
 		// bool		_post_enabled;
 		// bool		_delete_enabled;
@@ -40,8 +44,6 @@ class	location{
 		std::string	_save_file;
 		std::vector<std::string> _allowed_methods;
 		std::string _cgi_path;
-		std::string	_return_code;
-		std::string	_return_path;
 };
 
 #endif

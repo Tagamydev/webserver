@@ -39,10 +39,89 @@ response::response(request *_request, webserver *_webserver)
 
 response::~response(){}
 
+//CGI Parser
+// Handle errors
+void response::set_error_code(int code, std::string msg)
+{
+	this->_error_code = code;
+	this->_debug_msg = msg;	
+}
+
+
+
+
 void	response::do_cgi_response()
 {
-	std::cout << "[David!!]: " << this->_request->_cgi_response << std::endl;
+	if (this->_request->_cgi_response.length() <= 0)
+		return ;
+	std::cout << "\n\n[David!!]: " << std::endl;
+	// std::cout << "\n\n[David!!]: " << this->_request->_cgi_response << std::endl;
+	//process_headers
+	std::string headers;
+	std::string tmp;
+	std::stringstream ss;
 
+	ss << this->_request->_cgi_response;
+	ss.seekg(0);
+	getline(ss, tmp);
+	while (!tmp.empty() && tmp != "\r\n\r\n")
+	{
+		headers += tmp;
+		headers += '\n';
+		getline(ss, tmp);
+		if (ss.eof())
+		{
+			headers += tmp;
+			break;
+		}
+	}
+	utils::fix_spaces_in_line(headers);
+	// check if headers is empty?
+	// save_headers
+	int	i = 0;
+	int	flag = 0;
+	tmp.clear();
+
+	while (i < headers.length())
+	{
+		while (headers[i] == ' ')
+			i++;
+		if (i >= headers.size() || headers.find('\n') == std::string::npos) 
+			return (this->set_error_code(-1, "No error, should skip headers."));
+		flag = std::count(headers.begin() + i, headers.begin() + headers.find('\n'), ':');
+		if (flag > 0)
+		{
+			tmp = headers.substr(i, (headers.find(':') - i));
+			utils::ft_toLower(tmp);
+			i = headers.find(':');
+			while (headers[i] == ' ' || headers[i] == ':')
+				i++;
+			this->_headers[tmp] = headers.substr(i, (headers.find('\n') - i));
+		}
+		else
+		{
+			tmp = headers.substr(i, (headers.find('\n') - i));
+			utils::ft_toLower(tmp);
+			this->_headers[tmp] = "";
+		}
+		headers.erase(0, headers.find('\n') + 1);
+		i = 0;
+	}
+
+	//save body
+	tmp.clear();
+	getline(ss, tmp);
+	while (!tmp.empty())
+	{
+		this->_body += tmp;
+		this->_body += '\n';
+		getline(ss, tmp);
+		if (ss.eof())
+		{
+			this->_body += tmp;
+			break;
+		}
+	}
 }
 
 void	response::set_length()

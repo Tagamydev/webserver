@@ -60,6 +60,12 @@ class   response{
 
 		webserver	*_webserver;
 		request		*_request;
+
+		//cgi parser
+		void 			set_error_code(int code, std::string msg);
+
+		int				_error_code;
+		std::string		_debug_msg;
 		
 };
 

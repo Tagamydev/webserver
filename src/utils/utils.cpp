@@ -169,6 +169,8 @@ void utils::trim_space_newline(std::string &line)
 	int i = 0;
 	int j = line.length() - 1;
 
+	if (line.empty() || j <= 1)
+		return;
 	while (line[i] != '\0' && line[i] == ' ' || line[i] == '\t' || line[i] == '\r' || line[i] == '\f' || line[i] == '\n')
 		i++;
 	
@@ -178,6 +180,8 @@ void utils::trim_space_newline(std::string &line)
 
 	while (line[j] != '\0' && line[j] == ' ' || line[j] == '\t' || line[j] == '\r' || line[j] == '\f' || line[j] == '\n')
 		j--;
+	if (i >= j)
+		return;
 	line = line.substr(i,j - i +1);
 }
 

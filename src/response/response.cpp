@@ -1,4 +1,5 @@
 #include "response.hpp"
+#include <sstream>
 
 response::response(request *_request, webserver *_webserver)
 {
@@ -82,15 +83,38 @@ std::string	make_error_page_html(int error, std::string message, std::string deb
 	return (strm.str());
 }
 
+std::string	get_file(std::string &path)
+{
+	std::ifstream	file(path.c_str(), std::ios::binary);
+	std::stringstream	buff;
+	std::string			result = "";
+
+	if (file.is_open())
+	{
+		buff << file.rdbuf();
+		result = buff.str();
+		file.close();
+	}
+	return (result);
+}
+
 void	response::do_error_page(int error)
 {
+	std::stringstream	debug;
+
 	this->_error = true;
 	this->_status_code = error;
-	std::cout << "Error page { " << error << " }: "; 
-	std::cout << this->status_message(error) << "!!" << std::endl;
+	debug << "Error page: " << error << ": " << this->status_message(error);
+	utils::print_debug(debug.str());
 	this->_headers["Content-Type"] = "text/html;charset=utf-8";
-	this->_body = make_error_page_html(error, this->status_message(error), this->_request->_debug_msg);
-
+	if (this->_request->_server && !this->_request->_server->_error_pages[error].empty())
+	{
+		this->_body = this->_request->_server->_error_pages[error];
+		if (this->_body.empty())
+			this->_body = make_error_page_html(error, this->status_message(error), this->_request->_debug_msg);
+	}
+	else
+		this->_body = make_error_page_html(error, this->status_message(error), this->_request->_debug_msg);
 }
 
 std::string	response::get_mimeType(std::string &path)
@@ -204,13 +228,14 @@ void	response::get_dir(std::string &path)
 			this->do_error_page(403);
 			return ;
 		}
-
 	}
 	else
 	{
-		this->do_error_page(200);
-		return ;
-		// what happend if the index file is not found?
+		std::string	index_file;
+
+		// this is a tmp index geter, i dont know how to handle the root and alias.
+		index_file = "./" + this->_request->_location->_root + "/" + this->_request->_location->_index_file;
+		this->get_file(index_file);
 	}
 }
 
@@ -364,7 +389,6 @@ void	response::do_delete()
 		{
 			// directory
 			//'/?' 301
-
 			this->delete_dir(path);
 		}
 		else

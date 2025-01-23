@@ -6,9 +6,9 @@
 - [ ] Limit client body size.
 - [ ] Setup routes with one or multiple of the following rules/configurations (routes won't be using regexp):
   - [x] Define a list of accepted HTTP methods for the route.
-  - [ ] Define an HTTP redirection.
+  - [x] Define an HTTP redirection.
   - [ ] Define a directory or a file from where the file should be searched (for example, if URL `/kapouet` is rooted to `/tmp/www`, URL `/kapouet/pouic/toto/pouet` is `/tmp/www/pouic/toto/pouet`).
-  - [ ] Turn on or off directory listing.
+  - [x] Turn on or off directory listing.
   - [ ] Set a default file to answer if the request is a directory.
   - [ ] Execute CGI based on certain file extensions (for example, `.php`).
   - [ ] Make it work with POST and GET methods.

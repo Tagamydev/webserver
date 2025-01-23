@@ -42,6 +42,7 @@ class   response{
 		void		do_get();
 		void		do_post();
 		void		do_delete();
+		void		do_cgi_response();
 
 		void		set_length();
 		void		get_file(std::string &path);
@@ -59,6 +60,12 @@ class   response{
 
 		webserver	*_webserver;
 		request		*_request;
+
+		//cgi parser
+		void 			set_error_code(int code, std::string msg);
+
+		int				_error_code;
+		std::string		_debug_msg;
 		
 };
 

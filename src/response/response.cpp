@@ -28,7 +28,7 @@ response::response(request *_request, webserver *_webserver)
 			this->do_error_page(405);
 	}
 	else
-		this->do_cgi_response();
+		// this->do_cgi_response();
 
 	this->set_length();
 	if (!this->_keep_alive)
@@ -111,6 +111,7 @@ void	response::do_cgi_response()
 	//save body
 	tmp.clear();
 	getline(ss, tmp);
+	// std::cout << "\n\nBODY\n" << tmp << std::endl;
 	while (!tmp.empty())
 	{
 		this->_body += tmp;

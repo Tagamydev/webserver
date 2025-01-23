@@ -89,8 +89,8 @@ void cgi::read()
 	this->_request->_cgi_response = result;
 
 // to delete
-	utils::print_debug("\nmakeDAVID\n");
-	utils::print_debug(this->_request->_cgi_response);
+	// utils::print_debug("\nmakeDAVID\n");
+	// utils::print_debug(this->_request->_cgi_response);
 }
 
 void cgi::write(std::string &content)

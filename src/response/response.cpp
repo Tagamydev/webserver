@@ -46,16 +46,6 @@ response::response(request *_request, webserver *_webserver)
 response::~response(){}
 
 //CGI Parser
-// Handle errors
-void response::set_error_code(int code, std::string msg)
-{
-	this->_error_code = code;
-	this->_debug_msg = msg;	
-}
-
-
-
-
 void	response::do_cgi_response()
 {
 	if (this->_request->_cgi_response.length() <= 0)
@@ -92,8 +82,6 @@ void	response::do_cgi_response()
 	{
 		while (headers[i] == ' ')
 			i++;
-		if (i >= headers.size() || headers.find('\n') == std::string::npos) 
-			return (this->set_error_code(-1, "No error, should skip headers."));
 		flag = std::count(headers.begin() + i, headers.begin() + headers.find('\n'), ':');
 		if (flag > 0)
 		{

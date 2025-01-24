@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 07:52:36 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/24 17:55:24 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/24 21:13:16 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "request.hpp"
@@ -252,7 +252,6 @@ void	request::parsing()
 
 bool	request::check_if_cgi()
 {
-	return (true);
 	if (this->_error_code != -1)
 		return (false);
 	if (this->_location || this->_method == "DELETE")

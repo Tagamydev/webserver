@@ -217,7 +217,7 @@ std::string	make_error_page_html(int error, std::string message, std::string deb
 	return (strm.str());
 }
 
-std::string	get_file(std::string &path)
+std::string	str_file(std::string &path)
 {
 	std::ifstream	file(path.c_str(), std::ios::binary);
 	std::stringstream	buff;
@@ -246,6 +246,11 @@ void	response::do_error_page(int error)
 		this->_body = this->_request->_server->_error_pages[error];
 		if (this->_body.empty())
 			this->_body = make_error_page_html(error, this->status_message(error), this->_request->_debug_msg);
+		else
+		{
+			this->_body = "./" + this->_body;
+			this->_body = str_file(this->_body);
+		}
 	}
 	else
 		this->_body = make_error_page_html(error, this->status_message(error), this->_request->_debug_msg);

@@ -12,15 +12,19 @@ class	location{
 		~location();
 		location(std::string line);
 
-
-
-
-
 		// std::map<int, std::string>	_return;
 
 		// bool		_index;
+		std::string	_index_file;
 		bool		_auto_index;
 		bool		_cgi_enabled;
+		bool		_return;
+		std::string	_return_code;
+		std::string	_return_path;
+		std::string	_path;
+		std::string _root;
+		std::string _alias;
+
 		// bool		_get_enabled;
 		// bool		_post_enabled;
 		// bool		_delete_enabled;
@@ -33,15 +37,9 @@ class	location{
 		// const std::string &get_root() const;
 
 	private:
-		std::string	_path;
-		std::string _root;
-		std::string _alias;
-		std::string	_index_file;
 		std::string	_save_file;
 		std::vector<std::string> _allowed_methods;
 		std::string _cgi_path;
-		std::string	_return_code;
-		std::string	_return_path;
 };
 
 #endif

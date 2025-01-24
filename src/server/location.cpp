@@ -73,6 +73,7 @@ void	location::set_priv_attribute(std::string line)
 	}
 	else if (key == "return")
 	{
+		this->_return = true;
 		this->_return_code = value.substr(0, value.find(' '));
 		value.erase(0, value.find(' ') + 1);
 
@@ -88,13 +89,16 @@ const std::string &location::get_path() const { return this->_path; }
 
 
 location::location() : _path(""), _index_file(DEFAULT_INDEX), _save_file(""), _cgi_path(DEFAULT_CGI),
-       _alias(""), _auto_index(false), _cgi_enabled(false), _return_path(""), _return_code("") {}
+       _alias(""), _auto_index(false), _cgi_enabled(false), _return_path(""), _return(false), _return_code("")
+{
+
+}
 
 location::~location()
 {}
 
 location::location(std::string content) : _path(""), _index_file(DEFAULT_INDEX), _save_file(""), _cgi_path(DEFAULT_CGI),
-       _alias(""), _auto_index(false), _cgi_enabled(false), _return_path(""), _return_code("") 
+       _alias(""), _auto_index(false), _cgi_enabled(false), _return_path(""), _return(false), _return_code("") 
 {
 	std::stringstream contentStream;
 	std::string	line;

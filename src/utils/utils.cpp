@@ -27,9 +27,17 @@ void utils::print_log(std::string message)
 
 void utils::send_response(int socket_fd, const std::string &response_str)
 {
-	size_t response_length = response_str.length();
+	size_t	response_length = response_str.length();
+	int		result;
 
-	send(socket_fd, response_str.c_str(), response_length, 0);
+	result = send(socket_fd, response_str.c_str(), response_length, 0);
+	// from send manual: Locally detected errors are indicated by a return value of -1.
+	if (result == -1)
+		throw std::runtime_error("Error sending info to file descriptor.");
+	// from write manual: If no errors are detected, 
+	// or error detection is not performed, 0 is returned without causing any other effect..
+	if (result == 0)
+		return ;
 }
 
 std::string	utils::read_file(int fd)
@@ -169,6 +177,8 @@ void utils::trim_space_newline(std::string &line)
 	int i = 0;
 	int j = line.length() - 1;
 
+	if (line.empty() || j <= 1)
+		return;
 	while (line[i] != '\0' && line[i] == ' ' || line[i] == '\t' || line[i] == '\r' || line[i] == '\f' || line[i] == '\n')
 		i++;
 	
@@ -178,6 +188,8 @@ void utils::trim_space_newline(std::string &line)
 
 	while (line[j] != '\0' && line[j] == ' ' || line[j] == '\t' || line[j] == '\r' || line[j] == '\f' || line[j] == '\n')
 		j--;
+	if (i >= j)
+		return;
 	line = line.substr(i,j - i +1);
 }
 

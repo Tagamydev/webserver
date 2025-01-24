@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 09:24:16 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/16 18:00:28 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/22 16:24:01 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ struct loopHandler{
 		std::map<int, struct pollfd>		_clientFd_cgiFd;
 		
 		// UTILS
+		void	open_ports();
 		void	delete_client(client *_client, int &i);
 
 		client	*get_client_from_clientFd(int fd);
@@ -61,10 +62,9 @@ struct loopHandler{
 		void	delete_cgi_from_list(cgi *_cgi, int &i);
 
 		void	read_from_cgi(int &i, std::vector<struct pollfd> &list);
+  
 		void	new_client(struct pollfd socket);
-		void	new_request(int fd, std::vector<struct pollfd> &list);
-
-
+		void	new_request(int fd, std::vector<struct pollfd> &list, int &i);
 };
 
 #endif

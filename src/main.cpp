@@ -6,7 +6,7 @@
 /*   By: samusanc <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/11 08:36:52 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/16 18:01:56 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/22 08:20:32 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,6 @@ void	make_poll(std::vector<struct pollfd> &list)
 	if (result < 0)
 		throw (std::runtime_error("Poll fail."));
 }
-
 
 void	server_loop(webserver &server)
 {

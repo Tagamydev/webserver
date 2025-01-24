@@ -1,6 +1,7 @@
 #ifndef __DEFAULTS_HPP__
 # define __DEFAULTS_HPP__
 
+// this will be changed, this cannot be defaults
 # define DEFAULT_ROOT "www"
 # define DEFAULT_ALIAS "www"
 # define DEFAULT_INDEX ""

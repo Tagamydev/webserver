@@ -228,7 +228,6 @@ void	response::get_file(std::string &path)
 	}
 	else
 	{
-		std::cout << "[La mama]" << std::endl;
 		this->do_error_page(404);
 		return ;
 	}

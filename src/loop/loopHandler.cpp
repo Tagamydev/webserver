@@ -12,6 +12,7 @@
 
 #include "loopHandler.hpp"
 #include "utils.hpp"
+#include <exception>
 
 loopHandler::loopHandler(webserver &webserver)
 {
@@ -196,7 +197,15 @@ void	loopHandler::send_response(int &i, std::vector<struct pollfd> &list)
 		bool		_keep_alive;
 	
 		_keep_alive = _response._keep_alive;
-		utils::send_response(_client->get_fd(), _response.str());
+		try
+		{
+			utils::send_response(_client->get_fd(), _response.str());
+		}
+		catch (std::exception &e)
+		{
+			utils::print_info("fail to read/write into client reason: " + std::string(e.what()));
+			_keep_alive = false;
+		}
 		_client->free_request();
 		if (!_keep_alive)
 		{
@@ -339,13 +348,21 @@ void	loopHandler::new_client(struct pollfd socket)
 	this->_client_clientFd[_client] = _client->get_pollfd();
 }
 
-void	loopHandler::new_request(int fd, std::vector<struct pollfd> &list)
+void	loopHandler::new_request(int fd, std::vector<struct pollfd> &list, int &i)
 {
 	client	*_client;
 
 	_client = this->get_client_from_clientFd(fd);
-	utils::print_debug("assigning new request to client");
-	_client->_request = new request(_client, this->_webserver, list);
+	try
+	{
+		utils::print_debug("assigning new request to client");
+		_client->_request = new request(_client, this->_webserver, list);
+	}
+	catch (std::exception &e)
+	{
+		utils::print_info("fail to read/write into client reason: " + std::string(e.what()));
+		this->delete_client(_client, i);
+	}
 }
 
 void	loopHandler::add_cgi(int clientFd, struct pollfd cgiFd)
@@ -365,12 +382,12 @@ void	loopHandler::check_additions(int &i, std::vector<struct pollfd> &list)
 	else if (is_cgi(socket.fd))
 		this->read_from_cgi(i, list);
 	else
-		this->new_request(socket.fd, list);
+		this->new_request(socket.fd, list, i);
 }
 
 void	loopHandler::send_to_cgi(int &i, std::vector<struct pollfd> &list)
 {
-	client *_client;
+	client			*_client;
 	struct pollfd	socket;
 
 	socket = list[i];
@@ -380,151 +397,3 @@ void	loopHandler::send_to_cgi(int &i, std::vector<struct pollfd> &list)
 	this->make_fd_list(list);
 }
 
-
-/*
-bool	check_if_fd_match(std::list<int> &_serversFD, int value)
-{
-	std::list<int>::iterator i = std::find(_serversFD.begin(), _serversFD.end(), value);
-	if (i == _serversFD.end())
-		return (false);
-	return (true);
-}
-
-
-void	loopHandler::delete_FD_from_FD_list(int fd, std::list<int> &list)
-{
-	std::list<int>::iterator	i = list.begin();
-	std::list<int>::iterator	ie = list.end();
-
-	for (; i != ie; i++)
-	{
-		if (*i == fd)
-		{
-			list.erase(i);
-			break ;
-		}
-	}
-}
-
-void	loopHandler::delete_FD_from_pollFD_list(int fd, std::vector<struct pollfd> &list)
-{
-	std::cout << "deleting fd number: "<< fd << std::endl;
-	std::vector<struct pollfd>::iterator	i = list.begin();
-	std::vector<struct pollfd>::iterator	ie = list.end();
-
-	for (; i != ie; i++)
-	{
-		if ((*i).fd == fd)
-		{
-			list.erase(i);
-			break ;
-		}
-	}
-}
-
-
-void	loopHandler::send_response_client(int n_client, request *tmp_req)
-{
-	response	_response = response(*tmp_req, *this->_webserver);
-	bool		_keep_alive;
-
-	_keep_alive = _response._keep_alive;
-	utils::send_response(this->_fdsList[n_client].fd, _response.str());
-	delete tmp_req;
-	if (!_keep_alive)
-	{
-		close(this->_fdsList[n_client].fd);
-		this->_fdsList.erase(this->_fdsList.begin() + n_client);
-	}
-}
-
-cgi	*loopHandler::get_cgi_from_client(int n_client)
-{
-	request	*tmp_req = this->get_request_from_client(this->_cgi_request[this->_fdsList[n_client].fd]);
-
-	if (!tmp_req)
-		throw (std::runtime_error("get cgi fail. Request is NULL"));
-	return (tmp_req->_cgi);
-}
-
-
-
-void	loopHandler::do_poll()
-{
-	int	result;
-
-	result = poll(_fdsList.data(), this->total_fds(), 0);
-	if (result < 0)
-		throw (std::runtime_error("Poll fail."));
-}
-
-int	loopHandler::port_from_client_fd(int fd)
-{
-	int	serverFD;
-	int	port;
-
-	serverFD = this->_clientFD_serverFD[fd];
-	port = this->_serverFD_port[serverFD];
-	return (port);
-}
-
-unsigned int loopHandler::total_fds()
-{
-	return (static_cast<unsigned int>(_fdsList.size()));
-}
-
-bool	loopHandler::check_poll_in(int number)
-{
-	if (_fdsList[number].revents & POLLIN)
-		return (true);
-	return (false);
-}
-
-bool	loopHandler::check_poll_in_server(int number)
-{
-	if (check_if_fd_match(this->_serversFD, this->_fdsList[number].fd))
-		return (true);
-	return (false);
-}
-
-bool	loopHandler::check_poll_in_cgi(int number)
-{
-	if (check_if_fd_match(this->_cgiFD, this->_fdsList[number].fd))
-		return (true);
-	return (false);
-}
-
-
-bool	loopHandler::check_poll_out(int number)
-{
-	if ((_fdsList[number].events & POLLOUT))
-		return (true);
-	return (false);
-}
-
-void	loopHandler::new_client(int number)
-{
-	int new_socket;
-
-	if ((new_socket = accept(this->_fdsList[number].fd, NULL, NULL)) == -1)
-		throw (std::runtime_error("Accept fail."));
-
-	this->_fdsList.push_back(utils::pollfd_from_fd(new_socket, POLLIN | POLLOUT));
-	this->_clientFD_serverFD[this->_fdsList.back().fd] = this->_fdsList[number].fd;
-
-	std::cout << "[Info]: New client in port: " 
-	<< this->port_from_client_fd(this->_fdsList.back().fd) 
-	<< std::endl;
-}
-
-void	loopHandler::new_request(int number)
-{
-	this->_client_and_request[number] = new request(this->_fdsList[number].fd, *this->_webserver, number, *this);
-}
-
-request	*loopHandler::get_request_from_client(int n_client)
-{
-	return (this->_client_and_request[n_client]);
-}
-
-*/

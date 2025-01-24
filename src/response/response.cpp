@@ -34,7 +34,7 @@ response::response(request *_request, webserver *_webserver)
 			this->do_error_page(405);
 	}
 	else
-		// this->do_cgi_response();
+		this->do_cgi_response();
 
 	this->set_length();
 	if (!this->_keep_alive)
@@ -48,11 +48,65 @@ response::~response(){}
 //CGI Parser
 void	response::do_cgi_response()
 {
+	if (this->_request->_cgi_response.empty())
+		return;
+
+	std::string headers;
+	std::string tmp;
+	std::stringstream ss(this->_request->_cgi_response);
+
+	// Separate headers from the body
+	while (getline(ss, tmp)) {
+		if (tmp == "\r" || tmp == "\r\n" || tmp.empty()) // End of headers
+			break;
+		headers += tmp + '\n'; // Keep headers for parsing
+	}
+
+	utils::fix_spaces_in_line(headers); // Assume this fixes whitespace issues in the header lines
+
+	// Parse headers into a map
+	size_t i = 0;
+	while (i < headers.length()) {
+		// Skip leading whitespace
+		while (i < headers.length() && headers[i] == ' ')
+			i++;
+
+		size_t colonPos = headers.find(':', i);
+		size_t lineEnd = headers.find('\n', i);
+
+		if (colonPos != std::string::npos && colonPos < lineEnd) {
+			std::string key = headers.substr(i, colonPos - i);
+			utils::ft_toLower(key); // Normalize header name
+
+			// Extract value
+			size_t valueStart = colonPos + 1;
+			while (valueStart < lineEnd && headers[valueStart] == ' ') // Skip spaces after ':'
+				valueStart++;
+			std::string value = headers.substr(valueStart, lineEnd - valueStart);
+
+			this->_headers[key] = value; // Store the header
+		} else {
+			// Handle headers without values
+			std::string key = headers.substr(i, lineEnd - i);
+			utils::ft_toLower(key);
+			this->_headers[key] = "";
+		}
+
+		// Move to the next line
+		i = lineEnd + 1;
+	}
+
+	// Extract body
+	this->_body.clear();
+	while (getline(ss, tmp)) {
+		if (!tmp.empty()) {
+			this->_body += tmp + '\n';
+		}
+	}
+	this->_status_code = 200;
+	/*
 	if (this->_request->_cgi_response.length() <= 0)
 		return ;
-	std::cout << "\n\n[David!!]: " << std::endl;
-	// std::cout << "\n\n[David!!]: " << this->_request->_cgi_response << std::endl;
-	//process_headers
 	std::string headers;
 	std::string tmp;
 	std::stringstream ss;
@@ -72,8 +126,6 @@ void	response::do_cgi_response()
 		}
 	}
 	utils::fix_spaces_in_line(headers);
-	// check if headers is empty?
-	// save_headers
 	int	i = 0;
 	int	flag = 0;
 	tmp.clear();
@@ -102,10 +154,8 @@ void	response::do_cgi_response()
 		i = 0;
 	}
 
-	//save body
 	tmp.clear();
 	getline(ss, tmp);
-	// std::cout << "\n\nBODY\n" << tmp << std::endl;
 	while (!tmp.empty())
 	{
 		this->_body += tmp;
@@ -117,6 +167,10 @@ void	response::do_cgi_response()
 			break;
 		}
 	}
+	this->_status_code = 200;
+	std::cout << "this is america" << std::endl;
+	std::cout << this->_body << std::endl;
+	*/
 }
 
 void	response::set_length()
@@ -296,6 +350,8 @@ void	response::get_dir(std::string &path)
 {
     std::list<std::string> entries = listDirectory(path);
 
+	std::cout << "[debug this is num]: " << this->_request->_location->_index_file.empty() 
+		<< "this is the value: " << this->_request->_location->_index_file << std::endl;
 	if (this->_request->_location->_index_file.empty())
 	{
 		if (this->_request->_location->_auto_index)

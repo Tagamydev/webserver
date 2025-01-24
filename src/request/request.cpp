@@ -1,7 +1,19 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   request.cpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/20 07:52:36 by samusanc          #+#    #+#             */
+/*   Updated: 2025/01/22 17:18:27 by samusanc         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 #include "request.hpp"
 #include "utils.hpp"
+#include "webserver.hpp"
+#include <cstddef>
 #include <string>
-
 
 /* while on reqFile to skip new lines at the begining of the request.
 */
@@ -9,18 +21,194 @@ request::request(client *_client, webserver *_webserver,
 std::vector<struct pollfd> &list)
 {
 	utils::print_debug("new request");
+	this->clear();
+	this->_fd = _client->get_fd();
+	this->parsing();
+	this->debug();
+	this->check_config_file(_client, _webserver);
+
+	if (this->check_if_cgi())
+	{
+		this->_cgi_status = WAITING;
+		this->_cgi = new cgi(*this, _client, list, _webserver);
+	}
+}
+
+std::string split_hostname(const std::string& hostname)
+{
+	std::string	host;
+	std::size_t colonPos = hostname.find(':');
+	
+	if (colonPos != std::string::npos)
+		host = hostname.substr(0, colonPos);
+	else
+		host = hostname;
+	return (host);
+}
+
+server	*find_wildcard_name(std::list<server*> list, std::string hostname)
+{
+	std::list<server*>::iterator i = list.begin();
+	std::list<server*>::iterator ie = list.end();
+	std::vector<std::string>	names_list;
+
+	for (; i != ie ; i++)
+	{
+		names_list = (*i)->_names;
+		std::vector<std::string>::iterator	j = names_list.begin();
+		std::vector<std::string>::iterator	je = names_list.end();
+		std::vector<std::string>::iterator	result;
+
+		for (; j != je ; j++)
+		{
+			if (*j == "_" || *j == "*")
+				return (*i);
+		}
+	}
+	i = list.begin();
+	ie = list.end();
+
+	for (; i != ie ; i++)
+	{
+		names_list = (*i)->_names;
+		if (names_list.empty())
+			return (*i);
+	}
+	return (NULL);
+}
+
+server	*find_server_by_name(std::list<server*> list, std::string hostname)
+{
+	std::list<server*>::iterator i = list.begin();
+	std::list<server*>::iterator ie = list.end();
+	std::vector<std::string>	names_list;
+
+	for (; i != ie ; i++)
+	{
+		names_list = (*i)->_names;
+		std::vector<std::string>::iterator	j = names_list.begin();
+		std::vector<std::string>::iterator	je = names_list.end();
+		std::vector<std::string>::iterator	result;
+
+		result = std::find(j, je, hostname);
+		if (result != je)
+			return (*i);
+	}
+	return (NULL);
+}
+
+server	*find_server_by_hostname(std::list<server*> list, std::string hostname)
+{
+	server		*result;
+	std::string	hostname_without_port;
+
+	hostname_without_port = split_hostname(hostname);
+	result = find_server_by_name(list, hostname_without_port);
+	if (!result)
+		result = find_server_by_name(list, hostname);
+	if (!result)
+		result = find_wildcard_name(list, hostname);
+	return (result);
+}
+
+std::string location_from_uri(const std::string& uri)
+{
+	std::string	result;
+	std::string	copy(uri.c_str() + 1);
+	std::size_t colonPos = copy.find('/');
+	
+	if (colonPos != std::string::npos)
+		result = uri.substr(0, colonPos + 1);
+	else
+		result = uri;
+	return (result);
+}
+
+location	*get_location_from_uri(server *_server, std::string uri)
+{
+	std::map<std::string, location>::iterator	i;
+
+	i = _server->_locations.find(location_from_uri(uri));
+	if (i != _server->_locations.end())
+		return (&(i->second));
+	return (NULL);
+}
+
+void	request::get_server(client *_client, webserver *_webserver)
+{
+	if (this->_error_code != -1)
+		return ;
+	std::list<server*>	_servers_list = _webserver->_port_servers_list[_client->port];
+	std::string			hostname = this->_headers["host"];
+	server				*result;
+
+	result = find_server_by_hostname(_servers_list, hostname);
+	if (!result)
+	{
+		set_error_code(404, "host not found");
+		return ;
+	}
+	this->_server = result;
+}
+
+void	request::get_location()
+{
+	location			*result;
+
+	if (this->_error_code != -1)
+		return ;
+	result = get_location_from_uri(this->_server, this->_uri);
+	if (!result)
+	{
+		set_error_code(404, "location not found");
+		return ;
+	}
+	result->print_location_content();
+
+	if (result->_return)
+	{
+		set_error_code(std::atoi(result->_return_code.c_str()), result->_return_path);
+		return ;
+	}
+
+	if (!result->is_allowed_method(this->_method))
+	{
+		set_error_code(405, "Method Not Allowed");
+		return ;
+	}
+
+	this->_location = result;
+}
+
+void	request::check_config_file(client *_client, webserver *_webserver)
+{
+	if (this->_error_code != -1)
+		return ;
+	this->get_server(_client,_webserver);
+	this->get_location();
+}
+
+request::~request()
+{
+	if (this->_cgi)
+		delete this->_cgi;
+}
+
+void	request::debug()
+{
+	print_request();
+	print_header();
+	print_body();
+	print_others();
+}
+
+void	request::parsing()
+{
 	std::string			file;
 	std::stringstream	reqFile;
 	std::string			line;
-	int					fd;
 
-	fd = _client->get_fd();
-
-	this->_cgi = NULL;
-	this->clear();
-	this->_cgi_status = NONE;
-
-	file = utils::read_file(fd);
+	file = utils::read_file(this->_fd);
 	std::cout << file << std::endl;
 	reqFile << file;
 	reqFile.seekg(0);
@@ -34,29 +222,20 @@ std::vector<struct pollfd> &list)
 		this->process_body(reqFile, line);
 	if (this->_error_code == -1)
 		this->parse_headers();
-
-	print_request();
-	print_header();
-	print_body();
-	print_others();
-
-	if (this->check_if_cgi())
-	{
-		this->_cgi_status = WAITING;
-		this->_cgi = new cgi(*this, _client, list, _webserver);
-	}
-}
-
-request::~request()
-{
-	if (this->_cgi)
-		delete this->_cgi;
 }
 
 bool	request::check_if_cgi()
 {
-	// tmp we assume all is a cgi!
-	return (true);
+	if (this->_error_code != -1)
+		return (false);
+	if (this->_location || this->_method == "DELETE")
+	{
+		if (this->_location->_cgi_enabled)
+		{
+			return (true);
+		}
+	}
+	return (false);
 }
 
 void	request::close_cgi()
@@ -64,7 +243,7 @@ void	request::close_cgi()
 	if (this->_cgi)
 		delete this->_cgi;
 	this->_cgi = NULL;
-	this->_cgi_status = NONE;
+	this->_cgi_status = DONE;
 }
 
 void	request::clear()
@@ -80,6 +259,10 @@ void	request::clear()
 	this->_chunked_flag = false;
 	this->_error_code = -1;
 	this->_debug_msg.clear();
+	this->_cgi = NULL;
+	this->_cgi_status = NONE;
+	this->_location = NULL;
+	this->_server = NULL;
 }
 // Handle body
 
@@ -324,38 +507,46 @@ void request::set_error_code(int code, std::string msg)
 
 
 // Utils
-
 void	request::print_request()
 {
-	std::cout << "\n<<<<    Request    >>>>" << std::endl;
-	std::cout << "Method : " << this->_method << std::endl;
-	std::cout << "URI : " << this->_uri << std::endl;
-	std::cout << "HTTP V : " << this->_http_version << std::endl;
-	std::cout << "Uri_file : " << this->_uri_file << std::endl;
-	std::cout << "Uri_params : " << this->_uri_params << std::endl;
+	utils::print_debug("\n<<<<    Request    >>>>");
+	utils::print_debug("Method : " + this->_method);
+	utils::print_debug("URI : " + this->_uri);
+	utils::print_debug("HTTP V : " + this->_http_version);
+	utils::print_debug("Uri_file : " + this->_uri_file);
+	utils::print_debug("Uri_params : " + this->_uri_params);
 }
 
 void	request::print_header()
 {
-	std::cout << "\n<<<<    HEADER    >>>>" << std::endl;
+	utils::print_debug("\n<<<<    HEADER    >>>>");
 	for (std::map<std::string,std::string>::iterator it = this->_headers.begin(); it != this->_headers.end(); it++)
 	{
-		std::cout << "Key: " << it->first <<  std::endl;
-		std::cout << " Value: " << it->second << "" << std::endl;
+		utils::print_debug("Key: " + it->first);
+		utils::print_debug(" Value: " + it->second);
 	}
 }
 
 void	request::print_body()
 {
-	std::cout << "\n<<<<    BODY    >>>>" << std::endl;
-	std::cout << this->_body <<  std::endl;
+	utils::print_debug("\n<<<<    BODY    >>>>");
+	utils::print_debug(this->_body);
 }
 void	request::print_others()
 {
-std::cout << "\n<<<<    Control vars    >>>>" << std::endl;
-	std::cout << "body lenght: " << this->_body_length << std::endl;
-	std::cout << "Has body: " << this->_has_body << std::endl;
-	std::cout << "Is chunked: " << this->_chunked_flag << std::endl;
-	std::cout << "Error code: " << this->_error_code << std::endl;
-	std::cout << "Debug Message: " << this->_debug_msg << std::endl;
+	std::stringstream	body_length;
+	std::stringstream	has_body;
+	std::stringstream	chunked_flag;
+	std::stringstream	error_code;
+
+	body_length << this->_body_length;
+	has_body << this->_has_body;
+	chunked_flag << this->_chunked_flag;
+	error_code << this->_error_code;
+	utils::print_debug("\n<<<<    Control vars    >>>>");
+	utils::print_debug("body lenght: " + body_length.str());
+	utils::print_debug("Has body: " + has_body.str());
+	utils::print_debug("Is chunked: " + chunked_flag.str());
+	utils::print_debug("Error code: " + error_code.str());
+	utils::print_debug("Debug Message: " + this->_debug_msg);
 }

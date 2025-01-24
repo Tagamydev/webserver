@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 10:40:56 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/18 14:48:26 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/22 16:36:37 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,21 @@
 loopHandler::loopHandler(webserver &webserver)
 {
 	this->_webserver = &webserver;
+	this->open_ports();
+}
 
-	this->new_server(1234);
-//	this->new_server(4321);
-//	this->new_server(7777);
+void	loopHandler::open_ports()
+{
+	std::map<int, std::list<server *> >::iterator	i;
+	std::map<int, std::list<server *> >::iterator	ie;
+
+	i = this->_webserver->_port_servers_list.begin();
+	ie = this->_webserver->_port_servers_list.end();
+	for (; i != ie ; i++)
+	{
+		std::cout << "[Debug]: " << i->first;
+		this->new_server(i->first);
+	}
 }
 
 void	clear_server_cgi_Fd(std::map<int, struct pollfd> &_list)

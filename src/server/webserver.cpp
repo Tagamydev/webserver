@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 08:03:12 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/15 08:34:33 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/21 17:06:01 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,12 +37,32 @@ webserver::webserver(std::string &path)
 		// std::cout << "Create Server "  << newServer.get_first_name() << std::endl;
 	}
 	check_servers();
+	sort_servers();
 	this->_loop = new loopHandler(*this);
 }
 
 webserver::~webserver()
 {
 	delete this->_loop;
+}
+
+void	webserver::sort_servers()
+{
+	std::vector<server>::iterator	i = this->_servers.begin();
+	std::vector<server>::iterator	ie = this->_servers.end();
+
+	for (; i != ie ; i++)
+	{
+		std::vector<int>::iterator	j = i->_ports.begin();
+		std::vector<int>::iterator	je = i->_ports.end();
+
+		for (; j != je ; j++)
+		{
+			std::list<server*>	&_list = this->_port_servers_list[*j];
+
+			_list.push_back(&(*i));
+		}
+	}
 }
 
 /// Parsing Utils

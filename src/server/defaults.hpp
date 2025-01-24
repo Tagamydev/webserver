@@ -3,7 +3,7 @@
 
 # define DEFAULT_ROOT "www"
 # define DEFAULT_ALIAS "www"
-# define DEFAULT_INDEX "index.html"
+# define DEFAULT_INDEX ""
 # define DEFAULT_MAX_CLIENT_BODY_SIZE 1024
 # define DEFAULT_HOST "localhost"
 # define DEFAULT_SERVER 0

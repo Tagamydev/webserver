@@ -34,6 +34,7 @@ response::response(request *_request, webserver *_webserver)
 			this->do_error_page(405);
 	}
 	else
+		;
 		// this->do_cgi_response();
 
 	this->set_length();
@@ -227,6 +228,7 @@ void	response::get_file(std::string &path)
 	}
 	else
 	{
+		std::cout << "[La mama]" << std::endl;
 		this->do_error_page(404);
 		return ;
 	}
@@ -296,6 +298,8 @@ void	response::get_dir(std::string &path)
 {
     std::list<std::string> entries = listDirectory(path);
 
+	std::cout << "[debug this is num]: " << this->_request->_location->_index_file.empty() 
+		<< "this is the value: " << this->_request->_location->_index_file << std::endl;
 	if (this->_request->_location->_index_file.empty())
 	{
 		if (this->_request->_location->_auto_index)

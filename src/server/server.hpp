@@ -23,7 +23,6 @@ class	server{
 		std::map<int, std::string>		_error_pages;
 		std::map<std::string, location>	_locations;
 
-
 		//utils
 		void	print_config_file();
 

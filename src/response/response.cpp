@@ -22,6 +22,24 @@ response::response(request *_request, webserver *_webserver)
 			this->do_error_page(this->_request->_error_code);
 	}
 
+	//check in config file for alias and root in the same block
+	if (!this->_request->_location->_alias.empty())
+	{
+		this->_request->_uri = this->_request->_location->_alias;
+		if (this->_request->_uri[0] != '/')
+			this->_request->_uri = "./" + this->_request->_uri;
+		std::cout << "[Path]: " << this->_request->_uri << std::endl;
+	}
+	else if (!this->_request->_location->_root.empty())
+	{
+		this->_request->_uri = this->_request->_location->_root + this->_request->_uri;
+		if (this->_request->_uri[0] != '/')
+			this->_request->_uri = "./" + this->_request->_uri;
+		std::cout << "[Path]: " << this->_request->_uri << std::endl;
+	}
+	else
+		this->_request->_uri = "." + this->_request->_uri;
+
 	if (this->_request->_cgi_status == NONE)
 	{
 		if (this->_request->_method == "GET")
@@ -55,122 +73,52 @@ void	response::do_cgi_response()
 	std::string tmp;
 	std::stringstream ss(this->_request->_cgi_response);
 
-	// Separate headers from the body
-	while (getline(ss, tmp)) {
+	while (getline(ss, tmp))
+	{
 		if (tmp == "\r" || tmp == "\r\n" || tmp.empty()) // End of headers
 			break;
-		headers += tmp + '\n'; // Keep headers for parsing
+		headers += tmp + '\n';
 	}
 
-	utils::fix_spaces_in_line(headers); // Assume this fixes whitespace issues in the header lines
+	utils::fix_spaces_in_line(headers);
 
-	// Parse headers into a map
 	size_t i = 0;
-	while (i < headers.length()) {
-		// Skip leading whitespace
+	while (i < headers.length())
+	{
 		while (i < headers.length() && headers[i] == ' ')
 			i++;
 
 		size_t colonPos = headers.find(':', i);
 		size_t lineEnd = headers.find('\n', i);
 
-		if (colonPos != std::string::npos && colonPos < lineEnd) {
+		if (colonPos != std::string::npos && colonPos < lineEnd)
+		{
 			std::string key = headers.substr(i, colonPos - i);
 			utils::ft_toLower(key); // Normalize header name
 
-			// Extract value
 			size_t valueStart = colonPos + 1;
 			while (valueStart < lineEnd && headers[valueStart] == ' ') // Skip spaces after ':'
 				valueStart++;
 			std::string value = headers.substr(valueStart, lineEnd - valueStart);
 
 			this->_headers[key] = value; // Store the header
-		} else {
-			// Handle headers without values
+		}
+		else 
+		{
 			std::string key = headers.substr(i, lineEnd - i);
 			utils::ft_toLower(key);
 			this->_headers[key] = "";
 		}
-
-		// Move to the next line
 		i = lineEnd + 1;
 	}
 
-	// Extract body
 	this->_body.clear();
-	while (getline(ss, tmp)) {
-		if (!tmp.empty()) {
+	while (getline(ss, tmp))
+	{
+		if (!tmp.empty())
 			this->_body += tmp + '\n';
-		}
 	}
 	this->_status_code = 200;
-	/*
-	if (this->_request->_cgi_response.length() <= 0)
-		return ;
-	std::string headers;
-	std::string tmp;
-	std::stringstream ss;
-
-	ss << this->_request->_cgi_response;
-	ss.seekg(0);
-	getline(ss, tmp);
-	while (!tmp.empty() && tmp != "\r\n\r\n")
-	{
-		headers += tmp;
-		headers += '\n';
-		getline(ss, tmp);
-		if (ss.eof())
-		{
-			headers += tmp;
-			break;
-		}
-	}
-	utils::fix_spaces_in_line(headers);
-	int	i = 0;
-	int	flag = 0;
-	tmp.clear();
-
-	while (i < headers.length())
-	{
-		while (headers[i] == ' ')
-			i++;
-		flag = std::count(headers.begin() + i, headers.begin() + headers.find('\n'), ':');
-		if (flag > 0)
-		{
-			tmp = headers.substr(i, (headers.find(':') - i));
-			utils::ft_toLower(tmp);
-			i = headers.find(':');
-			while (headers[i] == ' ' || headers[i] == ':')
-				i++;
-			this->_headers[tmp] = headers.substr(i, (headers.find('\n') - i));
-		}
-		else
-		{
-			tmp = headers.substr(i, (headers.find('\n') - i));
-			utils::ft_toLower(tmp);
-			this->_headers[tmp] = "";
-		}
-		headers.erase(0, headers.find('\n') + 1);
-		i = 0;
-	}
-
-	tmp.clear();
-	getline(ss, tmp);
-	while (!tmp.empty())
-	{
-		this->_body += tmp;
-		this->_body += '\n';
-		getline(ss, tmp);
-		if (ss.eof())
-		{
-			this->_body += tmp;
-			break;
-		}
-	}
-	this->_status_code = 200;
-	std::cout << "this is america" << std::endl;
-	std::cout << this->_body << std::endl;
-	*/
 }
 
 void	response::set_length()
@@ -414,7 +362,7 @@ void	response::do_get()
 	std::string	path;
 	struct stat pathStat;
 
-	path = "." + this->_request->_uri;
+	path = this->_request->_uri;
 	if (stat(path.c_str(), &pathStat) == 0)
 	{
 		if (S_ISREG(pathStat.st_mode))
@@ -455,7 +403,7 @@ void	response::do_post()
 	if (!this->_request || this->_error)
 		return ;
 
-	path = "." + this->_request->_uri;
+	path = this->_request->_uri;
 
 	// this method is cgi's deppendant, so the response came from the cgi
 	// not from this, this webserver is not a cgi is a webserver cgi dependant
@@ -521,7 +469,7 @@ void	response::do_delete()
 	std::string	path;
 	struct stat pathStat;
 
-	path = "." + this->_request->_uri;
+	path = this->_request->_uri;
 	if (stat(path.c_str(), &pathStat) == 0)
 	{
 		if (S_ISREG(pathStat.st_mode))

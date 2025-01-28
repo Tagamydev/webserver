@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 21:17:39 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/28 17:10:45 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/28 17:29:25 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,6 @@ client::~client()
 {
 	if (this->_request)
 		delete this->_request;
-	exit(-1);
 }
 
 struct pollfd	client::get_pollfd()

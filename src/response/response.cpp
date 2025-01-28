@@ -303,8 +303,6 @@ void	response::get_dir(std::string &path)
 {
     std::list<std::string> entries = listDirectory(path);
 
-	std::cout << "[debug this is num]: " << this->_request->_location->_index_file.empty() 
-		<< "this is the value: " << this->_request->_location->_index_file << std::endl;
 	if (this->_request->_location->_index_file.empty())
 	{
 		if (this->_request->_location->_auto_index)
@@ -322,7 +320,6 @@ void	response::get_dir(std::string &path)
 	{
 		std::string	index_file;
 
-		// this is a tmp index geter, i dont know how to handle the root and alias.
 		index_file = "./" + this->_request->_location->_root + "/" + this->_request->_location->_index_file;
 		this->get_file(index_file);
 	}

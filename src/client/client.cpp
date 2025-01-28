@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 21:17:39 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/16 18:11:35 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/28 17:10:45 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,12 @@ client::client(struct pollfd socket, int port)
 	std::cout << "[Info]: New client in port: " << port << std::endl;
 }
 
-client::~client(){}
+client::~client()
+{
+	if (this->_request)
+		delete this->_request;
+	exit(-1);
+}
 
 struct pollfd	client::get_pollfd()
 {

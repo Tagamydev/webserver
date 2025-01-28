@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 10:40:56 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/24 18:06:22 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/28 17:04:11 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,7 @@ loopHandler::~loopHandler()
 	clear_server_cgi_Fd(this->_port_serverFd);
 	clear_clientFd(this->_client_clientFd);
 	clear_server_cgi_Fd(this->_clientFd_cgiFd);
+
 }
 
 void loopHandler::new_server(int port)

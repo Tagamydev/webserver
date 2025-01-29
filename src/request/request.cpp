@@ -27,6 +27,8 @@ std::vector<struct pollfd> &list)
 	this->debug();
 	this->check_config_file(_client, _webserver);
 
+	this->parse_body(this->_server);
+
 	if (this->check_if_cgi())
 	{
 		this->_cgi_status = WAITING;
@@ -209,7 +211,7 @@ void	request::parsing()
 	std::string			line;
 
 	file = utils::read_file(this->_fd);
-	std::cout << file << std::endl;
+	// std::cout << file << std::endl;
 	reqFile << file;
 	reqFile.seekg(0);
 	getline(reqFile, line);
@@ -254,9 +256,12 @@ void	request::clear()
 	this->_http_version.clear();
 	this->_headers.clear();
 	this->_body.clear();
-	this->_body_length = -1;
+	this->_content_length = -1;
 	this->_has_body = -1;
 	this->_chunked_flag = false;
+	this->_chunk_length = 0x0;
+	this->_multiform_flag = 0;
+	this->_boundary.clear();
 	this->_error_code = -1;
 	this->_debug_msg.clear();
 	this->_cgi = NULL;
@@ -265,6 +270,43 @@ void	request::clear()
 	this->_server = NULL;
 }
 // Handle body
+
+void request::parse_body(server *this_server)
+{
+	std::ifstream			testFile;
+	std::stringstream	ss;
+	std::string			line;
+
+	testFile.open ("examples/request/chunked.txt", std::fstream::in);
+	ss << testFile;
+	ss.seekg(0);
+	getline(ss, line);
+	std::cout <<"\n\n line: " <<  testFile << std::endl;
+
+
+
+
+	if (this->_error_code != -1 && this->_error_code <= 200 && this->_error_code >= 300)
+		return ;
+	if(!this_server)
+		return ;
+	std::cout << "\n\nMAX SIZE " << this_server->_max_body_size << std::endl;
+	// std::cout << "Body SIZE " << this->_body.length() << std::endl;
+	if (!this->_has_body)
+		return ;
+	if (this->_headers["Transfer-Encoding"] == "chunked")
+		this->process_chunked();
+	if (this->_body.length() > this_server->_max_body_size)
+		return ; // set error 413 Payload Too Large
+	if (this->_body.length() > this->_content_length)
+		this->_body = this->_body.substr(0, this->_content_length);
+}
+
+void request::process_chunked()
+{
+	std::cout << "CHUNKED " << this->_body << std::endl;
+
+}
 
 void request::process_body(std::stringstream &reqFile, std::string line)
 {
@@ -287,6 +329,8 @@ void request::process_body(std::stringstream &reqFile, std::string line)
 	}
 	this->_has_body = 1;
 	this->_body = line;
+	std::cout << "\n\nPROCESS Body SIZE " << this->_body << std::endl;
+
 	//clear line?
 }
 
@@ -300,8 +344,8 @@ void request::parse_headers()
     {
 		if (this->_headers.count("transfer-encoding"))
 			return (set_error_code(400, "Incopatible headers: content-length & transfer-encoding."));
-		this->_body_length = std::atoi(_headers["content-length"].c_str());
-		if (this->_body_length <= 0)
+		this->_content_length = std::atoi(_headers["content-length"].c_str());
+		if (this->_content_length <= 0)
 			return (set_error_code(400, "Invalid Content-length header."));
     }
 	if (this->_http_version.compare("HTTP/1.0") == 0 && this->_headers.count("transfer-encoding"))
@@ -539,7 +583,7 @@ void	request::print_others()
 	std::stringstream	chunked_flag;
 	std::stringstream	error_code;
 
-	body_length << this->_body_length;
+	body_length << this->_content_length;
 	has_body << this->_has_body;
 	chunked_flag << this->_chunked_flag;
 	error_code << this->_error_code;

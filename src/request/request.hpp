@@ -60,9 +60,12 @@ class   request
 	private:
 		int				_fd;
 
-		int				_body_length;
 		int				_has_body;
+		int				_content_length;
         bool			_chunked_flag;
+        size_t			_chunk_length;
+		bool			_multiform_flag;
+		std::string		_boundary;
 		std::string		_http_version;
 
 		std::map<std::string, std::string>	_query_str;	
@@ -84,13 +87,15 @@ class   request
         void	check_save_request_line(std::string line);
         void	is_valid_method(std::string line);
         void	is_valid_uri(std::string &line);
-        void	process_uri(std::string line);
         void	is_valid_httpv(std::string line);
-        void	process_headers(std::stringstream &reqFile, std::string line);
-		void	save_headers(std::string &line);
 		void	parse_headers();
-		bool	space_in_header_name(std::string line);
+		void	parse_body(server *this_server);
+        void	process_uri(std::string line);
+        void	process_headers(std::stringstream &reqFile, std::string line);
 		void	process_body(std::stringstream &reqFile, std::string line);
+		void	process_chunked();
+		void	save_headers(std::string &line);
+		bool	space_in_header_name(std::string line);
 };
 
 #endif

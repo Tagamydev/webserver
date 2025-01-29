@@ -12,7 +12,7 @@ class	utils
 		static struct pollfd pollfd_from_fd(int fd, short events);
 		static void send_response(int socket_fd, const std::string &response_str);
 		static std::string	read_file(int fd);
-
+		static std::string	read_file_max_size(std::string fileName, long max_size);
 		static void    ft_toLower(std::string &str);
 		static void	trim_space_newline(std::string &line);
 		static void	trim_semicolon(std::string &line);

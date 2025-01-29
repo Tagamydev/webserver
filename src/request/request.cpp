@@ -273,16 +273,22 @@ void	request::clear()
 
 void request::parse_body(server *this_server)
 {
-	std::ifstream			testFile;
-	std::stringstream	ss;
+	// std::ifstream			testFile;
 	std::string			line;
+	// std::string			tmp;
 
-	testFile.open ("examples/request/chunked.txt", std::fstream::in);
-	ss << testFile;
-	ss.seekg(0);
-	getline(ss, line);
-	std::cout <<"\n\n line: " <<  testFile << std::endl;
+	// testFile.open ("examples/request/chunked.txt");
+	// while (getline(testFile, tmp))
+	// {
+	// 	line += tmp + "\n";
+	// std::cout <<"\n\n line: "  <<  line << std::endl;
+	// // std::cout <<"\n\n line: "  << std::endl;
+	// // std::cout <<  line << std::endl;
 
+	// }
+	// line += tmp;
+	// testFile.close();
+	line = utils::read_file_max_size("examples/request/chunked.txt", 60);
 
 
 

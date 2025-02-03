@@ -224,6 +224,8 @@ void	request::parsing()
 		this->process_body(reqFile, line);
 	if (this->_error_code == -1)
 		this->parse_headers();
+	if (this->_error_code == -1)
+		parse_body(this->_server);
 }
 
 bool	request::check_if_cgi()
@@ -273,8 +275,9 @@ void	request::clear()
 
 void request::parse_body(server *this_server)
 {
+	size_t pos;
 	// std::ifstream			testFile;
-	std::string			line;
+	// std::string			line;
 	// std::string			tmp;
 
 	// testFile.open ("examples/request/chunked.txt");
@@ -288,20 +291,40 @@ void request::parse_body(server *this_server)
 	// }
 	// line += tmp;
 	// testFile.close();
-	line = utils::read_file_max_size("examples/request/chunked.txt", 60);
-
-
 
 	if (this->_error_code != -1 && this->_error_code <= 200 && this->_error_code >= 300)
 		return ;
 	if(!this_server)
 		return ;
 	std::cout << "\n\nMAX SIZE " << this_server->_max_body_size << std::endl;
-	// std::cout << "Body SIZE " << this->_body.length() << std::endl;
+
+	this->process_chunked(); // delete, is only to check now
+
 	if (!this->_has_body)
 		return ;
-	if (this->_headers["Transfer-Encoding"] == "chunked")
+	if (atoi(this->_headers["content-length"].c_str()) >= 1)
+	{
+		// line = utils::read_file_max_size("examples/request/chunked.txt", atoi(this->_headers["content-length"].c_str()));
+		if (_body.length() >= atoi(this->_headers["content-length"].c_str()))
+			_body = _body.substr(0, atoi(this->_headers["content-length"].c_str()));
+		else
+			this->_headers["content-length"] = utils::to_string(_body.length());
+		_content_length = atoi(this->_headers["content-length"].c_str());
+	}
+	else if (this->_headers["transfer-encoding"] == "chunked")
+	{
+		_chunked_flag = 1;
 		this->process_chunked();
+	}	
+	
+	if (this->_headers.count("content-type") && this->_headers["content-type"].find("multipart/form-data") != std::string::npos)
+	{
+		pos = this->_headers["content-type"].find("boundary=", 0);
+        if (pos != std::string::npos)
+            this->_boundary = this->_headers["content-type"].substr(pos + 9, this->_headers["content-type"].size());
+        this->_multiform_flag = true;
+	}
+
 	if (this->_body.length() > this_server->_max_body_size)
 		return ; // set error 413 Payload Too Large
 	if (this->_body.length() > this->_content_length)
@@ -310,8 +333,42 @@ void request::parse_body(server *this_server)
 
 void request::process_chunked()
 {
-	std::cout << "CHUNKED " << this->_body << std::endl;
+	size_t	chunkSize = 0;
+	std::string tmpBody;
+	std::string newBody;
+	std::stringstream ss;
+	std::string line;
+	// bool	flag = 1;
 
+	//later replace to _body
+	// std::cout << "CHUNKED " << this->_body << std::endl;
+    // ss.str(_body);
+	tmpBody = utils::read_file_max_size("examples/request/chunked.txt", 200);
+	std::cout << "\n\nCHUNKED " << tmpBody << std::endl;
+    ss.str(tmpBody);
+	while (getline(ss, line))
+	{
+		utils::trim_space_newline(line);
+		if (line.empty())
+			continue;
+		else if (utils::hexToDecimal(line) >= 1)
+		{
+			chunkSize = utils::hexToDecimal(line);
+			// flag = !flag;
+			getline(ss, line);
+			utils::trim_space_newline(line);
+			if (line.empty())
+				getline(ss, line);
+			// newBody += line;
+			newBody += line.substr(0, chunkSize);
+		}
+		else if (utils::hexToDecimal(line) <= 0)
+			break;
+	}
+	if (utils::hexToDecimal(line) != 0)
+		newBody += line;
+	_body = newBody;
+	std::cout << "\n\nNew Body " << _body << std::endl;
 }
 
 void request::process_body(std::stringstream &reqFile, std::string line)
@@ -335,7 +392,6 @@ void request::process_body(std::stringstream &reqFile, std::string line)
 	}
 	this->_has_body = 1;
 	this->_body = line;
-	std::cout << "\n\nPROCESS Body SIZE " << this->_body << std::endl;
 
 	//clear line?
 }

@@ -72,12 +72,29 @@ std::string	utils::read_file_max_size(std::string fileName, long max_size)
 	if (result.length() >= max_size)
 		result = result.substr(0, max_size);
 
-	std::cout << "\n\nmax size " << max_size << std::endl;
-	std::cout << "\n\nresult size " << result.length() << std::endl;
+	// std::cout << "\n\nmax size " << max_size << std::endl;
+	// std::cout << "\n\nresult size " << result.length() << std::endl;
 	file.close();
 	return (result);
 }
 
+/// @brief convert a  hexadecimal string to decimal long
+long utils::hexToDecimal(const std::string& hexStr)
+{
+    std::istringstream iss(hexStr);
+    long decimalValue = 0;
+
+    iss >> std::hex >> decimalValue;
+    return decimalValue;
+}
+
+/// @brief convert int to string
+std::string utils::to_string(std::size_t value) 
+{
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
 
 /// @brief Takes a vector and populate it with the keys of a map. Used for location duplicated check.
 /// @param inputMap map<string, string>

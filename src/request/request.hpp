@@ -63,7 +63,6 @@ class   request
 		int				_has_body;
 		int				_content_length;
         bool			_chunked_flag;
-        size_t			_chunk_length;
 		bool			_multiform_flag;
 		std::string		_boundary;
 		std::string		_http_version;

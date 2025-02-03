@@ -261,7 +261,6 @@ void	request::clear()
 	this->_content_length = -1;
 	this->_has_body = -1;
 	this->_chunked_flag = false;
-	this->_chunk_length = 0x0;
 	this->_multiform_flag = 0;
 	this->_boundary.clear();
 	this->_error_code = -1;
@@ -276,27 +275,11 @@ void	request::clear()
 void request::parse_body(server *this_server)
 {
 	size_t pos;
-	// std::ifstream			testFile;
-	// std::string			line;
-	// std::string			tmp;
-
-	// testFile.open ("examples/request/chunked.txt");
-	// while (getline(testFile, tmp))
-	// {
-	// 	line += tmp + "\n";
-	// std::cout <<"\n\n line: "  <<  line << std::endl;
-	// // std::cout <<"\n\n line: "  << std::endl;
-	// // std::cout <<  line << std::endl;
-
-	// }
-	// line += tmp;
-	// testFile.close();
 
 	if (this->_error_code != -1 && this->_error_code <= 200 && this->_error_code >= 300)
 		return ;
 	if(!this_server)
 		return ;
-	std::cout << "\n\nMAX SIZE " << this_server->_max_body_size << std::endl;
 
 	this->process_chunked(); // delete, is only to check now
 
@@ -317,6 +300,7 @@ void request::parse_body(server *this_server)
 		this->process_chunked();
 	}	
 	
+	// need to test
 	if (this->_headers.count("content-type") && this->_headers["content-type"].find("multipart/form-data") != std::string::npos)
 	{
 		pos = this->_headers["content-type"].find("boundary=", 0);
@@ -324,7 +308,6 @@ void request::parse_body(server *this_server)
             this->_boundary = this->_headers["content-type"].substr(pos + 9, this->_headers["content-type"].size());
         this->_multiform_flag = true;
 	}
-
 	if (this->_body.length() > this_server->_max_body_size)
 		return ; // set error 413 Payload Too Large
 	if (this->_body.length() > this->_content_length)

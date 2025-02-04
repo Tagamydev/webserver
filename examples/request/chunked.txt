@@ -1,7 +1,5 @@
-10
-{"key1": "va
-E
-lue1", "key2":
-A
-"value2"}
+20
+This is the first chunk of the binary data...
+1F
+Here comes the next chunk of binary data...
 0

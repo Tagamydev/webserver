@@ -29,6 +29,8 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 	if (pipe(pipeIN) == -1 || pipe(pipeOUT) == -1)
 		throw std::runtime_error("Pipe fail!.");
 
+	// create env
+
 	pid = fork();
 	if (pid < 0)
 		throw std::runtime_error("Fork fail!.");

@@ -294,7 +294,7 @@ void request::parse_body(server *this_server)
 			this->_headers["content-length"] = utils::to_string(_body.length());
 		_content_length = atoi(this->_headers["content-length"].c_str());
 	}
-	else if (this->_headers["transfer-encoding"] == "chunked")
+	else if (this->_headers.count("transfer-encoding") && this->_headers["transfer-encoding"] == "chunked")
 	{
 		_chunked_flag = 1;
 		this->process_chunked();
@@ -309,9 +309,15 @@ void request::parse_body(server *this_server)
         this->_multiform_flag = true;
 	}
 	if (this->_body.length() > this_server->_max_body_size)
-		return ; // set error 413 Payload Too Large
+	{
+		this->_error_code = 413;
+		return ; 
+	}
 	if (this->_body.length() > this->_content_length)
 		this->_body = this->_body.substr(0, this->_content_length);
+	else
+		this->_headers["content-length"] = utils::to_string(_body.length());
+	_content_length = atoi(this->_headers["content-length"].c_str());
 }
 
 void request::process_chunked()

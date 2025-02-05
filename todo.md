@@ -21,3 +21,5 @@
 - [ ] The CGI should be run in the correct directory for relative path file access.
 - [ ] Your server should work with one CGI (php-CGI, Python, etc.).
 
+
+one segfault happend with g3 idk why, maybe i have to test 

@@ -394,6 +394,15 @@ void	response::do_get()
 	}
 }
 
+bool	response::post_file(std::string path)
+{
+	std::ofstream file("example.txt", std::ios::out);
+	if (!file)
+		return (false);
+	file.close();
+	return (true);
+}
+
 void	response::do_post()
 {
 	std::string	path;
@@ -402,19 +411,7 @@ void	response::do_post()
 
 	path = this->_request->_uri;
 
-	// this method is cgi's deppendant, so the response came from the cgi
-	// not from this, this webserver is not a cgi is a webserver cgi dependant
-	// so the only method with post allowed is when the content-type has:
-	// multipart/form-data
-
-	// check post permissions
-
-	// check if the content-type from the response has multipart/form-data
-	// if not 400
-
-	// try to upload the file!
-	// in success return this
-	if (true)
+	if (this->post_file(path))
 	{
 		this->_status_code = 201;
 		this->_headers["Location"] = path;

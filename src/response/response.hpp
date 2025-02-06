@@ -44,6 +44,7 @@ class   response{
 		void		do_post();
 		void		do_delete();
 
+		bool			post_file(std::string path);
 		void		set_length();
 		void		get_file(std::string &path);
 		void		get_dir(std::string &path);

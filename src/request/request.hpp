@@ -58,6 +58,10 @@ class   request
 		server			*_server;
 		location		*_location;
 
+		// Getters
+		std::map<std::string, std::string>	get_headers();
+
+
 	private:
 		int				_fd;
 

@@ -307,7 +307,7 @@ void request::parse_body(server *this_server)
 	if(!this_server)
 		return ;
 
-	this->process_chunked(); // delete, is only to check now
+	// this->process_chunked(); // delete, is only to check now
 
 	if (!this->_has_body)
 		return ;
@@ -357,7 +357,7 @@ void request::process_chunked()
 
 	//later replace to _body
 	// std::cout << "CHUNKED " << this->_body << std::endl;
-    // ss.str(_body);
+    // ss.str(this->_body);
 	tmpBody = utils::read_file_max_size("examples/request/chunked.txt", 200);
 	std::cout << "\n\nCHUNKED " << tmpBody << std::endl;
     ss.str(tmpBody);
@@ -618,6 +618,16 @@ void request::check_save_request_line(std::string line)
 	this->_http_version = key;
 
 }
+
+//Getters
+
+std::map<std::string, std::string>	request::get_headers()
+{
+	return(this->_headers);
+}
+
+
+
 
 // Handle errors
 void request::set_error_code(int code, std::string msg)

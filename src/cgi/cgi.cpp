@@ -30,6 +30,7 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 		throw std::runtime_error("Pipe fail!.");
 
 	// create env
+	this->init_env(_request.get_headers());
 
 	pid = fork();
 	if (pid < 0)
@@ -106,7 +107,7 @@ bool cgi::cgi_timeout()
 	return (false);
 }
 
-void			cgi::init_env(std::map<std::string, std::string>	_headers)
+void	cgi::init_env(std::map<std::string, std::string> _headers)
 {
 	std::map<std::string, std::string>::iterator it;
 	std::string	name;

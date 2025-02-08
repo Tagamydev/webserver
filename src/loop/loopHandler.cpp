@@ -144,6 +144,13 @@ void	loopHandler::delete_client(client *_client, int &_it)
 	i--;
 }
 
+bool	loopHandler::request_is_cgi(request req)
+{
+	
+}
+
+
+
 bool	loopHandler::fd_is_client(int fd)
 {
 	std::map<client *, struct pollfd>::iterator i;
@@ -186,7 +193,7 @@ client	*loopHandler::get_client_from_clientFd(int fd)
 
 void	loopHandler::send_response(int &i, std::vector<struct pollfd> &list)
 {
-	utils::print_debug("sending response");
+	// utils::print_debug("sending response");
 	client *_client;
 	struct pollfd	socket;
 

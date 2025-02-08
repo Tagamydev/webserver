@@ -27,9 +27,17 @@ void utils::print_log(std::string message)
 
 void utils::send_response(int socket_fd, const std::string &response_str)
 {
-	size_t response_length = response_str.length();
+	size_t	response_length = response_str.length();
+	int		result;
 
-	send(socket_fd, response_str.c_str(), response_length, 0);
+	result = send(socket_fd, response_str.c_str(), response_length, 0);
+	// from send manual: Locally detected errors are indicated by a return value of -1.
+	if (result == -1)
+		throw std::runtime_error("Error sending info to file descriptor.");
+	// from write manual: If no errors are detected, 
+	// or error detection is not performed, 0 is returned without causing any other effect..
+	if (result == 0)
+		return ;
 }
 
 std::string	utils::read_file(int fd)
@@ -171,8 +179,15 @@ std::list<std::string>	utils::split_to_list(std::string line, char sep)
 	return (list);
 }
 
+/// @brief transform a string in upper case
+void    utils::ft_to_upper(std::string &str)
+{
+    for (size_t i = 0; i < str.length(); ++i)
+        str[i] = std::toupper(str[i]);
+}
+
 /// @brief transform a string in lower case
-void    utils::ft_toLower(std::string &str)
+void    utils::ft_to_lower(std::string &str)
 {
     for (size_t i = 0; i < str.length(); ++i)
         str[i] = std::tolower(str[i]);
@@ -277,6 +292,18 @@ void	utils::print_map_content(std::map<int, std::string> map, std::string title)
 	size_t i = 1;
 		std::cout << "\n<<<   "<< title << "   >>>" << std::endl;
 	for (std::map<int, std::string>::iterator it = map.begin(); it != map.end(); it++)
+		{
+			std::cout << "--- Item " << i++ << " value: ";
+			std::cout << it->first << " " << it->second << "\n";
+		}
+	std::cout << std::endl;
+}
+
+void	utils::print_map_content(std::map<std::string, std::string> map, std::string title)
+{
+	size_t i = 1;
+		std::cout << "\n<<<   "<< title << "   >>>" << std::endl;
+	for (std::map<std::string, std::string>::iterator it = map.begin(); it != map.end(); it++)
 		{
 			std::cout << "--- Item " << i++ << " value: ";
 			std::cout << it->first << " " << it->second << "\n";

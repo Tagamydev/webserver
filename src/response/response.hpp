@@ -34,6 +34,7 @@ class   response{
 	// FUNTIONS
 
 		bool		_keep_alive;
+		void		do_cgi_response();
 
 	private:
 
@@ -42,7 +43,6 @@ class   response{
 		void		do_get();
 		void		do_post();
 		void		do_delete();
-		void		do_cgi_response();
 
 		void		set_length();
 		void		get_file(std::string &path);

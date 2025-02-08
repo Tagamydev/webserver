@@ -62,8 +62,9 @@ struct loopHandler{
 		void	delete_cgi_from_list(cgi *_cgi, int &i);
 
 		void	read_from_cgi(int &i, std::vector<struct pollfd> &list);
+  
 		void	new_client(struct pollfd socket);
-		void	new_request(int fd, std::vector<struct pollfd> &list);
+		void	new_request(int fd, std::vector<struct pollfd> &list, int &i);
 };
 
 #endif

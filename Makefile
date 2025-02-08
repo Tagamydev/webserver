@@ -7,7 +7,7 @@
 #    By: samusanc <samusanc@student.42madrid>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/06/24 19:28:25 by samusanc          #+#    #+#              #
-#    Updated: 2025/01/21 17:12:49 by samusanc         ###   ########.fr        #
+#    Updated: 2025/01/28 17:23:10 by samusanc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,7 +21,7 @@ INC_DIR		=	-I ./src/ \
 				-I ./src/loop/ \
 				-I ./src/response/ 
 
-CXXFLAGS	=	-fsanitize=address -g3#-Wall -Wextra -Werror -I ./
+CXXFLAGS	=	-g3#-fsanitize=address -g3#-Wall -Wextra -Werror -I ./
 CXXFLAGS	+= $(INC_DIR)
 CXXFLAGS	+=	-std=c++98
 CXX		=	c++ $(CXXFLAGS)

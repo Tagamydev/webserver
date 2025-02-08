@@ -94,7 +94,7 @@ void	response::do_cgi_response()
 		if (colonPos != std::string::npos && colonPos < lineEnd)
 		{
 			std::string key = headers.substr(i, colonPos - i);
-			utils::ft_toLower(key); // Normalize header name
+			utils::ft_to_lower(key); // Normalize header name
 
 			size_t valueStart = colonPos + 1;
 			while (valueStart < lineEnd && headers[valueStart] == ' ') // Skip spaces after ':'
@@ -106,7 +106,7 @@ void	response::do_cgi_response()
 		else 
 		{
 			std::string key = headers.substr(i, lineEnd - i);
-			utils::ft_toLower(key);
+			utils::ft_to_lower(key);
 			this->_headers[key] = "";
 		}
 		i = lineEnd + 1;

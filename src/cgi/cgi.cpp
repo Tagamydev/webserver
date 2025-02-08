@@ -18,7 +18,7 @@ cgi::cgi(request &_request, client *_client,
 std::vector<struct pollfd> &list, webserver *_webserver)
 {
 	utils::print_debug("new cgi...");
-	this->_env = NULL;
+	// this->_env = NULL;
 	this->_request = &_request;
 	this->_request->_cgi_status = WAITING;
 
@@ -102,4 +102,23 @@ void cgi::write(std::string &content)
 bool cgi::cgi_timeout()
 {
 	return (false);
+}
+
+void			cgi::init_env(std::map<std::string, std::string>	_headers)
+{
+	std::map<std::string, std::string>::iterator it;
+	std::string	name;
+	std::string	key;
+
+	for (it = _headers.begin(); it != _headers.end(); *it++)
+	{
+		if (it->first == "content_lenght" || it->first == "content_type")
+			name = it->first;
+		else
+			name = "HTTP_" + it->first;
+		utils::ft_to_upper(name);
+		this->_env[name] = it->second;
+	}
+	std::cout << "\n\n CGI ENV " << std::endl;
+	utils::print_map_content(this->_env, "CGI ENV");
 }

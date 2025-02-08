@@ -369,7 +369,7 @@ void request::save_headers(std::string &line)
 			tmp = line.substr(i, (line.find(':') - i));
 			if(space_in_header_name(tmp))
 				return (set_error_code(400, "Found space on header name."));
-			utils::ft_toLower(tmp);
+			utils::ft_to_lower(tmp);
 			i = line.find(':');
 			while (line[i] == ' ' || line[i] == ':')
 				i++;
@@ -380,7 +380,7 @@ void request::save_headers(std::string &line)
 			tmp = line.substr(i, (line.find('\n') - i));
 			if(space_in_header_name(tmp))
 				return (set_error_code(400, "Found space on header name."));
-			utils::ft_toLower(tmp);
+			utils::ft_to_lower(tmp);
 			this->_headers[tmp] = "";
 		}
 		line.erase(0, line.find('\n') + 1);

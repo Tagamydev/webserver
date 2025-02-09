@@ -144,13 +144,6 @@ void	loopHandler::delete_client(client *_client, int &_it)
 	i--;
 }
 
-bool	loopHandler::request_is_cgi(request req)
-{
-	
-}
-
-
-
 bool	loopHandler::fd_is_client(int fd)
 {
 	std::map<client *, struct pollfd>::iterator i;
@@ -400,6 +393,9 @@ void	loopHandler::send_to_cgi(int &i, std::vector<struct pollfd> &list)
 
 	socket = list[i];
 	_client = this->get_client_from_clientFd(socket.fd);
+	send(_client->_request->_cgi->_write_fd.fd, _client->_request->_body_parsed.c_str(), _client->_request->_body_parsed.length(), 0);
+	
+	
 	std::cout << "this is a message for the cgi" << std::endl;
 	this->delete_fd_from_cgi_list(_client->get_request()->_cgi->_write_fd.fd, i);
 	this->make_fd_list(list);

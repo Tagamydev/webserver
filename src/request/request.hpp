@@ -38,6 +38,7 @@ class   request
 		cgi			*_cgi;
 		cgi_status	_cgi_status;
 		std::string	_cgi_response;
+        bool			_is_cgi;
 		void		close_cgi();
 		bool		check_if_cgi();
 
@@ -54,6 +55,7 @@ class   request
 		// STATES FOR RESPONSE
 		int				_error_code;
 		std::string		_debug_msg;
+		std::map<std::string, std::string>	_cgi_extensions;	
 
 		server			*_server;
 		location		*_location;
@@ -81,8 +83,12 @@ class   request
 
 		void	get_server(client *_client, webserver *_webserver);
 		void	get_location();
+		bool	get_cgi_extension(std::string ext);
+
 
 		void	set_error_code(int code, std::string msg);
+		void	set_cgi_extension();
+
 		void	print_request();
 		void	print_header();
 		void	print_body();

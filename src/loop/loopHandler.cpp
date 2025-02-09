@@ -163,6 +163,8 @@ bool	loopHandler::fd_is_client(int fd)
 	return (false);
 }
 
+
+
 client	*loopHandler::get_client_from_clientFd(int fd)
 {
 	std::map<client *, struct pollfd>::iterator i;
@@ -250,7 +252,7 @@ bool	loopHandler::is_server(int fd)
 	return (false);
 }
 
-bool	loopHandler::is_cgi(int fd)
+bool	loopHandler::fd_is_cgi(int fd)
 {
 	std::map<int, struct pollfd>::iterator	i;
 	std::map<int, struct pollfd>::iterator	ie;
@@ -380,7 +382,7 @@ void	loopHandler::check_additions(int &i, std::vector<struct pollfd> &list)
 		this->new_client(socket);
 		this->make_fd_list(list);
 	}
-	else if (is_cgi(socket.fd))
+	else if (fd_is_cgi(socket.fd))
 		this->read_from_cgi(i, list);
 	else
 		this->new_request(socket.fd, list, i);

@@ -113,15 +113,24 @@ void	cgi::init_env(std::map<std::string, std::string> _headers)
 	std::string	name;
 	std::string	key;
 
+	//save headers
 	for (it = _headers.begin(); it != _headers.end(); *it++)
 	{
-		if (it->first == "content_lenght" || it->first == "content_type")
-			name = it->first;
+		if (it->first == "content-lenght" || it->first == "content-type")
+			continue;
 		else
 			name = "HTTP_" + it->first;
 		utils::ft_to_upper(name);
-		this->_env[name] = it->second;
+		this->_env_tmp[name] = it->second;
 	}
-	std::cout << "\n\n CGI ENV " << std::endl;
-	utils::print_map_content(this->_env, "CGI ENV");
+	//init manual headers
+	this->_env_tmp["REQUEST_METHOD"] = it->second;
+	this->_env_tmp["SCRIPT_NAME"] = it->second;
+	this->_env_tmp["REQUEST_URI"] = it->second;
+	this->_env_tmp["QUERY_STRING"] = it->second;
+	this->_env_tmp["CONTENT_TYPE"] = it->second;
+	this->_env_tmp["CONTENT_LENGTH"] = it->second;
+
+
+	utils::print_map_content(this->_env_tmp, "CGI ENV");
 }

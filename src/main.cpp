@@ -66,8 +66,8 @@ void	server_loop(webserver &server)
 		{
 			if(server._loop->fd_is_client(list[i].fd))
 				server._loop->handle_client(i, list);
-			// if(server._loop->fd_is_cgi(list[i].fd))
-			// 	server._loop->send_to_cgi(i, list);
+			if(server._loop->fd_is_cgi(list[i].fd))
+				server._loop->send_to_cgi(i, list);
 		}
 	}
 }

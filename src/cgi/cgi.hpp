@@ -47,8 +47,8 @@ class	cgi
 		
 		private:
 		request			*_request;
-		std::map<std::string, std::string>	_env;
-		// char			**_env;
+		std::map<std::string, std::string>	_env_tmp;
+		char			**_env;
 		int				_id;
 		
 		void			init_env(std::map<std::string, std::string>	_headers);

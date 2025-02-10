@@ -2,6 +2,17 @@
 #include "cgi.hpp"
 #include <sstream>
 
+std::string replaceToken(const std::string &token, const std::string &replacement, const std::string &buffer) {
+    std::string result = buffer;
+    std::size_t pos = 0;
+
+    while ((pos = result.find(token, pos)) != std::string::npos) {
+        result.replace(pos, token.length(), replacement);
+        pos += replacement.length(); // Move past the replaced token
+    }
+    return result;
+}
+
 response::response(request *_request, webserver *_webserver)
 {
 	this->_webserver = _webserver;
@@ -14,6 +25,7 @@ response::response(request *_request, webserver *_webserver)
 
 	this->_error = false;
 	this->_keep_alive = false;
+
 	if (this->_request->_error_code != -1)
 	{
 		if (this->_request->_error_code >= 300 && this->_request->_error_code <= 308)
@@ -30,10 +42,13 @@ response::response(request *_request, webserver *_webserver)
 
 	if (!this->_request->_location->_alias.empty())
 	{
-		this->_request->_uri = this->_request->_location->_alias;
+		this->_request->_uri = replaceToken(
+				this->_request->_location->_path, 
+				this->_request->_location->_alias, 
+				this->_request->_uri
+				);
 		if (this->_request->_uri[0] != '/')
 			this->_request->_uri = "./" + this->_request->_uri;
-		std::cout << "[Path]: " << this->_request->_uri << std::endl;
 	}
 	else if (!this->_request->_location->_root.empty())
 	{
@@ -401,9 +416,10 @@ void	response::do_get()
 
 bool	response::post_file(std::string path)
 {
-	std::ofstream file("example.txt", std::ios::out);
+	std::ofstream file(path.c_str(), std::ios::out);
 	if (!file)
 		return (false);
+	file << this->_request->_body_parsed;
 	file.close();
 	return (true);
 }
@@ -414,7 +430,7 @@ void	response::do_post()
 	if (!this->_request || this->_error)
 		return ;
 
-	path = this->_request->_uri;
+//	path = this->_request->_uri;
 
 	if (this->post_file(path))
 	{

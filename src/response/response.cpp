@@ -20,9 +20,14 @@ response::response(request *_request, webserver *_webserver)
 			this->do_redirection(this->_request->_error_code, this->_request->_debug_msg);
 		else
 			this->do_error_page(this->_request->_error_code);
+		this->set_length();
+		if (!this->_keep_alive)
+			this->_headers["Connection"] = "close";
+		else
+			this->_headers["Connection"] = "keep-alive";
+		return ;
 	}
 
-	//check in config file for alias and root in the same block
 	if (!this->_request->_location->_alias.empty())
 	{
 		this->_request->_uri = this->_request->_location->_alias;

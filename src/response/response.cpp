@@ -40,6 +40,7 @@ response::response(request *_request, webserver *_webserver)
 		return ;
 	}
 
+	/*
 	if (!this->_request->_location->_alias.empty())
 	{
 		this->_request->_uri = replaceToken(
@@ -59,6 +60,42 @@ response::response(request *_request, webserver *_webserver)
 	}
 	else
 		this->_request->_uri = "." + this->_request->_uri;
+		*/
+	if (!this->_request->_location->_alias.empty())
+	{
+		std::string locPath = this->_request->_location->_path;
+		std::string alias   = this->_request->_location->_alias;
+		std::string uri     = this->_request->_uri;
+
+		// Ensure that the URI starts with the location's path.
+		if (uri.find(locPath) == 0)
+		{
+			// Remove the location prefix and prepend the alias.
+			uri = alias + uri.substr(locPath.length());
+		}
+		else
+		{
+			// Optionally, handle the error that the URI does not start with the expected prefix.
+		}
+		if (uri.empty() || uri[0] != '/')
+			uri = "./" + uri;
+
+		this->_request->_uri = uri + "/";
+		std::cout << "[Pathaaaaaaaaaaaa]: " << this->_request->_uri << std::endl;
+	}
+	else if (!this->_request->_location->_root.empty())
+	{
+		this->_request->_uri = this->_request->_location->_root + this->_request->_uri;
+		if (this->_request->_uri.empty() || this->_request->_uri[0] != '/')
+			this->_request->_uri = "./" + this->_request->_uri;
+		std::cout << "[Path]: " << this->_request->_uri << std::endl;
+	}
+	else
+	{
+		this->_request->_uri = "." + this->_request->_uri;
+	}
+
+
 
 	if (this->_request->_cgi_status == NONE)
 	{

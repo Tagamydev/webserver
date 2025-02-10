@@ -43,10 +43,12 @@ class   request
 		bool		check_if_cgi();
 
 		// QUERY
+		std::string		_query;
 		std::string		_method;
 		std::string		_uri;
 		std::string		_uri_file;
-		std::string		_uri_params;
+		std::string		_uri_params; // vars after ? on filename
+		std::string		_http_version;
 
 		// BODY
 		std::string		_body;
@@ -72,9 +74,8 @@ class   request
         bool			_chunked_flag;
 		bool			_multiform_flag;
 		std::string		_boundary;
-		std::string		_http_version;
 
-		std::map<std::string, std::string>	_query_str;	
+		// std::map<std::string, std::string>	_query_str;	
 		std::map<std::string, std::string>	_headers;	
 
 		void	parsing();

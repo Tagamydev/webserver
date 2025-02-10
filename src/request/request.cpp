@@ -607,6 +607,7 @@ void request::check_save_request_line(std::string line)
 	if (line[0] == ' ')
 		return (set_error_code(400, "Found spaces before method."));
 	utils::fix_spaces_in_line(line);
+	this->_query = line;
 	//check method
 	if (line.find(" ") != std::string::npos)
 		key = line.substr(0, line.find(" "));
@@ -642,7 +643,7 @@ std::map<std::string, std::string>	request::get_headers()
 
 bool	request::get_cgi_extension(std::string ext)
 {
-	if (!this->_cgi_extensions[ext].empty())
+	if (this->_cgi_extensions.find(ext) != this->_cgi_extensions.end() && !this->_cgi_extensions[ext].empty())
      	return (1);
 	return (0);
 }
@@ -651,6 +652,7 @@ void	request::set_cgi_extension()
 {
     this->_cgi_extensions[".php"] = "/bin/php";
     this->_cgi_extensions[".py"] = "/bin/python3";
+    this->_cgi_extensions[".cgi"] = "/bin/cgi";
 }
 
 

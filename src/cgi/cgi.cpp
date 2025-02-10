@@ -47,7 +47,8 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 			exit(-1);
 		}
 	//	error = execle("/bin/python3 ./www/cgi/simple-cgi.py", "./www/cgi/simple-cgi.py", (char *)NULL, this->_env);
-		error = execle("/bin/python3", "/bin/python3", "./www/cgi/simple-cgi.py", (char *)NULL, this->_env);
+		// error = execle("/bin/python3", "/bin/python3", "./www/cgi/simple-cgi.py", (char *)NULL, this->_env);
+		error = execle("./www/cgi/form-handler.cgi", "./www/cgi/form-handler.cgi",  (char *)NULL, this->_env);
 
 		std::cerr << "[FATAL]: execle fail inside fork, log[" << error << "]" << std::endl;
 		exit(-1);
@@ -121,16 +122,32 @@ void	cgi::init_env(std::map<std::string, std::string> _headers)
 		else
 			name = "HTTP_" + it->first;
 		utils::ft_to_upper(name);
+		utils::ft_to_underscore(name);
 		this->_env_tmp[name] = it->second;
 	}
 	//init manual headers
-	this->_env_tmp["REQUEST_METHOD"] = it->second;
-	this->_env_tmp["SCRIPT_NAME"] = it->second;
-	this->_env_tmp["REQUEST_URI"] = it->second;
-	this->_env_tmp["QUERY_STRING"] = it->second;
-	this->_env_tmp["CONTENT_TYPE"] = it->second;
-	this->_env_tmp["CONTENT_LENGTH"] = it->second;
+	this->_env_tmp["REQUEST_METHOD"] = this->_request->_method;
+	this->_env_tmp["SCRIPT_NAME"] = this->_request->_uri_file; // check where to init (The path to the CGI script being executed.)
+	this->_env_tmp["REQUEST_URI"] = this->_request->_uri;
+	this->_env_tmp["QUERY_STRING"] = this->_request->_uri_params;
+	this->_env_tmp["CONTENT_TYPE"] = _headers["content-type"];
+	this->_env_tmp["CONTENT_LENGTH"] = _headers["content-lenght"];
+	this->_env_tmp["SERVER_NAME"] = _headers["host"];
+	// this->_env_tmp["SERVER_PORT"] = ; port on location?
+	this->_env_tmp["SERVER_PROTOCOL"] = this->_request->_http_version;
+// body is sent on send_to_cgi()
 
+	//create char** env
+	this->_env = new char*[1 + _env_tmp.size()];
+	int i =0;
+	for (std::map<std::string, std::string>::iterator it = _env_tmp.begin(); 
+				it != _env_tmp.end(); it++){
+		(this->_env)[i] = new char[(*it).first.size() +(*it).second.size() + 2];
+		std::strcpy((this->_env)[i],((*it).first + "=" + (*it).second).c_str());
+		i++;
+	}
+	(this->_env)[_env_tmp.size()] = NULL;
+	// _env_size = i;
 
 	utils::print_map_content(this->_env_tmp, "CGI ENV");
 }

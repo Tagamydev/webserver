@@ -163,6 +163,8 @@ bool	loopHandler::fd_is_client(int fd)
 	return (false);
 }
 
+
+
 client	*loopHandler::get_client_from_clientFd(int fd)
 {
 	std::map<client *, struct pollfd>::iterator i;
@@ -186,7 +188,7 @@ client	*loopHandler::get_client_from_clientFd(int fd)
 
 void	loopHandler::send_response(int &i, std::vector<struct pollfd> &list)
 {
-	utils::print_debug("sending response");
+	// utils::print_debug("sending response");
 	client *_client;
 	struct pollfd	socket;
 
@@ -250,7 +252,7 @@ bool	loopHandler::is_server(int fd)
 	return (false);
 }
 
-bool	loopHandler::is_cgi(int fd)
+bool	loopHandler::fd_is_cgi(int fd)
 {
 	std::map<int, struct pollfd>::iterator	i;
 	std::map<int, struct pollfd>::iterator	ie;
@@ -380,7 +382,7 @@ void	loopHandler::check_additions(int &i, std::vector<struct pollfd> &list)
 		this->new_client(socket);
 		this->make_fd_list(list);
 	}
-	else if (is_cgi(socket.fd))
+	else if (fd_is_cgi(socket.fd))
 		this->read_from_cgi(i, list);
 	else
 		this->new_request(socket.fd, list, i);
@@ -393,6 +395,9 @@ void	loopHandler::send_to_cgi(int &i, std::vector<struct pollfd> &list)
 
 	socket = list[i];
 	_client = this->get_client_from_clientFd(socket.fd);
+	send(_client->_request->_cgi->_write_fd.fd, _client->_request->_body_parsed.c_str(), _client->_request->_body_parsed.length(), 0);
+	
+	
 	std::cout << "this is a message for the cgi" << std::endl;
 	this->delete_fd_from_cgi_list(_client->get_request()->_cgi->_write_fd.fd, i);
 	this->make_fd_list(list);

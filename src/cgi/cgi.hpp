@@ -44,11 +44,14 @@ class	cgi
 		bool			cgi_timeout();
 		struct pollfd	_read_fd;
 		struct pollfd	_write_fd;
-
-	private:
+		
+		private:
 		request			*_request;
+		std::map<std::string, std::string>	_env_tmp;
 		char			**_env;
 		int				_id;
+		
+		void			init_env(std::map<std::string, std::string>	_headers);
 };
 
 #endif

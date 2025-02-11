@@ -27,7 +27,9 @@ std::vector<struct pollfd> &list)
 	this->debug();
 	this->check_config_file(_client, _webserver);
 
-	if (this->check_if_cgi())
+	this->parse_body(this->_server);
+
+	if (this->check_if_cgi() && this->_is_cgi)
 	{
 		this->_cgi_status = WAITING;
 		this->_cgi = new cgi(*this, _client, list, _webserver);
@@ -235,7 +237,7 @@ void	request::parsing()
 	std::string			line;
 
 	file = utils::read_file(this->_fd);
-	std::cout << file << std::endl;
+	// std::cout << file << std::endl;
 	reqFile << file;
 	reqFile.seekg(0);
 	getline(reqFile, line);
@@ -248,19 +250,34 @@ void	request::parsing()
 		this->process_body(reqFile, line);
 	if (this->_error_code == -1)
 		this->parse_headers();
+	if (this->_error_code == -1)
+		parse_body(this->_server);
 }
 
 bool	request::check_if_cgi()
 {
 	if (this->_error_code != -1)
 		return (false);
+	
+	size_t	dotPos = this->_uri_file.find_last_of('.');
+	std::string extension = "";
+
+    if (dotPos != std::string::npos)
+        extension = this->_uri_file.substr(dotPos);
+	if (this->get_cgi_extension(extension))
+	{
+		this->_is_cgi = true;
+		// return (true);
+	}
 	if (this->_location || this->_method == "DELETE")
 	{
 		if (this->_location->_cgi_enabled)
 		{
+			this->_is_cgi = true;
 			return (true);
 		}
 	}
+	this->_is_cgi = false;
 	return (false);
 }
 
@@ -280,9 +297,12 @@ void	request::clear()
 	this->_http_version.clear();
 	this->_headers.clear();
 	this->_body.clear();
-	this->_body_length = -1;
+	this->_content_length = -1;
 	this->_has_body = -1;
 	this->_chunked_flag = false;
+	this->_is_cgi = false;
+	this->_multiform_flag = 0;
+	this->_boundary.clear();
 	this->_error_code = -1;
 	this->_debug_msg.clear();
 	this->_cgi = NULL;
@@ -291,6 +311,91 @@ void	request::clear()
 	this->_server = NULL;
 }
 // Handle body
+
+void request::parse_body(server *this_server)
+{
+	size_t pos;
+
+	if (this->_error_code != -1 && this->_error_code <= 200 && this->_error_code >= 300)
+		return ;
+	if(!this_server)
+		return ;
+
+	if (!this->_has_body)
+		return ;
+	if (atoi(this->_headers["content-length"].c_str()) >= 1)
+	{
+		// line = utils::read_file_max_size("examples/request/chunked.txt", atoi(this->_headers["content-length"].c_str()));
+		if (_body.length() >= atoi(this->_headers["content-length"].c_str()))
+			_body = _body.substr(0, atoi(this->_headers["content-length"].c_str()));
+		else
+			this->_headers["content-length"] = utils::to_string(_body.length());
+		_content_length = atoi(this->_headers["content-length"].c_str());
+	}
+	else if (this->_headers.count("transfer-encoding") && this->_headers["transfer-encoding"] == "chunked")
+	{
+		_chunked_flag = 1;
+		this->process_chunked();
+	}	
+	
+	// need to test
+	if (this->_headers.count("content-type") && this->_headers["content-type"].find("multipart/form-data") != std::string::npos)
+	{
+		pos = this->_headers["content-type"].find("boundary=", 0);
+        if (pos != std::string::npos)
+            this->_boundary = this->_headers["content-type"].substr(pos + 9, this->_headers["content-type"].size());
+        this->_multiform_flag = true;
+	}
+	if (this->_body.length() > this_server->_max_body_size)
+	{
+		this->_error_code = 413;
+		return ; 
+	}
+	if (this->_body.length() > this->_content_length)
+		this->_body = this->_body.substr(0, this->_content_length);
+	else
+		this->_headers["content-length"] = utils::to_string(_body.length());
+	_content_length = atoi(this->_headers["content-length"].c_str());
+}
+
+void request::process_chunked()
+{
+	size_t	chunkSize = 0;
+	std::string tmpBody;
+	std::string newBody;
+	std::stringstream ss;
+	std::string line;
+	// bool	flag = 1;
+
+	//later replace to _body
+	// std::cout << "CHUNKED " << this->_body << std::endl;
+	tmpBody = utils::read_file_max_size("examples/request/chunked.txt", 200);
+	std::cout << "\n\nCHUNKED " << tmpBody << std::endl;
+    ss.str(tmpBody);
+	while (getline(ss, line))
+	{
+		utils::trim_space_newline(line);
+		if (line.empty())
+			continue;
+		else if (utils::hexToDecimal(line) >= 1)
+		{
+			chunkSize = utils::hexToDecimal(line);
+			// flag = !flag;
+			getline(ss, line);
+			utils::trim_space_newline(line);
+			if (line.empty())
+				getline(ss, line);
+			// newBody += line;
+			newBody += line.substr(0, chunkSize);
+		}
+		else if (utils::hexToDecimal(line) <= 0)
+			break;
+	}
+	if (utils::hexToDecimal(line) != 0)
+		newBody += line;
+	_body = newBody;
+	std::cout << "\n\nNew Body " << _body << std::endl;
+}
 
 void request::process_body(std::stringstream &reqFile, std::string line)
 {
@@ -313,6 +418,7 @@ void request::process_body(std::stringstream &reqFile, std::string line)
 	}
 	this->_has_body = 1;
 	this->_body = line;
+
 	//clear line?
 }
 
@@ -326,8 +432,8 @@ void request::parse_headers()
     {
 		if (this->_headers.count("transfer-encoding"))
 			return (set_error_code(400, "Incopatible headers: content-length & transfer-encoding."));
-		this->_body_length = std::atoi(_headers["content-length"].c_str());
-		if (this->_body_length <= 0)
+		this->_content_length = std::atoi(_headers["content-length"].c_str());
+		if (this->_content_length <= 0)
 			return (set_error_code(400, "Invalid Content-length header."));
     }
 	if (this->_http_version.compare("HTTP/1.0") == 0 && this->_headers.count("transfer-encoding"))
@@ -369,7 +475,7 @@ void request::save_headers(std::string &line)
 			tmp = line.substr(i, (line.find(':') - i));
 			if(space_in_header_name(tmp))
 				return (set_error_code(400, "Found space on header name."));
-			utils::ft_toLower(tmp);
+			utils::ft_to_lower(tmp);
 			i = line.find(':');
 			while (line[i] == ' ' || line[i] == ':')
 				i++;
@@ -380,7 +486,7 @@ void request::save_headers(std::string &line)
 			tmp = line.substr(i, (line.find('\n') - i));
 			if(space_in_header_name(tmp))
 				return (set_error_code(400, "Found space on header name."));
-			utils::ft_toLower(tmp);
+			utils::ft_to_lower(tmp);
 			this->_headers[tmp] = "";
 		}
 		line.erase(0, line.find('\n') + 1);
@@ -498,6 +604,7 @@ void request::check_save_request_line(std::string line)
 	if (line[0] == ' ')
 		return (set_error_code(400, "Found spaces before method."));
 	utils::fix_spaces_in_line(line);
+	this->_query = line;
 	//check method
 	if (line.find(" ") != std::string::npos)
 		key = line.substr(0, line.find(" "));
@@ -523,6 +630,28 @@ void request::check_save_request_line(std::string line)
 	this->_http_version = key;
 
 }
+
+//Getters
+
+std::map<std::string, std::string>	request::get_headers()
+{
+	return(this->_headers);
+}
+
+bool	request::get_cgi_extension(std::string ext)
+{
+	if (this->_cgi_extensions.find(ext) != this->_cgi_extensions.end() && !this->_cgi_extensions[ext].empty())
+     	return (1);
+	return (0);
+}
+
+void	request::set_cgi_extension()
+{
+    this->_cgi_extensions[".php"] = "/bin/php";
+    this->_cgi_extensions[".py"] = "/bin/python3";
+    this->_cgi_extensions[".cgi"] = "/bin/cgi";
+}
+
 
 // Handle errors
 void request::set_error_code(int code, std::string msg)
@@ -565,7 +694,7 @@ void	request::print_others()
 	std::stringstream	chunked_flag;
 	std::stringstream	error_code;
 
-	body_length << this->_body_length;
+	body_length << this->_content_length;
 	has_body << this->_has_body;
 	chunked_flag << this->_chunked_flag;
 	error_code << this->_error_code;

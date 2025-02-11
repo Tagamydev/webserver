@@ -6,7 +6,7 @@
 /*   By: samusanc <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 09:08:35 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/25 15:41:41 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/02/11 06:55:13 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,6 @@ class   request
         bool			_chunked_flag;
 		bool			_multiform_flag;
 		std::string		_boundary;
-		std::string		_http_version;
 
 		// std::map<std::string, std::string>	_query_str;	
 		std::map<std::string, std::string>	_headers;	

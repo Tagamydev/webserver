@@ -8,7 +8,7 @@
             "name": "C/C++: gcc build and debug active file",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${fileDirname}/minishell_debug",
+            "program": "${workspaceFolder}/webserver",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",

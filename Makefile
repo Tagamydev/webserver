@@ -11,7 +11,7 @@
 #                                                                              #
 # **************************************************************************** #
 
-NAME		=	result
+NAME		=	webserver
 INC_DIR		=	-I ./src/ \
 				-I ./src/server/ \
 				-I ./src/client/ \
@@ -21,7 +21,7 @@ INC_DIR		=	-I ./src/ \
 				-I ./src/loop/ \
 				-I ./src/response/ 
 
-CXXFLAGS	=	-g3 -fsanitize=address -g3#-Wall -Wextra -Werror -I ./
+CXXFLAGS	=	-g3  -fsanitize=address #-Wall -Wextra -Werror -I ./
 CXXFLAGS	+= $(INC_DIR)
 CXXFLAGS	+=	-std=c++98
 CXX		=	c++ $(CXXFLAGS)

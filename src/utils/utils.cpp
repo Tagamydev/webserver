@@ -179,6 +179,14 @@ std::list<std::string>	utils::split_to_list(std::string line, char sep)
 	return (list);
 }
 
+/// @brief transform a all the '-' to '_'
+void    utils::ft_to_underscore(std::string &str)
+{
+    for (size_t i = 0; i < str.length(); ++i)
+        if (str[i] == '-')
+			str[i] == '_';
+}		
+
 /// @brief transform a string in upper case
 void    utils::ft_to_upper(std::string &str)
 {

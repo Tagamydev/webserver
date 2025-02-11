@@ -38,14 +38,17 @@ class   request
 		cgi			*_cgi;
 		cgi_status	_cgi_status;
 		std::string	_cgi_response;
+        bool			_is_cgi;
 		void		close_cgi();
 		bool		check_if_cgi();
 
 		// QUERY
+		std::string		_query;
 		std::string		_method;
 		std::string		_uri;
 		std::string		_uri_file;
-		std::string		_uri_params;
+		std::string		_uri_params; // vars after ? on filename
+		std::string		_http_version;
 
 		// BODY
 		std::string		_body;
@@ -54,9 +57,14 @@ class   request
 		// STATES FOR RESPONSE
 		int				_error_code;
 		std::string		_debug_msg;
+		std::map<std::string, std::string>	_cgi_extensions;	
 
 		server			*_server;
 		location		*_location;
+
+		// Getters
+		std::map<std::string, std::string>	get_headers();
+
 
 	private:
 		int				_fd;
@@ -68,7 +76,7 @@ class   request
 		std::string		_boundary;
 		std::string		_http_version;
 
-		std::map<std::string, std::string>	_query_str;	
+		// std::map<std::string, std::string>	_query_str;	
 		std::map<std::string, std::string>	_headers;	
 
 		void	parsing();
@@ -77,8 +85,12 @@ class   request
 
 		void	get_server(client *_client, webserver *_webserver);
 		void	get_location();
+		bool	get_cgi_extension(std::string ext);
+
 
 		void	set_error_code(int code, std::string msg);
+		void	set_cgi_extension();
+
 		void	print_request();
 		void	print_header();
 		void	print_body();

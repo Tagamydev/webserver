@@ -23,14 +23,14 @@ response::response(request *_request, webserver *_webserver)
 	}
 
 	//check in config file for alias and root in the same block
-	if (!this->_request->_location->_alias.empty())
+	if (this->_request->_location && !this->_request->_location->_alias.empty())
 	{
 		this->_request->_uri = this->_request->_location->_alias;
 		if (this->_request->_uri[0] != '/')
 			this->_request->_uri = "./" + this->_request->_uri;
 		std::cout << "[Path]: " << this->_request->_uri << std::endl;
 	}
-	else if (!this->_request->_location->_root.empty())
+	else if (this->_request->_location && !this->_request->_location->_root.empty())
 	{
 		this->_request->_uri = this->_request->_location->_root + this->_request->_uri;
 		if (this->_request->_uri[0] != '/')

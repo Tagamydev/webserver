@@ -16,6 +16,7 @@ class	utils
 
 		static void    ft_to_lower(std::string &str);
 		static void    ft_to_upper(std::string &str);
+		static void    ft_to_underscore(std::string &str);
 		static void	trim_space_newline(std::string &line);
 		static void	trim_semicolon(std::string &line);
 		static void	trim_curly_brackets(std::string &line);

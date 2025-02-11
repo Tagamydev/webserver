@@ -13,6 +13,7 @@ class	utils
 		static void send_response(int socket_fd, const std::string &response_str);
 		static std::string	read_file(int fd);
 		static std::string	read_file_max_size(std::string fileName, long max_size);
+
 		static void    ft_to_lower(std::string &str);
 		static void    ft_to_upper(std::string &str);
 		static void    ft_to_underscore(std::string &str);

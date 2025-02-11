@@ -1,9 +1,6 @@
 {
 	"files.associations": {
-<<<<<<< HEAD
 		"new": "cpp",
-=======
->>>>>>> origin/main
 		"array": "cpp",
 		"atomic": "cpp",
 		"bit": "cpp",
@@ -48,10 +45,6 @@
 		"iostream": "cpp",
 		"istream": "cpp",
 		"limits": "cpp",
-<<<<<<< HEAD
-=======
-		"new": "cpp",
->>>>>>> origin/main
 		"numbers": "cpp",
 		"ostream": "cpp",
 		"sstream": "cpp",

@@ -321,8 +321,6 @@ void request::parse_body(server *this_server)
 	if(!this_server)
 		return ;
 
-	// this->process_chunked(); // delete, is only to check now
-
 	if (!this->_has_body)
 		return ;
 	if (atoi(this->_headers["content-length"].c_str()) >= 1)
@@ -371,7 +369,6 @@ void request::process_chunked()
 
 	//later replace to _body
 	// std::cout << "CHUNKED " << this->_body << std::endl;
-    // ss.str(this->_body);
 	tmpBody = utils::read_file_max_size("examples/request/chunked.txt", 200);
 	std::cout << "\n\nCHUNKED " << tmpBody << std::endl;
     ss.str(tmpBody);

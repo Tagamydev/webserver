@@ -29,7 +29,6 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 	if (pipe(pipeIN) == -1 || pipe(pipeOUT) == -1)
 		throw std::runtime_error("Pipe fail!.");
 
-	// create env
 	this->init_env(_request.get_headers());
 
 	pid = fork();

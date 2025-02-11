@@ -74,6 +74,7 @@ class   request
         bool			_chunked_flag;
 		bool			_multiform_flag;
 		std::string		_boundary;
+		std::string		_http_version;
 
 		// std::map<std::string, std::string>	_query_str;	
 		std::map<std::string, std::string>	_headers;	

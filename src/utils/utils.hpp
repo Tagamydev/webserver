@@ -12,6 +12,7 @@ class	utils
 		static struct pollfd pollfd_from_fd(int fd, short events);
 		static void send_response(int socket_fd, const std::string &response_str);
 		static std::string	read_file(int fd);
+		static std::string	read_file_max_size(std::string fileName, long max_size);
 
 		static void    ft_to_lower(std::string &str);
 		static void    ft_to_upper(std::string &str);
@@ -33,8 +34,8 @@ class	utils
 
 		static void map_to_vector_populate_keys(const std::map<std::string, location>& inputMap, std::vector<std::string>& outputVector);
 		static void map_to_vector_populate_values(const std::map<std::string, std::string>& inputMap, std::vector<std::string>& outputVector);
-		
-
+		static std::string to_string(std::size_t value);
+		static long hexToDecimal(const std::string& hexStr);
 		static void print_info(std::string message);
 		static void print_debug(std::string message);
 		static void print_log(std::string message);

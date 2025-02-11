@@ -6,7 +6,7 @@
 /*   By: samusanc <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 09:08:35 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/22 17:33:20 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/25 15:41:41 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ class   request
 
 		// BODY
 		std::string		_body;
+		std::string		_body_parsed;
 
 		// STATES FOR RESPONSE
 		int				_error_code;

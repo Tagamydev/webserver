@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 07:52:36 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/22 17:18:27 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/01/24 21:13:16 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "request.hpp"
@@ -128,12 +128,38 @@ std::string location_from_uri(const std::string& uri)
 
 location	*get_location_from_uri(server *_server, std::string uri)
 {
+	std::map<std::string, location>::iterator	it;
+	std::map<std::string, location>::iterator	ie;
+	std::map<std::string, location>::iterator	best_match;
+
+	it = _server->_locations.begin();
+	ie = _server->_locations.end();
+	best_match = ie;
+	size_t best_match_length = 0;
+	for (; it != ie ; ++it)
+	{
+		const std::string &loc_path = it->first;
+		if (uri.find(loc_path) == 0)
+		{
+			if (loc_path.length() > best_match_length)
+			{
+				best_match = it;
+				best_match_length = loc_path.length();
+			}
+		}
+	}
+	if (best_match != ie)
+		return &(best_match->second);
+	return (NULL);
+	// OLD FUNCTION: this fuction dont allow herachy and dont probe / or /.git/branches as location blocks
+	/*
 	std::map<std::string, location>::iterator	i;
 
 	i = _server->_locations.find(location_from_uri(uri));
 	if (i != _server->_locations.end())
 		return (&(i->second));
 	return (NULL);
+	*/
 }
 
 void	request::get_server(client *_client, webserver *_webserver)
@@ -438,7 +464,7 @@ void request::save_headers(std::string &line)
 			tmp = line.substr(i, (line.find(':') - i));
 			if(space_in_header_name(tmp))
 				return (set_error_code(400, "Found space on header name."));
-			utils::ft_toLower(tmp);
+			utils::ft_to_lower(tmp);
 			i = line.find(':');
 			while (line[i] == ' ' || line[i] == ':')
 				i++;
@@ -449,7 +475,7 @@ void request::save_headers(std::string &line)
 			tmp = line.substr(i, (line.find('\n') - i));
 			if(space_in_header_name(tmp))
 				return (set_error_code(400, "Found space on header name."));
-			utils::ft_toLower(tmp);
+			utils::ft_to_lower(tmp);
 			this->_headers[tmp] = "";
 		}
 		line.erase(0, line.find('\n') + 1);

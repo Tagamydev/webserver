@@ -40,7 +40,6 @@ response::response(request *_request, webserver *_webserver)
 		return ;
 	}
 
-	/*
 	if (!this->_request->_location->_alias.empty())
 	{
 		this->_request->_uri = replaceToken(
@@ -51,7 +50,7 @@ response::response(request *_request, webserver *_webserver)
 		if (this->_request->_uri[0] != '/')
 			this->_request->_uri = "./" + this->_request->_uri;
 	}
-	else if (!this->_request->_location->_root.empty())
+	else if (this->_request->_location && !this->_request->_location->_root.empty())
 	{
 		this->_request->_uri = this->_request->_location->_root + this->_request->_uri;
 		if (this->_request->_uri[0] != '/')
@@ -151,7 +150,7 @@ void	response::do_cgi_response()
 		if (colonPos != std::string::npos && colonPos < lineEnd)
 		{
 			std::string key = headers.substr(i, colonPos - i);
-			utils::ft_toLower(key); // Normalize header name
+			utils::ft_to_lower(key); // Normalize header name
 
 			size_t valueStart = colonPos + 1;
 			while (valueStart < lineEnd && headers[valueStart] == ' ') // Skip spaces after ':'
@@ -163,7 +162,7 @@ void	response::do_cgi_response()
 		else 
 		{
 			std::string key = headers.substr(i, lineEnd - i);
-			utils::ft_toLower(key);
+			utils::ft_to_lower(key);
 			this->_headers[key] = "";
 		}
 		i = lineEnd + 1;

@@ -115,7 +115,7 @@ void	server::process_parameters(std::stringstream &contentStream, std::string li
 	{
 		if (utils::is_empty(value))
 			throw std::runtime_error("Error reading config file. Wrong value in server_name directive.");
-		utils::ft_toLower(value);
+		utils::ft_to_lower(value);
 		this->_names = utils::split_to_vector(value, ' ');
 	}
 	else if (key == "client_max_body_size")

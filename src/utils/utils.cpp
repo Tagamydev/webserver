@@ -59,6 +59,51 @@ std::string	utils::read_file(int fd)
 	return (result);
 }
 
+std::string	utils::read_file_max_size(std::string fileName, long max_size)
+{
+	std::ifstream		file;
+	std::string			result;
+	std::string			tmp;
+
+	file.open (fileName.c_str());
+	while (getline(file, tmp))
+	{
+		result += tmp + "\n";
+		if (result.length() >= max_size)
+		{
+			result = result.substr(0, max_size);
+			break;
+		}	
+	}
+	if (result.length() < max_size)
+		result += tmp;
+	if (result.length() >= max_size)
+		result = result.substr(0, max_size);
+
+	// std::cout << "\n\nmax size " << max_size << std::endl;
+	// std::cout << "\n\nresult size " << result.length() << std::endl;
+	file.close();
+	return (result);
+}
+
+/// @brief convert a  hexadecimal string to decimal long
+long utils::hexToDecimal(const std::string& hexStr)
+{
+    std::istringstream iss(hexStr);
+    long decimalValue = 0;
+
+    iss >> std::hex >> decimalValue;
+    return decimalValue;
+}
+
+/// @brief convert int to string
+std::string utils::to_string(std::size_t value) 
+{
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
+
 /// @brief Takes a vector and populate it with the keys of a map. Used for location duplicated check.
 /// @param inputMap map<string, string>
 /// @param outputVector vector<std::string>
@@ -134,8 +179,23 @@ std::list<std::string>	utils::split_to_list(std::string line, char sep)
 	return (list);
 }
 
+/// @brief transform a all the '-' to '_'
+void    utils::ft_to_underscore(std::string &str)
+{
+    for (size_t i = 0; i < str.length(); ++i)
+        if (str[i] == '-')
+			str[i] == '_';
+}		
+
+/// @brief transform a string in upper case
+void    utils::ft_to_upper(std::string &str)
+{
+    for (size_t i = 0; i < str.length(); ++i)
+        str[i] = std::toupper(str[i]);
+}
+
 /// @brief transform a string in lower case
-void    utils::ft_toLower(std::string &str)
+void    utils::ft_to_lower(std::string &str)
 {
     for (size_t i = 0; i < str.length(); ++i)
         str[i] = std::tolower(str[i]);
@@ -240,6 +300,18 @@ void	utils::print_map_content(std::map<int, std::string> map, std::string title)
 	size_t i = 1;
 		std::cout << "\n<<<   "<< title << "   >>>" << std::endl;
 	for (std::map<int, std::string>::iterator it = map.begin(); it != map.end(); it++)
+		{
+			std::cout << "--- Item " << i++ << " value: ";
+			std::cout << it->first << " " << it->second << "\n";
+		}
+	std::cout << std::endl;
+}
+
+void	utils::print_map_content(std::map<std::string, std::string> map, std::string title)
+{
+	size_t i = 1;
+		std::cout << "\n<<<   "<< title << "   >>>" << std::endl;
+	for (std::map<std::string, std::string>::iterator it = map.begin(); it != map.end(); it++)
 		{
 			std::cout << "--- Item " << i++ << " value: ";
 			std::cout << it->first << " " << it->second << "\n";

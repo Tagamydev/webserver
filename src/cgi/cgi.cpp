@@ -18,7 +18,7 @@ cgi::cgi(request &_request, client *_client,
 std::vector<struct pollfd> &list, webserver *_webserver)
 {
 	utils::print_debug("new cgi...");
-	this->_env = NULL;
+	// this->_env = NULL;
 	this->_request = &_request;
 	this->_request->_cgi_status = WAITING;
 
@@ -28,6 +28,8 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 	
 	if (pipe(pipeIN) == -1 || pipe(pipeOUT) == -1)
 		throw std::runtime_error("Pipe fail!.");
+
+	this->init_env(_request.get_headers());
 
 	pid = fork();
 	if (pid < 0)
@@ -44,7 +46,8 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 			exit(-1);
 		}
 	//	error = execle("/bin/python3 ./www/cgi/simple-cgi.py", "./www/cgi/simple-cgi.py", (char *)NULL, this->_env);
-		error = execle("/bin/python3", "/bin/python3", "./www/cgi/simple-cgi.py", (char *)NULL, this->_env);
+		// error = execle("/bin/python3", "/bin/python3", "./www/cgi/simple-cgi.py", (char *)NULL, this->_env);
+		error = execle("./www/cgi/form-handler.cgi", "./www/cgi/form-handler.cgi",  (char *)NULL, this->_env);
 
 		std::cerr << "[FATAL]: execle fail inside fork, log[" << error << "]" << std::endl;
 		exit(-1);
@@ -102,4 +105,48 @@ void cgi::write(std::string &content)
 bool cgi::cgi_timeout()
 {
 	return (false);
+}
+
+void	cgi::init_env(std::map<std::string, std::string> _headers)
+{
+	std::map<std::string, std::string>::iterator it;
+	std::string	name;
+	std::string	key;
+
+	//save headers
+	for (it = _headers.begin(); it != _headers.end(); *it++)
+	{
+		if (it->first == "content-lenght" || it->first == "content-type")
+			continue;
+		else
+			name = "HTTP_" + it->first;
+		utils::ft_to_upper(name);
+		utils::ft_to_underscore(name);
+		this->_env_tmp[name] = it->second;
+	}
+	//init manual headers
+	this->_env_tmp["REQUEST_METHOD"] = this->_request->_method;
+	this->_env_tmp["SCRIPT_NAME"] = this->_request->_uri_file; // check where to init (The path to the CGI script being executed.)
+	this->_env_tmp["REQUEST_URI"] = this->_request->_uri;
+	this->_env_tmp["QUERY_STRING"] = this->_request->_uri_params;
+	this->_env_tmp["CONTENT_TYPE"] = _headers["content-type"];
+	this->_env_tmp["CONTENT_LENGTH"] = _headers["content-lenght"];
+	this->_env_tmp["SERVER_NAME"] = _headers["host"];
+	// this->_env_tmp["SERVER_PORT"] = ; port on location?
+	this->_env_tmp["SERVER_PROTOCOL"] = this->_request->_http_version;
+// body is sent on send_to_cgi()
+
+	//create char** env
+	this->_env = new char*[1 + _env_tmp.size()];
+	int i =0;
+	for (std::map<std::string, std::string>::iterator it = _env_tmp.begin(); 
+				it != _env_tmp.end(); it++){
+		(this->_env)[i] = new char[(*it).first.size() +(*it).second.size() + 2];
+		std::strcpy((this->_env)[i],((*it).first + "=" + (*it).second).c_str());
+		i++;
+	}
+	(this->_env)[_env_tmp.size()] = NULL;
+	// _env_size = i;
+
+	utils::print_map_content(this->_env_tmp, "CGI ENV");
 }

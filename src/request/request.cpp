@@ -470,8 +470,8 @@ void request::save_headers(std::string &line)
 	{
 		while (line[i] == ' ')
 			i++;
-		if (i >= line.size() || line.find('\n') == std::string::npos) 
-			return (set_error_code(-1, "No error, should skip headers."));
+		// if (i >= line.size() || line.find('\n') == std::string::npos) 
+		// 	return (set_error_code(-1, "No error, should skip headers."));
 		flag = std::count(line.begin() + i, line.begin() + line.find('\n'), ':');
 		if (flag > 0)
 		{
@@ -488,7 +488,7 @@ void request::save_headers(std::string &line)
 		{
 			tmp = line.substr(i, (line.find('\n') - i));
 			if(space_in_header_name(tmp))
-				return (set_error_code(400, "Found space on header name."));
+				// return (set_error_code(400, "Found space on header name."));
 			utils::ft_to_lower(tmp);
 			this->_headers[tmp] = "";
 		}

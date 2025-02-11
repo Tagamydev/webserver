@@ -383,7 +383,11 @@ void	loopHandler::check_additions(int &i, std::vector<struct pollfd> &list)
 		this->make_fd_list(list);
 	}
 	else if (fd_is_cgi(socket.fd))
+	{
+		std::cout << "\n\n HERE READ CGI!! \n\n" ;
+
 		this->read_from_cgi(i, list);
+	}
 	else
 		this->new_request(socket.fd, list, i);
 }

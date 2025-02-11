@@ -18,6 +18,8 @@ cgi::cgi(request &_request, client *_client,
 std::vector<struct pollfd> &list, webserver *_webserver)
 {
 	utils::print_debug("new cgi...");
+	std::cout << "\n\n HERE CGIIIII!! \n\n" ;
+
 	// this->_env = NULL;
 	this->_request = &_request;
 	this->_request->_cgi_status = WAITING;
@@ -117,7 +119,7 @@ void	cgi::init_env(std::map<std::string, std::string> _headers)
 	//save headers
 	for (it = _headers.begin(); it != _headers.end(); *it++)
 	{
-		if (it->first == "content-lenght" || it->first == "content-type")
+		if (it->first == "content-lenght" || it->first == "content-type" || it->first == "host")
 			continue;
 		else
 			name = "HTTP_" + it->first;

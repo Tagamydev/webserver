@@ -50,7 +50,7 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 		}
 	//	error = execle("/bin/python3 ./www/cgi/simple-cgi.py", "./www/cgi/simple-cgi.py", (char *)NULL, this->_env);
 		// error = execle("/bin/python3", "/bin/python3", "./www/cgi/simple-cgi.py", (char *)NULL, this->_env);
-		error = execle("./www/cgi/form-handler.cgi", "./www/cgi/form-handler.cgi",  (char *)NULL, this->_env);
+		error = execle("./www/cgi-bin/form-handler.cgi", "./www/cgi-bin/form-handler.cgi",  (char *)NULL, this->_env);
 
 		std::cerr << "[FATAL]: execle fail inside fork, log[" << error << "]" << std::endl;
 		exit(-1);
@@ -81,6 +81,7 @@ cgi::~cgi()
 {
 	close(this->_read_fd.fd);
 	close(this->_write_fd.fd);
+	free_env();
 	// i need to close the cgi???
 	kill(this->_id, SIGKILL);
 }
@@ -119,21 +120,27 @@ void	cgi::init_env(std::map<std::string, std::string> _headers)
 	//save headers
 	for (it = _headers.begin(); it != _headers.end(); *it++)
 	{
-		if (it->first == "content-lenght" || it->first == "content-type" || it->first == "host")
-			continue;
+		if (it->first == "content-length" || it->first == "content-type" || it->first == "host")
+			name = it->first;
 		else
+		{
+			if (it->first.empty())
+				continue;
 			name = "HTTP_" + it->first;
+		}
 		utils::ft_to_upper(name);
 		utils::ft_to_underscore(name);
+		std::cout << "\n\nNAME " << name << std::endl;
 		this->_env_tmp[name] = it->second;
 	}
 	//init manual headers
 	this->_env_tmp["REQUEST_METHOD"] = this->_request->_method;
 	this->_env_tmp["SCRIPT_NAME"] = this->_request->_uri_file; // check where to init (The path to the CGI script being executed.)
 	this->_env_tmp["REQUEST_URI"] = this->_request->_uri;
-	this->_env_tmp["QUERY_STRING"] = this->_request->_uri_params;
-	this->_env_tmp["CONTENT_TYPE"] = _headers["content-type"];
-	this->_env_tmp["CONTENT_LENGTH"] = _headers["content-lenght"];
+	if(!this->_request->_uri_params.empty())
+		this->_env_tmp["QUERY_STRING"] = this->_request->_uri_params;
+	// this->_env_tmp["CONTENT_TYPE"] = _headers["content-type"];
+	// this->_env_tmp["CONTENT_LENGTH"] = _headers["content-lenght"];
 	this->_env_tmp["SERVER_NAME"] = _headers["host"];
 	// this->_env_tmp["SERVER_PORT"] = ; port on location?
 	this->_env_tmp["SERVER_PROTOCOL"] = this->_request->_http_version;
@@ -149,7 +156,17 @@ void	cgi::init_env(std::map<std::string, std::string> _headers)
 		i++;
 	}
 	(this->_env)[_env_tmp.size()] = NULL;
-	// _env_size = i;
+	_env_size = i;
 
-	utils::print_map_content(this->_env_tmp, "CGI ENV");
+	// utils::print_map_content(this->_env_tmp, "CGI ENV");
+}
+
+void cgi::free_env()
+{
+	utils::print_debug("freeing env");
+	for(unsigned int i = 0; i < this->_env_size ; i++){
+		delete[] _env[i];
+	}
+	delete[] _env;
+	utils::print_debug("freeing env done");
 }

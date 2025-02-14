@@ -29,7 +29,7 @@ std::vector<struct pollfd> &list)
 
 	this->parse_body(this->_server);
 
-	if (this->check_if_cgi() && this->_is_cgi)
+	if (this->check_if_cgi())
 	{
 		this->_cgi_status = WAITING;
 		this->_cgi = new cgi(*this, _client, list, _webserver);
@@ -262,6 +262,7 @@ bool	request::check_if_cgi()
 	size_t	dotPos = this->_uri_file.find_last_of('.');
 	std::string extension = "";
 
+	//Check extension. // CHECK IF NECESSARY
     if (dotPos != std::string::npos)
         extension = this->_uri_file.substr(dotPos);
 	if (this->get_cgi_extension(extension))
@@ -269,7 +270,9 @@ bool	request::check_if_cgi()
 		this->_is_cgi = true;
 		// return (true);
 	}
-	if (this->_location || this->_method == "DELETE")
+	//check if location is cgi enabled
+	this->_location = get_location_from_uri(_server, _uri);
+	if (this->_location)
 	{
 		if (this->_location->_cgi_enabled)
 		{
@@ -495,8 +498,6 @@ void request::save_headers(std::string &line)
 		line.erase(0, line.find('\n') + 1);
 		i = 0;
 	}
-	/*
-	*/
 }
 
 
@@ -518,7 +519,6 @@ void    request::process_headers(std::stringstream &reqFile, std::string line)
 		}
 	}
 	utils::fix_spaces_in_line(line);
-	// check if line is empty?
 	save_headers(line);
 }
 
@@ -557,7 +557,6 @@ void request::is_valid_uri(std::string &line)
 
 	if (line.empty())
 		return (set_error_code(400, "Empty or invalid URI."));
-	// max size?
 	if (len > MAX_URI_LENGTH)
 		return (set_error_code(414, "Max. URI length reached."));
 	// Check for invalid characters
@@ -650,9 +649,9 @@ bool	request::get_cgi_extension(std::string ext)
 
 void	request::set_cgi_extension()
 {
-    this->_cgi_extensions[".php"] = "/bin/php";
-    this->_cgi_extensions[".py"] = "/bin/python3";
-    this->_cgi_extensions[".cgi"] = "/bin/cgi";
+    this->_cgi_extensions[".php"] = "/cgi-bin/php";
+    this->_cgi_extensions[".py"] = "/cgi-bin/python3";
+    this->_cgi_extensions[".cgi"] = "/cgi-bin/cgi";
 }
 
 

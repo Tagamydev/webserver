@@ -184,7 +184,7 @@ void    utils::ft_to_underscore(std::string &str)
 {
     for (size_t i = 0; i < str.length(); ++i)
         if (str[i] == '-')
-			str[i] == '_';
+			str[i] = '_';
 }		
 
 /// @brief transform a string in upper case
@@ -313,8 +313,8 @@ void	utils::print_map_content(std::map<std::string, std::string> map, std::strin
 		std::cout << "\n<<<   "<< title << "   >>>" << std::endl;
 	for (std::map<std::string, std::string>::iterator it = map.begin(); it != map.end(); it++)
 		{
-			std::cout << "--- Item " << i++ << " value: ";
-			std::cout << it->first << " " << it->second << "\n";
+			std::cout << "--- Item " << i++ << " | value: ";
+			std::cout << it->first << " | " << it->second << "\n";
 		}
 	std::cout << std::endl;
 }

@@ -252,6 +252,27 @@ bool	loopHandler::is_server(int fd)
 	return (false);
 }
 
+bool	loopHandler::is_for_cgi(int fd)
+{
+	//server server = webserver._port_servers_list[];
+	// server server();
+
+	// if (server->_locations.find(req.getLocation()) == this->_locations.end())
+	//   return false;
+	// if (this->_locations[req.getLocation()].getCGI()== "on" && 
+	// 	!access(resourcePath.c_str(),X_OK))
+	// 		return true;
+
+
+
+// 	for (; i != ie ; i++)
+// 	{
+// 		if (i->second.fd == fd)
+// 			return (true);
+// 	}
+	return (false);
+}
+
 bool	loopHandler::fd_is_cgi(int fd)
 {
 	std::map<int, struct pollfd>::iterator	i;
@@ -377,12 +398,12 @@ void	loopHandler::check_additions(int &i, std::vector<struct pollfd> &list)
 {
 	struct pollfd socket = list[i];
 
-	if (is_server(socket.fd))
+	if (loopHandler::is_server(socket.fd))
 	{
 		this->new_client(socket);
 		this->make_fd_list(list);
 	}
-	else if (fd_is_cgi(socket.fd))
+	else if (loopHandler::is_for_cgi(socket.fd))
 	{
 		std::cout << "\n\n HERE READ CGI!! \n\n" ;
 

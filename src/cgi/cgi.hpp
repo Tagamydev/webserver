@@ -44,6 +44,7 @@ class	cgi
 		bool			cgi_timeout();
 		struct pollfd	_read_fd;
 		struct pollfd	_write_fd;
+		int				_env_size;
 		
 		private:
 		request			*_request;
@@ -52,6 +53,8 @@ class	cgi
 		int				_id;
 		
 		void			init_env(std::map<std::string, std::string>	_headers);
+		void 			free_env();
+
 };
 
 #endif

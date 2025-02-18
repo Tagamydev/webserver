@@ -96,8 +96,8 @@ void cgi::read()
 	this->_request->_cgi_response = result;
 
 // to delete
-	// utils::print_debug("\nmakeDAVID\n");
-	// utils::print_debug(this->_request->_cgi_response);
+	utils::print_debug("\nmakeDAVID\n");
+	utils::print_debug(this->_request->_cgi_response);
 }
 
 void cgi::write(std::string &content)
@@ -120,8 +120,10 @@ void	cgi::init_env(std::map<std::string, std::string> _headers)
 	//save headers
 	for (it = _headers.begin(); it != _headers.end(); *it++)
 	{
-		if (it->first == "content-length" || it->first == "content-type" || it->first == "host")
+		if (it->first == "content-length" || it->first == "content-type")
 			name = it->first;
+		else if (it->first == "host")
+			continue;
 		else
 		{
 			if (it->first.empty())
@@ -130,11 +132,11 @@ void	cgi::init_env(std::map<std::string, std::string> _headers)
 		}
 		utils::ft_to_upper(name);
 		utils::ft_to_underscore(name);
-		std::cout << "\n\nNAME " << name << std::endl;
 		this->_env_tmp[name] = it->second;
 	}
 	//init manual headers
 	this->_env_tmp["REQUEST_METHOD"] = this->_request->_method;
+	// this->_env_tmp["SCRIPT_NAME"] = "/cgi-bin/form-handler.cgi"; // check where to init (The path to the CGI script being executed.)
 	this->_env_tmp["SCRIPT_NAME"] = this->_request->_uri_file; // check where to init (The path to the CGI script being executed.)
 	this->_env_tmp["REQUEST_URI"] = this->_request->_uri;
 	if(!this->_request->_uri_params.empty())
@@ -158,7 +160,7 @@ void	cgi::init_env(std::map<std::string, std::string> _headers)
 	(this->_env)[_env_tmp.size()] = NULL;
 	_env_size = i;
 
-	// utils::print_map_content(this->_env_tmp, "CGI ENV");
+	utils::print_map_content(this->_env_tmp, "CGI ENV");
 }
 
 void cgi::free_env()

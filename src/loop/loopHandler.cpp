@@ -170,7 +170,9 @@ client	*loopHandler::get_client_from_clientFd(int fd)
 	std::map<client *, struct pollfd>::iterator i;
 	std::map<client *, struct pollfd>::iterator ie;
 	client	*result = NULL;
-
+	
+	
+	// check on all lists?
 	i = this->_client_clientFd.begin();
 	ie = this->_client_clientFd.end();
 	for (; i != ie ; i++)
@@ -179,6 +181,24 @@ client	*loopHandler::get_client_from_clientFd(int fd)
 		{
 			result = i->first;
 			break ;
+		}
+	}
+	
+	//checking on cgi list
+	if (!result)
+	{
+		std::map<int, struct pollfd>::iterator i;
+		std::map<int, struct pollfd>::iterator ie;
+		int result = 0;
+		i = this->_clientFd_cgiFd.begin();
+		ie = this->_clientFd_cgiFd.end();
+		for (; i != ie ; i++)
+		{
+			if (i->second.fd == fd)
+			{
+				result = i->first;
+				break ;
+			}
 		}
 	}
 	if (!result)
@@ -403,7 +423,7 @@ void	loopHandler::check_additions(int &i, std::vector<struct pollfd> &list)
 		this->new_client(socket);
 		this->make_fd_list(list);
 	}
-	else if (loopHandler::is_for_cgi(socket.fd))
+	else if (loopHandler::fd_is_cgi(socket.fd))
 	{
 		std::cout << "\n\n HERE READ CGI!! \n\n" ;
 

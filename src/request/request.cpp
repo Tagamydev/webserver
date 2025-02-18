@@ -274,6 +274,8 @@ bool	request::check_if_cgi()
 	this->_location = get_location_from_uri(_server, _uri);
 	if (this->_location)
 	{
+		this->_location->print_location_content();
+		// utils::print_debug();
 		if (this->_location->_cgi_enabled)
 		{
 			this->_is_cgi = true;

@@ -50,7 +50,9 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 		}
 	//	error = execle("/bin/python3 ./www/cgi/simple-cgi.py", "./www/cgi/simple-cgi.py", (char *)NULL, this->_env);
 		// error = execle("/bin/python3", "/bin/python3", "./www/cgi/simple-cgi.py", (char *)NULL, this->_env);
-		error = execle("./www/cgi-bin/form-handler.cgi", "./www/cgi-bin/form-handler.cgi",  (char *)NULL, this->_env);
+		// error = execle("./www/cgi-bin/upload.py", "./www/cgi-bin/upload.py",  (char *)NULL, this->_env);
+		// error = execle("./www/cgi-bin/form-handler.cgi", "./www/cgi-bin/form-handler.cgi",  (char *)NULL, this->_env);
+		error = execle(this->_env[0], this->_env[0],  (char *)NULL, this->_env);
 
 		std::cerr << "[FATAL]: execle fail inside fork, log[" << error << "]" << std::endl;
 		exit(-1);
@@ -60,8 +62,8 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 	close(pipeIN[1]);
 	close(pipeOUT[0]);
 
-	fcntl(pipeIN[0], F_SETFL, O_NONBLOCK);
-	fcntl(pipeOUT[1], F_SETFL, O_NONBLOCK);
+	// fcntl(pipeIN[0], F_SETFL, O_NONBLOCK);
+	// fcntl(pipeOUT[1], F_SETFL, O_NONBLOCK);
 
 	std::cout << "[Log]: " << "starting fds addition to vector list..." << std::endl;
 
@@ -79,6 +81,21 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 
 cgi::~cgi()
 {
+	// working on this, check on andres webserver
+	// if (_id != 0)
+	// {
+	// 	kill(_id, SIGKILL);
+	// 	waitpid(_id,&_exitstatus, 0);
+	// 	// close(_pip[0]);
+	// 	// close(_pipOut[1]);
+	// 	close(this->_read_fd.fd);
+	// 	close(this->_write_fd.fd);
+	// 	free_env();
+	// 	_id = 0;
+	// }
+
+
+
 	close(this->_read_fd.fd);
 	close(this->_write_fd.fd);
 	free_env();
@@ -136,23 +153,26 @@ void	cgi::init_env(std::map<std::string, std::string> _headers)
 	}
 	//init manual headers
 	this->_env_tmp["REQUEST_METHOD"] = this->_request->_method;
-	// this->_env_tmp["SCRIPT_NAME"] = "/cgi-bin/form-handler.cgi"; // check where to init (The path to the CGI script being executed.)
 	this->_env_tmp["SCRIPT_NAME"] = this->_request->_uri_file; // check where to init (The path to the CGI script being executed.)
 	this->_env_tmp["REQUEST_URI"] = this->_request->_uri;
 	if(!this->_request->_uri_params.empty())
 		this->_env_tmp["QUERY_STRING"] = this->_request->_uri_params;
-	// this->_env_tmp["CONTENT_TYPE"] = _headers["content-type"];
-	// this->_env_tmp["CONTENT_LENGTH"] = _headers["content-lenght"];
 	this->_env_tmp["SERVER_NAME"] = _headers["host"];
 	// this->_env_tmp["SERVER_PORT"] = ; port on location?
 	this->_env_tmp["SERVER_PROTOCOL"] = this->_request->_http_version;
-// body is sent on send_to_cgi()
 
 	//create char** env
-	this->_env = new char*[1 + _env_tmp.size()];
-	int i =0;
+	this->_env = new char*[2 + _env_tmp.size()]; // +1 for exec route
+	
+	
+	(this->_env)[0] = new char[6 + this->_env_tmp["SCRIPT_NAME"].size() + 1];
+	std::strcpy((this->_env)[0],(("./www" + this->_env_tmp["SCRIPT_NAME"]).c_str()));
+	
+	
+	int i =1;
 	for (std::map<std::string, std::string>::iterator it = _env_tmp.begin(); 
-				it != _env_tmp.end(); it++){
+				it != _env_tmp.end(); it++)
+	{
 		(this->_env)[i] = new char[(*it).first.size() +(*it).second.size() + 2];
 		std::strcpy((this->_env)[i],((*it).first + "=" + (*it).second).c_str());
 		i++;

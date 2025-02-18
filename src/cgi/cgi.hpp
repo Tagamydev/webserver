@@ -45,6 +45,7 @@ class	cgi
 		struct pollfd	_read_fd;
 		struct pollfd	_write_fd;
 		int				_env_size;
+		int				_exitstatus;
 		
 		private:
 		request			*_request;

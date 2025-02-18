@@ -38,6 +38,7 @@
 # include "loopHandler.hpp"
 # include <algorithm>    // std::count
 # include <set>
+# include <sys/wait.h>
 
 std::string get_actual_date();
 

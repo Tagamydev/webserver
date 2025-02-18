@@ -4,7 +4,6 @@ echo "Content-Type: text/plain"
 echo ""
 echo "this should be body"
 echo "WTF is wrong with you!!!"
-echo $POST_DATA
 
     
 # Read the request body from stdin

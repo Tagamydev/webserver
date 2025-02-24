@@ -36,7 +36,7 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 
 	pid = fork();
 	if (pid < 0)
-		throw std::runtime_error("Fork fail!.");
+		throw std::runtime_error("Fork fail!."); // free env? or it calls the destructor?
 
 	if (!pid)
 	{
@@ -45,11 +45,11 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 		close(pipeOUT[1]);
 		if (dup2(pipeIN[1], STDOUT_FILENO) == -1 || dup2(pipeOUT[0], STDIN_FILENO) == -1)
 		{
-			std::cerr << "[FATAL]: dup2 fail inside fork!." << std::endl;
+			std::cerr << "[FATAL]: dup2 fail inside fork!." << std::endl; // free env? or it calls the destructor?
 			exit(-1);
 		}
-	//	error = execle("/bin/python3 ./www/cgi/simple-cgi.py", "./www/cgi/simple-cgi.py", (char *)NULL, this->_env);
-		// error = execle("/bin/python3", "/bin/python3", "./www/cgi/simple-cgi.py", (char *)NULL, this->_env);
+		close(pipeIN[1]);
+		close(pipeOUT[0]);
 		// error = execle("./www/cgi-bin/upload.py", "./www/cgi-bin/upload.py",  (char *)NULL, this->_env);
 		// error = execle("./www/cgi-bin/form-handler.cgi", "./www/cgi-bin/form-handler.cgi",  (char *)NULL, this->_env);
 		error = execle(this->_env[0], this->_env[0],  (char *)NULL, this->_env);
@@ -62,8 +62,8 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 	close(pipeIN[1]);
 	close(pipeOUT[0]);
 
-	// fcntl(pipeIN[0], F_SETFL, O_NONBLOCK);
-	// fcntl(pipeOUT[1], F_SETFL, O_NONBLOCK);
+	fcntl(pipeIN[0], F_SETFL, O_NONBLOCK);
+	fcntl(pipeOUT[1], F_SETFL, O_NONBLOCK);
 
 	std::cout << "[Log]: " << "starting fds addition to vector list..." << std::endl;
 

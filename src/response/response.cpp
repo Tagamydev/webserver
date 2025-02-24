@@ -290,7 +290,9 @@ void	response::get_dir(std::string &path)
 
 	if (!this->_request->_location)
 	{
-		this->do_error_page(404);
+		this->_status_code = 200;
+			this->_body = make_autoindex(entries, path, this->_request->_uri);
+		//this->do_error_page(404);
 		return;
 	}
 	if (this->_request->_location->_index_file.empty())
@@ -361,10 +363,10 @@ void	response::do_get()
 		{
 			// directory
 			//'/?' 301 redirect to match directory
-			std::cout << "\n\nPATH: " << path << std::endl;
 			this->get_dir(path);
 			char	c;
 
+			std::cout << "\n\nHERE PATH: " << path << std::endl;
 			c = path[path.length() - 1];
 			if (c == '/')
 				this->get_dir(path);

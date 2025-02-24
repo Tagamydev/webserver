@@ -15,21 +15,6 @@
 #include <cstddef>
 #include <string>
 
-//remove
-bool is_directory(const std::string& path) 
-{
-    struct stat info;
-    if (stat(path.c_str(), &info) != 0) {
-        return false; // Cannot access path (doesn't exist or no permission)
-    }
-    return (info.st_mode & S_IFDIR) != 0; // Check if it's a directory
-}
-
-
-
-
-
-
 /* while on reqFile to skip new lines at the begining of the request.
 */
 request::request(client *_client, webserver *_webserver, 

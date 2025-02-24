@@ -53,10 +53,7 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 		}
 		// close(pipeIN[1]);
 		// close(pipeOUT[0]);
-		// error = execle("./www/cgi-bin/upload.py", "./www/cgi-bin/upload.py",  (char *)NULL, this->_env);
-		// error = execle("./www/cgi-bin/form-handler.cgi", "./www/cgi-bin/form-handler.cgi",  (char *)NULL, this->_env);
 		error = execle(this->_env[0], this->_env[0],  (char *)NULL, this->_env);
-		std::cout << "\n\n Exec " << this->_env[0] << std::endl;
 		std::cout << "\n\n PIPE IN " << pipeIN[1] <<  " PIPE OUT " << pipeOUT[0] << std::endl;
 
 		std::cerr << "[FATAL]: execle fail inside fork, log[" << error << "]" << std::endl;

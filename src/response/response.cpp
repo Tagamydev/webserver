@@ -1,4 +1,5 @@
 #include "response.hpp"
+#include "utils.hpp"
 #include "cgi.hpp"
 #include <sstream>
 

@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "client.hpp"
+
 client::client(struct pollfd socket, int port)
 {
 	int new_socket;

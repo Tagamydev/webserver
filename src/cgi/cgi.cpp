@@ -36,9 +36,12 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 
 	pid = fork();
 	if (pid < 0)
+	{
+		free_env();
 		throw std::runtime_error("Fork fail!."); // free env? or it calls the destructor?
+	}
 
-	if (!pid)
+	if (pid == 0)
 	{
 		int	error;
 		close(pipeIN[0]);
@@ -48,11 +51,13 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 			std::cerr << "[FATAL]: dup2 fail inside fork!." << std::endl; // free env? or it calls the destructor?
 			exit(-1);
 		}
-		close(pipeIN[1]);
-		close(pipeOUT[0]);
+		// close(pipeIN[1]);
+		// close(pipeOUT[0]);
 		// error = execle("./www/cgi-bin/upload.py", "./www/cgi-bin/upload.py",  (char *)NULL, this->_env);
 		// error = execle("./www/cgi-bin/form-handler.cgi", "./www/cgi-bin/form-handler.cgi",  (char *)NULL, this->_env);
 		error = execle(this->_env[0], this->_env[0],  (char *)NULL, this->_env);
+		std::cout << "\n\n Exec " << this->_env[0] << std::endl;
+		std::cout << "\n\n PIPE IN " << pipeIN[1] <<  " PIPE OUT " << pipeOUT[0] << std::endl;
 
 		std::cerr << "[FATAL]: execle fail inside fork, log[" << error << "]" << std::endl;
 		exit(-1);
@@ -62,8 +67,6 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 	close(pipeIN[1]);
 	close(pipeOUT[0]);
 
-	fcntl(pipeIN[0], F_SETFL, O_NONBLOCK);
-	fcntl(pipeOUT[1], F_SETFL, O_NONBLOCK);
 
 	std::cout << "[Log]: " << "starting fds addition to vector list..." << std::endl;
 
@@ -82,25 +85,25 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 cgi::~cgi()
 {
 	// working on this, check on andres webserver
-	// if (_id != 0)
-	// {
-	// 	kill(_id, SIGKILL);
-	// 	waitpid(_id,&_exitstatus, 0);
-	// 	// close(_pip[0]);
-	// 	// close(_pipOut[1]);
-	// 	close(this->_read_fd.fd);
-	// 	close(this->_write_fd.fd);
-	// 	free_env();
-	// 	_id = 0;
-	// }
+	if (_id != 0)
+	{
+		kill(_id, SIGKILL);
+		waitpid(_id,&_exitstatus, 0);
+		// close(_pip[0]);
+		// close(_pipOut[1]);
+		close(this->_read_fd.fd);
+		close(this->_write_fd.fd);
+		free_env();
+		_id = 0;
+	}
 
 
 
-	close(this->_read_fd.fd);
-	close(this->_write_fd.fd);
-	free_env();
-	// i need to close the cgi???
-	kill(this->_id, SIGKILL);
+	// close(this->_read_fd.fd);
+	// close(this->_write_fd.fd);
+	// free_env();
+	// // i need to close the cgi???
+	// kill(this->_id, SIGKILL);
 }
 
 void cgi::read()

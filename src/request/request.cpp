@@ -15,6 +15,21 @@
 #include <cstddef>
 #include <string>
 
+//remove
+bool is_directory(const std::string& path) 
+{
+    struct stat info;
+    if (stat(path.c_str(), &info) != 0) {
+        return false; // Cannot access path (doesn't exist or no permission)
+    }
+    return (info.st_mode & S_IFDIR) != 0; // Check if it's a directory
+}
+
+
+
+
+
+
 /* while on reqFile to skip new lines at the begining of the request.
 */
 request::request(client *_client, webserver *_webserver, 
@@ -262,6 +277,7 @@ bool	request::check_if_cgi()
 	size_t	dotPos = this->_uri_file.find_last_of('.');
 	std::string extension = "";
 
+
 	//Check extension. // CHECK IF NECESSARY
     if (dotPos != std::string::npos)
         extension = this->_uri_file.substr(dotPos);
@@ -272,6 +288,13 @@ bool	request::check_if_cgi()
 	}
 	//check if location is cgi enabled
 	this->_location = get_location_from_uri(_server, _uri);
+	if (utils::is_directory(this->_location->uri))
+	{
+		this->_is_cgi = false;
+		return (false);
+	}
+
+
 	if (this->_location)
 	{
 		// this->_location->print_location_content();

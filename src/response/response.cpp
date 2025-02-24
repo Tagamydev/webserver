@@ -24,23 +24,7 @@ response::response(request *_request, webserver *_webserver)
 	}
 
 	//check in config file for alias and root in the same block
-	if (this->_request->_location && !this->_request->_location->_alias.empty())
-	{
-		this->_request->_uri = this->_request->_location->_alias;
-		if (this->_request->_uri[0] != '/')
-			this->_request->_uri = "./" + this->_request->_uri;
-		std::cout << "[Path]: " << this->_request->_uri << std::endl;
-	}
-	else if (this->_request->_location && !this->_request->_location->_root.empty())
-	{
-		this->_request->_uri = this->_request->_location->_root + this->_request->_uri;
-		if (this->_request->_uri[0] != '/')
-			this->_request->_uri = "./" + this->_request->_uri;
-		std::cout << "[Path]: " << this->_request->_uri << std::endl;
-	}
-	else
-		this->_request->_uri = "." + this->_request->_uri;
-
+	
 	if (this->_request->_cgi_status == NONE)
 	{
 		if (this->_request->_method == "GET")
@@ -304,6 +288,11 @@ void	response::get_dir(std::string &path)
 {
     std::list<std::string> entries = listDirectory(path);
 
+	if (!this->_request->_location)
+	{
+		this->do_error_page(404);
+		return;
+	}
 	if (this->_request->_location->_index_file.empty())
 	{
 		if (this->_request->_location->_auto_index)
@@ -372,6 +361,7 @@ void	response::do_get()
 		{
 			// directory
 			//'/?' 301 redirect to match directory
+			std::cout << "\n\nPATH: " << path << std::endl;
 			this->get_dir(path);
 			char	c;
 

@@ -229,6 +229,23 @@ void	request::check_config_file(client *_client, webserver *_webserver)
 		return ;
 	this->get_server(_client,_webserver);
 	this->get_location();
+	if (this->_location && !this->_location->_alias.empty())
+	{
+		this->_uri = this->_location->_alias;
+		if (this->_uri[0] != '/')
+			this->_uri = "./" + this->_uri;
+		std::cout << "[Path]: " << this->_uri << std::endl;
+	}
+	else if (this->_location && !this->_location->_root.empty())
+	{
+		this->_uri = this->_location->_root + this->_uri;
+		if (this->_uri[0] != '/')
+			this->_uri = "./" + this->_uri;
+		std::cout << "[Path]: " << this->_uri << std::endl;
+	}
+	else
+		this->_uri = "." + this->_uri;
+
 }
 
 request::~request()
@@ -288,13 +305,11 @@ bool	request::check_if_cgi()
 	}
 	//check if location is cgi enabled
 	this->_location = get_location_from_uri(_server, _uri);
-	if (utils::is_directory(this->_location->uri))
+	if (utils::is_directory(this->_uri))
 	{
 		this->_is_cgi = false;
 		return (false);
 	}
-
-
 	if (this->_location)
 	{
 		// this->_location->print_location_content();

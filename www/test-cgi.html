@@ -9,21 +9,21 @@
     <h1>PHP CGI Test Page</h1>
 
     <h2>Simple Form Test</h2>
-    <form action="/www/cgi-bin/test.php" method="get">
+    <form action="/cgi-bin/test.php" method="get">
         <label for="name">Enter your name:</label>
         <input type="text" id="name" name="name">
         <button type="submit">Submit</button>
     </form>
 
     <h2>File Upload Test</h2>
-    <form action="/www/cgi-bin/upload.php" method="post" enctype="multipart/form-data">
+    <form action="/cgi-bin/upload.php" method="post" enctype="multipart/form-data">
         <label for="file">Choose a file:</label>
         <input type="file" id="file" name="file">
         <button type="submit">Upload</button>
     </form>
 
     <h2>Direct PHP Execution Test</h2>
-    <p><a href="/www/cgi-bin/test.php">Run test.php</a></p>
+    <p><a href="/cgi-bin/test.php">Run test.php</a></p>
 
 </body>
 </html>

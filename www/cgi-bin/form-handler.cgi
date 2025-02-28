@@ -1,5 +1,4 @@
 #!/bin/bash
-$POST_DATA="Hola que tal"
 echo "Content-Type: text/plain"
 echo ""
 echo "this should be body"

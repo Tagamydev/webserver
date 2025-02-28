@@ -51,8 +51,8 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 			std::cerr << "[FATAL]: dup2 fail inside fork!." << std::endl; // free env? or it calls the destructor?
 			exit(-1);
 		}
-		// close(pipeIN[1]);
-		// close(pipeOUT[0]);
+		close(pipeIN[1]);
+		close(pipeOUT[0]);
 		error = execle(this->_env[0], this->_env[0],  (char *)NULL, this->_env);
 		std::cout << "\n\n PIPE IN " << pipeIN[1] <<  " PIPE OUT " << pipeOUT[0] << std::endl;
 
@@ -165,8 +165,10 @@ void	cgi::init_env(std::map<std::string, std::string> _headers)
 	this->_env = new char*[2 + _env_tmp.size()]; // +1 for exec route
 	
 	
-	(this->_env)[0] = new char[6 + this->_env_tmp["SCRIPT_NAME"].size() + 1];
-	std::strcpy((this->_env)[0],(("./www" + this->_env_tmp["SCRIPT_NAME"]).c_str()));
+	(this->_env)[0] = new char[this->_env_tmp["SCRIPT_NAME"].size() + 1];
+	// (this->_env)[0] = new char[6 + this->_env_tmp["SCRIPT_NAME"].size() + 1];
+	// std::strcpy((this->_env)[0],(("./www" + this->_env_tmp["SCRIPT_NAME"]).c_str()));
+	std::strcpy((this->_env)[0],((this->_env_tmp["SCRIPT_NAME"]).c_str()));
 	
 	
 	int i =1;

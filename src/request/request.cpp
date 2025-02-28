@@ -674,9 +674,10 @@ bool	request::get_cgi_extension(std::string ext)
 
 void	request::set_cgi_extension()
 {
-    this->_cgi_extensions[".php"] = "/cgi-bin/php";
-    this->_cgi_extensions[".py"] = "/cgi-bin/python3";
-    this->_cgi_extensions[".cgi"] = "/cgi-bin/cgi";
+    this->_cgi_extensions[".php"] = "/usr/bin/php-cgi";
+    this->_cgi_extensions[".py"] = "/usr/bin/python3";
+    this->_cgi_extensions[".cgi"] = "/usr/bin/bash";
+    this->_cgi_extensions[".sh"] = "/usr/bin/bash";
 }
 
 

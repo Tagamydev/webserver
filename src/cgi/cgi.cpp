@@ -35,7 +35,7 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 	this->init_env(_request.get_headers());
 
 	pid = fork();
-	if (pid < 0)
+		if (pid < 0)
 	{
 		free_env();
 		throw std::runtime_error("Fork fail!."); // free env? or it calls the destructor?
@@ -56,7 +56,8 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 		error = execle(this->_env[0], this->_env[0],  (char *)NULL, this->_env);
 		std::cout << "\n\n PIPE IN " << pipeIN[1] <<  " PIPE OUT " << pipeOUT[0] << std::endl;
 
-		std::cerr << "[FATAL]: execle fail inside fork, log[" << error << "]" << std::endl;
+		std::cerr << "[FATAL]: execle fail inside fork, log[" << error << "]" << this->_env[0] << std::endl;
+		free_env();
 		exit(-1);
 	}
 	this->_id = pid;
@@ -165,9 +166,9 @@ void	cgi::init_env(std::map<std::string, std::string> _headers)
 	this->_env = new char*[2 + _env_tmp.size()]; // +1 for exec route
 	
 	
-	(this->_env)[0] = new char[this->_env_tmp["SCRIPT_NAME"].size() + 1];
 	// (this->_env)[0] = new char[6 + this->_env_tmp["SCRIPT_NAME"].size() + 1];
 	// std::strcpy((this->_env)[0],(("./www" + this->_env_tmp["SCRIPT_NAME"]).c_str()));
+	(this->_env)[0] = new char[this->_env_tmp["SCRIPT_NAME"].size() + 1];
 	std::strcpy((this->_env)[0],((this->_env_tmp["SCRIPT_NAME"]).c_str()));
 	
 	
@@ -189,8 +190,8 @@ void cgi::free_env()
 {
 	utils::print_debug("freeing env");
 	for(unsigned int i = 0; i < this->_env_size ; i++){
-		delete[] _env[i];
+		delete[] this->_env[i];
 	}
-	delete[] _env;
+	delete[] this->_env;
 	utils::print_debug("freeing env done");
 }

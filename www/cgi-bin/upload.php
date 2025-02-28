@@ -2,7 +2,7 @@
 <?php
 header("Content-Type: text/html");
 
-$uploadDir = "/www/cgi-bin/tmp/uploads/"; // Change if needed
+$uploadDir = "/www/tmp/uploads/"; // Change if needed
 if (!is_dir($uploadDir)) {
     mkdir($uploadDir, 0777, true);
 }

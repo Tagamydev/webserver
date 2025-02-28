@@ -103,6 +103,7 @@ void	response::do_cgi_response()
 		if (!tmp.empty())
 			this->_body += tmp + '\n';
 	}
+	std::cout << "\n\nResponse Body " << this->_body << std::endl;
 	this->_status_code = 200;
 }
 

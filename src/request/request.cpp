@@ -26,7 +26,7 @@ std::vector<struct pollfd> &list)
 	this->parsing();
 	this->debug();
 	this->check_config_file(_client, _webserver);
-
+	this->set_cgi_extension();
 	this->parse_body(this->_server);
 
 	if (this->check_if_cgi())
@@ -126,7 +126,7 @@ std::string location_from_uri(const std::string& uri)
 	return (result);
 }
 
-location	*get_location_from_uri(server *_server, std::string uri)
+location	*get_location_from_uri(server *_server, std::string url)
 {
 	std::map<std::string, location>::iterator	it;
 	std::map<std::string, location>::iterator	ie;
@@ -139,7 +139,7 @@ location	*get_location_from_uri(server *_server, std::string uri)
 	for (; it != ie ; ++it)
 	{
 		const std::string &loc_path = it->first;
-		if (uri.find(loc_path) == 0)
+		if (url.find(loc_path) == 0)
 		{
 			if (loc_path.length() > best_match_length)
 			{
@@ -185,7 +185,7 @@ void	request::get_location()
 
 	if (this->_error_code != -1)
 		return ;
-	result = get_location_from_uri(this->_server, this->_uri);
+	result = get_location_from_uri(this->_server, this->_uri_file);
 	if (!result)
 	{
 		set_error_code(404, "location not found");
@@ -214,22 +214,34 @@ void	request::check_config_file(client *_client, webserver *_webserver)
 		return ;
 	this->get_server(_client,_webserver);
 	this->get_location();
+
+
+	//check if location is cgi enabled
+	this->_location = get_location_from_uri(_server, _uri_file);
+	if (this->_location)
+	{
+		if (this->_location->_cgi_enabled)
+			this->_is_cgi = true;
+	}
+
+
+
 	if (this->_location && !this->_location->_alias.empty())
 	{
-		this->_uri = this->_location->_alias;
-		if (this->_uri[0] != '/')
-			this->_uri = "./" + this->_uri;
-		std::cout << "[Path]: " << this->_uri << std::endl;
+		this->_uri_file = this->_location->_alias;
+		if (this->_uri_file[0] != '/')
+			this->_uri_file = "./" + this->_uri_file;
+		std::cout << "[Path]: " << this->_uri_file << std::endl;
 	}
 	else if (this->_location && !this->_location->_root.empty())
 	{
-		this->_uri = this->_location->_root + this->_uri;
-		if (this->_uri[0] != '/')
-			this->_uri = "./" + this->_uri;
-		std::cout << "[Path]: " << this->_uri << std::endl;
+		this->_uri_file = this->_location->_root + this->_uri_file;
+		if (this->_uri_file[0] != '/')
+			this->_uri_file = "./" + this->_uri_file;
+		std::cout << "[Path]: " << this->_uri_file << std::endl;
 	}
 	else
-		this->_uri = "." + this->_uri;
+		this->_uri_file = "." + this->_uri_file;
 
 }
 
@@ -288,23 +300,25 @@ bool	request::check_if_cgi()
 		this->_is_cgi = true;
 		// return (true);
 	}
-	//check if location is cgi enabled
-	this->_location = get_location_from_uri(_server, _uri);
-	if (utils::is_directory(this->_uri))
+	if (utils::is_directory(this->_uri_file))
 	{
 		this->_is_cgi = false;
 		return (false);
 	}
-	if (this->_location)
-	{
-		// this->_location->print_location_content();
-		// utils::print_debug();
-		if (this->_location->_cgi_enabled)
-		{
-			this->_is_cgi = true;
-			return (true);
-		}
-	}
+	//check if location is cgi enabled
+	// this->_location = get_location_from_uri(_server, _uri_file);
+	// if (this->_location)
+	// {
+	// 	// this->_location->print_location_content();
+	// 	// utils::print_debug();
+	// 	if (this->_location->_cgi_enabled)
+	// 	{
+	// 		this->_is_cgi = true;
+	// 		return (true);
+	// 	}
+	// }
+	if(this->_is_cgi == true)
+		return (true);
 	this->_is_cgi = false;
 	return (false);
 }
@@ -322,6 +336,7 @@ void	request::clear()
 	this->_fd = -1;
 	this->_method.clear();
 	this->_uri.clear();
+	this->_uri_file.clear();
 	this->_http_version.clear();
 	this->_headers.clear();
 	this->_body.clear();
@@ -461,8 +476,8 @@ void request::parse_headers()
 			return (set_error_code(400, "Host header not found."));
 	if (this->_headers.count("content-length"))
     {
-		if (this->_headers.count("transfer-encoding"))
-			return (set_error_code(400, "Incopatible headers: content-length & transfer-encoding."));
+		// if (this->_headers.count("transfer-encoding"))
+			// return (set_error_code(400, "Incopatible headers: content-length & transfer-encoding."));
 		this->_content_length = std::atoi(_headers["content-length"].c_str());
 		if (this->_content_length <= 0)
 			return (set_error_code(400, "Invalid Content-length header."));
@@ -665,13 +680,13 @@ std::map<std::string, std::string>	request::get_headers()
 	return(this->_headers);
 }
 
-bool	request::get_cgi_extension(std::string ext)
+bool request::get_cgi_extension(std::string ext)
 {
-	if (this->_cgi_extensions.find(ext) != this->_cgi_extensions.end() && !this->_cgi_extensions[ext].empty())
-     	return (1);
-	return (0);
+    std::map<std::string, std::string>::iterator it = this->_cgi_extensions.find(ext);
+    if (it != this->_cgi_extensions.end() && !it->second.empty())
+        return true;
+    return false;
 }
-
 void	request::set_cgi_extension()
 {
     this->_cgi_extensions[".php"] = "/usr/bin/php-cgi";

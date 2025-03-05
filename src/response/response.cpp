@@ -15,6 +15,8 @@ response::response(request *_request, webserver *_webserver)
 
 	this->_error = false;
 	this->_keep_alive = false;
+
+	std::cout << "\n\nLALALA "<< _request->_uri_file << std::endl;
 	if (this->_request->_error_code != -1)
 	{
 		if (this->_request->_error_code >= 300 && this->_request->_error_code <= 308)
@@ -292,7 +294,7 @@ void	response::get_dir(std::string &path)
 	if (!this->_request->_location)
 	{
 		this->_status_code = 200;
-			this->_body = make_autoindex(entries, path, this->_request->_uri);
+			this->_body = make_autoindex(entries, path, this->_request->_uri_file);
 		//this->do_error_page(404);
 		return;
 	}
@@ -301,7 +303,7 @@ void	response::get_dir(std::string &path)
 		if (this->_request->_location->_auto_index)
 		{
 			this->_status_code = 200;
-			this->_body = make_autoindex(entries, path, this->_request->_uri);
+			this->_body = make_autoindex(entries, path, this->_request->_uri_file);
 		}
 		else
 		{
@@ -352,7 +354,7 @@ void	response::do_get()
 	std::string	path;
 	struct stat pathStat;
 
-	path = this->_request->_uri;
+	path = this->_request->_uri_file;
 	if (stat(path.c_str(), &pathStat) == 0)
 	{
 		if (S_ISREG(pathStat.st_mode))
@@ -372,7 +374,7 @@ void	response::do_get()
 			if (c == '/')
 				this->get_dir(path);
 			else
-				this->do_redirection(301, std::string(cut_spaces(this->_request->_uri) + "/"));
+				this->do_redirection(301, std::string(cut_spaces(this->_request->_uri_file) + "/"));
 		}
 		else
 		{
@@ -394,7 +396,7 @@ void	response::do_post()
 	if (!this->_request || this->_error)
 		return ;
 
-	path = this->_request->_uri;
+	path = this->_request->_uri_file;
 
 	// this method is cgi's deppendant, so the response came from the cgi
 	// not from this, this webserver is not a cgi is a webserver cgi dependant
@@ -460,7 +462,7 @@ void	response::do_delete()
 	std::string	path;
 	struct stat pathStat;
 
-	path = this->_request->_uri;
+	path = this->_request->_uri_file;
 	if (stat(path.c_str(), &pathStat) == 0)
 	{
 		if (S_ISREG(pathStat.st_mode))

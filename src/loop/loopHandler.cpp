@@ -141,7 +141,7 @@ void	loopHandler::delete_client(client *_client, int &_it)
 	}
 	_list.erase(i);
 	delete _client;
-	i--;
+	_it--;
 }
 
 bool	loopHandler::fd_is_client(int fd)

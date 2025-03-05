@@ -30,6 +30,7 @@ client::~client()
 {
 	if (this->_request)
 		delete this->_request;
+	close(this->_pollfd_client.fd);
 }
 
 struct pollfd	client::get_pollfd()

@@ -230,7 +230,7 @@ void	loopHandler::send_response(int &i, std::vector<struct pollfd> &list)
 			_keep_alive = false;
 		}
 		_client->free_request();
-		if (!_keep_alive)
+		if (true)
 		{
 			delete_client(_client, i);
 			this->make_fd_list(list);

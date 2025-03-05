@@ -651,7 +651,7 @@ void request::check_save_request_line(std::string line)
 	if (line.find(" ") != std::string::npos)
 		key = line.substr(0, line.find(" "));
 	else
-		return (set_error_code(400, "No spaces on first line."));
+		// return (set_error_code(400, "No spaces on first line."));
 	this->is_valid_method(key);
 	this->_method = key;
 	line = line.substr((line.find(" ") + 1), line.length());

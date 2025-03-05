@@ -53,7 +53,8 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 		}
 		close(pipeIN[1]);
 		close(pipeOUT[0]);
-		error = execle(this->_env[0], this->_env[0],  (char *)NULL, this->_env);
+
+		error = execve(this->_env[0], this->_env, this->_env);
 		std::cout << "\n\n PIPE IN " << pipeIN[1] <<  " PIPE OUT " << pipeOUT[0] << std::endl;
 
 		std::cerr << "[FATAL]: execle fail inside fork, log[" << error << "]" << this->_env[0] << std::endl;
@@ -153,14 +154,21 @@ void	cgi::init_env(std::map<std::string, std::string> _headers)
 		this->_env_tmp[name] = it->second;
 	}
 	//init manual headers
+	this->_env_tmp["INTERPRETE"] = "/usr/bin/php-cgi"; //set this with array
+	
+
+
 	this->_env_tmp["REQUEST_METHOD"] = this->_request->_method;
 	this->_env_tmp["SCRIPT_NAME"] = this->_request->_uri_file; // check where to init (The path to the CGI script being executed.)
+	this->_env_tmp["SCRIPT_FILENAME"] = this->_request->_uri_file; // check where to init (The path to the CGI script being executed.)
 	this->_env_tmp["REQUEST_URI"] = this->_request->_uri;
 	if(!this->_request->_uri_params.empty())
 		this->_env_tmp["QUERY_STRING"] = this->_request->_uri_params;
 	this->_env_tmp["SERVER_NAME"] = _headers["host"];
 	// this->_env_tmp["SERVER_PORT"] = ; port on location?
 	this->_env_tmp["SERVER_PROTOCOL"] = this->_request->_http_version;
+	this->_env_tmp["REDIRECT_STATUS"] = "200";
+	
 
 	//create char** env
 	this->_env = new char*[2 + _env_tmp.size()]; // +1 for exec route
@@ -168,8 +176,8 @@ void	cgi::init_env(std::map<std::string, std::string> _headers)
 	
 	// (this->_env)[0] = new char[6 + this->_env_tmp["SCRIPT_NAME"].size() + 1];
 	// std::strcpy((this->_env)[0],(("./www" + this->_env_tmp["SCRIPT_NAME"]).c_str()));
-	(this->_env)[0] = new char[this->_env_tmp["SCRIPT_NAME"].size() + 1];
-	std::strcpy((this->_env)[0],((this->_env_tmp["SCRIPT_NAME"]).c_str()));
+	(this->_env)[0] = new char[this->_env_tmp["INTERPRETE"].size() + 1];
+	std::strcpy((this->_env)[0],((this->_env_tmp["INTERPRETE"]).c_str()));
 	
 	
 	int i =1;

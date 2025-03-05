@@ -268,5 +268,4 @@ server::server()
 
 server::~server()
 {
-
 }

@@ -75,7 +75,6 @@ class   request
 		bool			_multiform_flag;
 		std::string		_boundary;
 
-		// std::map<std::string, std::string>	_query_str;	
 		std::map<std::string, std::string>	_headers;	
 
 		void	parsing();
@@ -84,7 +83,6 @@ class   request
 
 		void	get_server(client *_client, webserver *_webserver);
 		void	get_location();
-		bool	get_cgi_extension(std::string ext);
 
 
 		void	set_error_code(int code, std::string msg);

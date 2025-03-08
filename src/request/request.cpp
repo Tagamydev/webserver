@@ -247,6 +247,8 @@ void	request::check_config_file(client *_client, webserver *_webserver)
 
 request::~request()
 {
+	// utils::print_debug("delete request"); //should we disconect client? Check closeRequestExample.cpp
+
 	if (this->_cgi)
 		delete this->_cgi;
 }
@@ -288,18 +290,18 @@ bool	request::check_if_cgi()
 	if (this->_error_code != -1)
 		return (false);
 	
-	size_t	dotPos = this->_uri_file.find_last_of('.');
-	std::string extension = "";
+	// size_t	dotPos = this->_uri_file.find_last_of('.');
+	// std::string extension = "";
 
 
-	//Check extension. // CHECK IF NECESSARY
-    if (dotPos != std::string::npos)
-        extension = this->_uri_file.substr(dotPos);
-	if (this->get_cgi_extension(extension))
-	{
-		this->_is_cgi = true;
-		// return (true);
-	}
+	// //Check extension. // CHECK IF NECESSARY
+    // if (dotPos != std::string::npos)
+    //     extension = this->_uri_file.substr(dotPos);
+	// if (this->get_cgi_extension(extension))
+	// {
+	// 	this->_is_cgi = true;
+	// 	// return (true);
+	// }
 	if (utils::is_directory(this->_uri_file))
 	{
 		this->_is_cgi = false;
@@ -680,13 +682,6 @@ std::map<std::string, std::string>	request::get_headers()
 	return(this->_headers);
 }
 
-bool request::get_cgi_extension(std::string ext)
-{
-    std::map<std::string, std::string>::iterator it = this->_cgi_extensions.find(ext);
-    if (it != this->_cgi_extensions.end() && !it->second.empty())
-        return true;
-    return false;
-}
 void	request::set_cgi_extension()
 {
     this->_cgi_extensions[".php"] = "/usr/bin/php-cgi";

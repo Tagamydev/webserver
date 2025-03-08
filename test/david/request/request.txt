@@ -1,0 +1,12 @@
+POST /api/data HTTP/1.1
+Host: example.com
+Transfer-Encoding: chunked
+Content-Type: application/json
+
+10
+{"key1": "va
+E
+lue1", "key2":
+A
+"value2"}
+0

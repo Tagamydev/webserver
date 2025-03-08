@@ -54,10 +54,16 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 		close(pipeIN[1]);
 		close(pipeOUT[0]);
 
-		error = execve(this->_env[0], this->_env, this->_env);
-		std::cout << "\n\n PIPE IN " << pipeIN[1] <<  " PIPE OUT " << pipeOUT[0] << std::endl;
+		//test first with access before execve
+		
+		//Create _argv for execve
+		char * argv[] = {const_cast<char*>(this->_env_tmp["INTERPRETER"].c_str()),
+						const_cast<char*>(this->_env_tmp["SCRIPT_NAME"].c_str()),	
+						NULL};
+		error = execve(argv[0], argv, this->_env);
+		// std::cout << "\n\n PIPE IN " << pipeIN[1] <<  " PIPE OUT " << pipeOUT[0] << std::endl;
 
-		std::cerr << "[FATAL]: execle fail inside fork, log[" << error << "]" << this->_env[0] << std::endl;
+		std::cerr << "[FATAL]: execve fail inside fork, log[" << error << "]" << argv[0] << std::endl;
 		free_env();
 		exit(-1);
 	}
@@ -130,6 +136,25 @@ bool cgi::cgi_timeout()
 	return (false);
 }
 
+std::string cgi::set_cgi_interpreter(std::string filename, std::map<std::string, std::string> _cgi_extensions)
+{
+	size_t	dotPos = filename.find_last_of('.');
+	std::string extension = "";
+
+    if (dotPos != std::string::npos)
+        extension = filename.substr(dotPos);
+	if (extension.empty())
+		return ("/usr/bin/bash");
+	
+	std::map<std::string, std::string>::iterator it = _cgi_extensions.find(extension);
+	if (it != _cgi_extensions.end() && !it->second.empty())
+	{
+		return (it->second);
+	}
+	return ("/usr/bin/bash");
+}
+
+
 void	cgi::init_env(std::map<std::string, std::string> _headers)
 {
 	std::map<std::string, std::string>::iterator it;
@@ -154,9 +179,12 @@ void	cgi::init_env(std::map<std::string, std::string> _headers)
 		this->_env_tmp[name] = it->second;
 	}
 	//init manual headers
-	this->_env_tmp["INTERPRETE"] = "/usr/bin/php-cgi"; //set this with array
-	
 
+	
+	this->_env_tmp["INTERPRETER"] = set_cgi_interpreter(this->_request->_uri_file, this->_request->_cgi_extensions);
+	// this->_env_tmp["INTERPRETE"] = "/usr/bin/php-cgi"; //set this with array
+	
+	// std::cout << "\n\nINTERPRETER " << 	this->_env_tmp["INTERPRETER"] << std::endl;
 
 	this->_env_tmp["REQUEST_METHOD"] = this->_request->_method;
 	this->_env_tmp["SCRIPT_NAME"] = this->_request->_uri_file; // check where to init (The path to the CGI script being executed.)
@@ -165,19 +193,20 @@ void	cgi::init_env(std::map<std::string, std::string> _headers)
 	if(!this->_request->_uri_params.empty())
 		this->_env_tmp["QUERY_STRING"] = this->_request->_uri_params;
 	this->_env_tmp["SERVER_NAME"] = _headers["host"];
-	// this->_env_tmp["SERVER_PORT"] = ; port on location?
 	this->_env_tmp["SERVER_PROTOCOL"] = this->_request->_http_version;
 	this->_env_tmp["REDIRECT_STATUS"] = "200";
 	
 
+	
+
 	//create char** env
-	this->_env = new char*[2 + _env_tmp.size()]; // +1 for exec route
+	this->_env = new char*[2 + _env_tmp.size()]; // +1 for INTERPRETER
 	
 	
 	// (this->_env)[0] = new char[6 + this->_env_tmp["SCRIPT_NAME"].size() + 1];
 	// std::strcpy((this->_env)[0],(("./www" + this->_env_tmp["SCRIPT_NAME"]).c_str()));
-	(this->_env)[0] = new char[this->_env_tmp["INTERPRETE"].size() + 1];
-	std::strcpy((this->_env)[0],((this->_env_tmp["INTERPRETE"]).c_str()));
+	(this->_env)[0] = new char[this->_env_tmp["INTERPRETER"].size() + 1];
+	std::strcpy((this->_env)[0],((this->_env_tmp["INTERPRETER"]).c_str()));
 	
 	
 	int i =1;

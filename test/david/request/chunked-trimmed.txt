@@ -1,3 +1,8 @@
+POST /api/data HTTP/1.1
+Host: example.com
+Transfer-Encoding: chunked
+Content-Type: application/json
+
 20
 This is the first chunk of the binary data...
 1F

@@ -109,8 +109,8 @@ std::string utils::to_string(std::size_t value)
 /// @param outputVector vector<std::string>
 void utils::map_to_vector_populate_keys(const std::map<std::string, location>& inputMap, std::vector<std::string>& outputVector)
 {
-    outputVector.clear(); // Ensure the vector is empty before populating
-    for (typename std::map<std::string, location>::const_iterator it = inputMap.begin(); it != inputMap.end(); ++it)
+    outputVector.clear(); 
+    for (std::map<std::string, location>::const_iterator it = inputMap.begin(); it != inputMap.end(); ++it)
     {
         outputVector.push_back(it->first);
     }
@@ -124,7 +124,7 @@ void utils::map_to_vector_populate_keys(const std::map<std::string, location>& i
 void utils::map_to_vector_populate_values(const std::map<std::string, std::string>& inputMap, std::vector<std::string>& outputVector)
 {
     outputVector.clear(); // Ensure the vector is empty before populating
-    for (typename std::map<std::string, std::string>::const_iterator it = inputMap.begin(); it != inputMap.end(); ++it)
+    for (std::map<std::string, std::string>::const_iterator it = inputMap.begin(); it != inputMap.end(); ++it)
     {
         outputVector.push_back(it->second);
     }

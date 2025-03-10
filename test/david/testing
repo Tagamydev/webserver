@@ -1,15 +1,6 @@
-POST /cgi-bin/upload.py HTTP/1.1
+POST /cgi-bin/print-body.py HTTP/1.1
 Host: localhost:1234
 User-Agent: curl/7.68.0
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryXyz123
-Content-Length: 221
 
-------WebKitFormBoundaryXyz123
-Content-Disposition: form-data; name="file"; filename="testfile.txt"
-Content-Type: text/plain
-
-asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
-------WebKitFormBoundaryXyz123--
-
-
-CURL Version: curl -F "file=@test/david/testing" http://localhost:1234/www/cgi-bin/upload.py
+Test as body content.! :D

@@ -127,8 +127,35 @@ void cgi::read()
 
 void cgi::write(std::string &content)
 {
-	// this need to be changed to the real body
-	utils::send_response(this->_write_fd.fd, this->_request->_body);
+    utils::print_debug("\n\nwrite to CGI ");
+	// this is not working because use send function that works only with sockets.
+	// utils::send_response(this->_write_fd.fd, this->_request->_body);
+
+    utils::print_debug("Writing request body to CGI script...");
+
+    // size_t total_sent = 0;
+    // size_t data_length = this->_request->_body.size();
+
+
+    // while (total_sent < data_length) 
+	// {
+    //     ssize_t sent_now = write(this->_write_fd.fd, this->_request->_body.c_str() + total_sent, data_length - total_sent);
+
+    //     if (sent_now == -1) {
+    //         perror("write to CGI failed");
+    //         throw std::runtime_error("Error writing to CGI pipe.");
+    //     }
+
+    //     total_sent += sent_now;
+    // }
+
+    // // Important: Close the write pipe so the CGI knows the input is complete
+    // close(this->_write_fd.fd);
+
+    // std::ostringstream debug_message;
+    // debug_message << "Successfully wrote " << total_sent << " bytes to CGI.";
+    // utils::print_debug(debug_message.str());
+
 }
 
 bool cgi::cgi_timeout()

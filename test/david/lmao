@@ -1,6 +1,0 @@
-GET /cgi-bin/test.php?user=admin&debug=true HTTP/1.1
-Host: localhost:1234
-User-Agent: curl/7.68.0
-Content-Length: 2
-
-12

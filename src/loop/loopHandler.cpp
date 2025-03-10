@@ -361,6 +361,10 @@ void	loopHandler::read_from_cgi(int &i, std::vector<struct pollfd> &list)
 	this->get_clientFd_from_cgiFd(socket.fd));
 	_cgi = _client->get_request()->_cgi;
 	_cgi->read();
+
+	// write to cgi?
+
+
 	this->delete_cgi_from_list(_cgi, i);
 	_client->close_cgi();
 	this->make_fd_list(list);

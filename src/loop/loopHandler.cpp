@@ -436,82 +436,14 @@ void	loopHandler::check_additions(int &i, std::vector<struct pollfd> &list)
 	else
 		this->new_request(socket.fd, list, i);
 }
-
-// void loopHandler::send_to_cgi(int &i, std::vector<struct pollfd> &list)
-// {
-// 	client			*_client;
-// 	struct pollfd	socket;
-
-// 	socket = list[i];
-// 	_client = this->get_client_from_clientFd(socket.fd);
-// 	// send(_client->_request->_cgi->_write_fd.fd, _client->_request->_body_parsed.c_str(), _client->_request->_body_parsed.length(), 0);
-	
-//     // Get the CGI instance associated with this fd
-//     cgi *cgi_instance = _client->_request->_cgi;
-//     if (!cgi_instance)
-//     {
-//         utils::print_debug("Error: No CGI instance found for fd " + utils::to_string(socket.fd));
-//         return;
-//     }
-
-//     // Call write() to send the body to CGI
-//     cgi_instance->writee(_client->_request->_body_parsed);
-
-//     // Remove the POLLOUT event for this CGI process (so we don't write again)
-//     socket.events &= ~POLLOUT;
-// }
-
-
-// void	loopHandler::send_to_cgi(int &i, std::vector<struct pollfd> &list)
-// {
-// 	client			*_client;
-// 	struct pollfd	socket;
-// 	size_t			total_sent = 0;
-// 	ssize_t			sent_now;
-// 	size_t			data_length;
-
-// 	socket = list[i];
-// 	_client = this->get_client_from_clientFd(socket.fd);
-	
-// 	int write_fd = _client->_request->_cgi->_write_fd.fd;
-// 	std::string &body = _client->_request->_body_parsed;
-// 	data_length = body.length();
-
-// 	std::cout << "FD to write cgi" << write_fd << std::endl;
-
-// 	// Send the request body using write()
-// 	while (total_sent < data_length)
-// 	{
-// 		sent_now = write(write_fd, body.c_str() + total_sent, data_length - total_sent);
-		
-// 		if (sent_now == -1)
-// 		{
-// 			perror("write to CGI failed");
-// 			throw std::runtime_error("Error writing to CGI pipe.");
-// 		}
-
-// 		total_sent += sent_now;
-// 	}
-
-// 	// Close write-end of pipe to signal end of input
-// 	close(write_fd);
-
-// 	std::cout << "Sent " << total_sent << " bytes to CGI" << std::endl;
-
-// 	// Remove the write fd from the CGI list to prevent further writes
-// 	this->delete_fd_from_cgi_list(write_fd, i);
-// 	this->make_fd_list(list);
-// }
-
-//ORIGINAL
-
 void	loopHandler::send_to_cgi(int &i, std::vector<struct pollfd> &list)
 {
 	client			*_client;
 	struct pollfd	socket;
 
 	socket = list[i];
-	_client = this->get_client_from_clientFd(socket.fd);
+	// _client = this->get_client_from_clientFd(socket.fd);
+	_client = this->get_client_from_clientFd(this->get_clientFd_from_cgiFd(socket.fd));
 	send(_client->_request->_cgi->_write_fd.fd, _client->_request->_body_parsed.c_str(), _client->_request->_body_parsed.length(), 0);
 	
 	

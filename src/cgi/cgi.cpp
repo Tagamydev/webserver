@@ -85,6 +85,7 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 	_webserver->_loop->add_cgi(_client->get_fd(), this->_read_fd);
 	std::cout << "[Debug]: " << "fd to read from cgi: "<< this->_read_fd.fd << std::endl;
 	_webserver->_loop->make_fd_list(list);
+
 }
 
 cgi::~cgi()
@@ -125,7 +126,7 @@ void cgi::read()
 	utils::print_debug(this->_request->_cgi_response);
 }
 
-void cgi::write(std::string &content)
+void cgi::writee(std::string &content)
 {
     utils::print_debug("\n\nwrite to CGI ");
 	// this is not working because use send function that works only with sockets.
@@ -133,28 +134,28 @@ void cgi::write(std::string &content)
 
     utils::print_debug("Writing request body to CGI script...");
 
-    // size_t total_sent = 0;
-    // size_t data_length = this->_request->_body.size();
+    size_t total_sent = 0;
+    size_t data_length = this->_request->_body.size();
 
 
-    // while (total_sent < data_length) 
-	// {
-    //     ssize_t sent_now = write(this->_write_fd.fd, this->_request->_body.c_str() + total_sent, data_length - total_sent);
+    while (total_sent < data_length) 
+	{
+        ssize_t sent_now = write(this->_write_fd.fd, this->_request->_body.c_str() + total_sent, data_length - total_sent);
 
-    //     if (sent_now == -1) {
-    //         perror("write to CGI failed");
-    //         throw std::runtime_error("Error writing to CGI pipe.");
-    //     }
+        if (sent_now == -1) {
+            perror("write to CGI failed");
+            throw std::runtime_error("Error writing to CGI pipe.");
+        }
 
-    //     total_sent += sent_now;
-    // }
+        total_sent += sent_now;
+    }
 
-    // // Important: Close the write pipe so the CGI knows the input is complete
-    // close(this->_write_fd.fd);
+    // Important: Close the write pipe so the CGI knows the input is complete
+    close(this->_write_fd.fd);
 
-    // std::ostringstream debug_message;
-    // debug_message << "Successfully wrote " << total_sent << " bytes to CGI.";
-    // utils::print_debug(debug_message.str());
+    std::ostringstream debug_message;
+    debug_message << "Successfully wrote " << total_sent << " bytes to CGI.";
+    utils::print_debug(debug_message.str());
 
 }
 

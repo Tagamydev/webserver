@@ -39,7 +39,7 @@ class	cgi
 		cgi(request &_request, client *_client, std::vector<struct pollfd> &list, webserver *webserver);
 		~cgi();
 
-		void			write(std::string &content);
+		void			writee(std::string &content);
 		void			read();
 		bool			cgi_timeout();
 		struct pollfd	_read_fd;

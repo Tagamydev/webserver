@@ -39,11 +39,13 @@ class	cgi
 		cgi(request &_request, client *_client, std::vector<struct pollfd> &list, webserver *webserver);
 		~cgi();
 
-		void			write(std::string &content);
+		void			writee(std::string &content);
 		void			read();
 		bool			cgi_timeout();
 		struct pollfd	_read_fd;
 		struct pollfd	_write_fd;
+		int				_env_size;
+		int				_exitstatus;
 		
 		private:
 		request			*_request;
@@ -52,6 +54,11 @@ class	cgi
 		int				_id;
 		
 		void			init_env(std::map<std::string, std::string>	_headers);
+		void 			free_env();
+		std::string		set_cgi_interpreter(std::string filename, std::map<std::string, std::string> _cgi_extensions);
+		bool			get_cgi_extension(std::string ext);
+		void			set_cgi_extension();
+
 };
 
 #endif

@@ -141,7 +141,7 @@ void	loopHandler::delete_client(client *_client, int &_it)
 	}
 	_list.erase(i);
 	delete _client;
-	i--;
+	_it--;
 }
 
 bool	loopHandler::fd_is_client(int fd)
@@ -170,7 +170,9 @@ client	*loopHandler::get_client_from_clientFd(int fd)
 	std::map<client *, struct pollfd>::iterator i;
 	std::map<client *, struct pollfd>::iterator ie;
 	client	*result = NULL;
-
+	
+	
+	// check on all lists?
 	i = this->_client_clientFd.begin();
 	ie = this->_client_clientFd.end();
 	for (; i != ie ; i++)
@@ -179,6 +181,24 @@ client	*loopHandler::get_client_from_clientFd(int fd)
 		{
 			result = i->first;
 			break ;
+		}
+	}
+	
+	//checking on cgi list
+	if (!result)
+	{
+		std::map<int, struct pollfd>::iterator i;
+		std::map<int, struct pollfd>::iterator ie;
+		int result = 0;
+		i = this->_clientFd_cgiFd.begin();
+		ie = this->_clientFd_cgiFd.end();
+		for (; i != ie ; i++)
+		{
+			if (i->second.fd == fd)
+			{
+				result = i->first;
+				break ;
+			}
 		}
 	}
 	if (!result)
@@ -210,7 +230,7 @@ void	loopHandler::send_response(int &i, std::vector<struct pollfd> &list)
 			_keep_alive = false;
 		}
 		_client->free_request();
-		if (!_keep_alive)
+		if (true)
 		{
 			delete_client(_client, i);
 			this->make_fd_list(list);
@@ -249,6 +269,27 @@ bool	loopHandler::is_server(int fd)
 		if (i->second.fd == fd)
 			return (true);
 	}
+	return (false);
+}
+
+bool	loopHandler::is_for_cgi(int fd)
+{
+	//server server = webserver._port_servers_list[];
+	// server server();
+
+	// if (server->_locations.find(req.getLocation()) == this->_locations.end())
+	//   return false;
+	// if (this->_locations[req.getLocation()].getCGI()== "on" && 
+	// 	!access(resourcePath.c_str(),X_OK))
+	// 		return true;
+
+
+
+// 	for (; i != ie ; i++)
+// 	{
+// 		if (i->second.fd == fd)
+// 			return (true);
+// 	}
 	return (false);
 }
 
@@ -320,6 +361,11 @@ void	loopHandler::read_from_cgi(int &i, std::vector<struct pollfd> &list)
 	this->get_clientFd_from_cgiFd(socket.fd));
 	_cgi = _client->get_request()->_cgi;
 	_cgi->read();
+
+	// write to cgi?
+	// _cgi->writee(_client->get_request()->_cgi_response);
+
+
 	this->delete_cgi_from_list(_cgi, i);
 	_client->close_cgi();
 	this->make_fd_list(list);
@@ -377,24 +423,27 @@ void	loopHandler::check_additions(int &i, std::vector<struct pollfd> &list)
 {
 	struct pollfd socket = list[i];
 
-	if (is_server(socket.fd))
+	if (loopHandler::is_server(socket.fd))
 	{
 		this->new_client(socket);
 		this->make_fd_list(list);
 	}
-	else if (fd_is_cgi(socket.fd))
+	else if (loopHandler::fd_is_cgi(socket.fd))
+	{
+
 		this->read_from_cgi(i, list);
+	}
 	else
 		this->new_request(socket.fd, list, i);
 }
-
 void	loopHandler::send_to_cgi(int &i, std::vector<struct pollfd> &list)
 {
 	client			*_client;
 	struct pollfd	socket;
 
 	socket = list[i];
-	_client = this->get_client_from_clientFd(socket.fd);
+	// _client = this->get_client_from_clientFd(socket.fd);
+	_client = this->get_client_from_clientFd(this->get_clientFd_from_cgiFd(socket.fd));
 	send(_client->_request->_cgi->_write_fd.fd, _client->_request->_body_parsed.c_str(), _client->_request->_body_parsed.length(), 0);
 	
 	

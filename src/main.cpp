@@ -60,16 +60,19 @@ void	server_loop(webserver &server)
 		{
 			server._loop->check_additions(i, list);
 			if (list[i].revents & POLLOUT)
-			server._loop->handle_client(i, list);
-		}
-		else if (list[i].revents & POLLOUT)
-		{
-			std::cout << "\n\n HERE!! \n\n" ;
-
-			if(server._loop->fd_is_client(list[i].fd))
+			{
 				server._loop->handle_client(i, list);
-			else if(server._loop->fd_is_cgi(list[i].fd))
+			}
+		}
+		if (list[i].revents & POLLOUT)
+		{
+			std::cout << "\n\n HERE POLLOUT!! \n\n" ;
+			 if(server._loop->fd_is_cgi(list[i].fd))
 				server._loop->send_to_cgi(i, list);
+			else if(server._loop->fd_is_client(list[i].fd))
+				server._loop->handle_client(i, list);
+			// else if(server._loop->fd_is_cgi(list[i].fd))
+			// 	server._loop->send_to_cgi(i, list);
 		}
 	}
 }

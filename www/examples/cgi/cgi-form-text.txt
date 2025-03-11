@@ -1,0 +1,11 @@
+POST /cgi/upload.py HTTP/1.1
+Host: localhost:1234
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryXYZ
+Content-Length: 219
+
+------WebKitFormBoundaryXYZ
+Content-Disposition: form-data; name="file"; filename="sample.txt"
+Content-Type: text/plain
+
+Hello, this is a test file.
+------WebKitFormBoundaryXYZ--

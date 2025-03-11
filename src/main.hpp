@@ -29,15 +29,16 @@
 # include "location.hpp"
 # include "server.hpp"
 # include "request.hpp"
+# include "utils.hpp"
 # include "response.hpp"
 # include "serverFd.hpp"
 # include "webserver.hpp"
-# include "utils.hpp"
 # include "defaults.hpp"
 # include "client.hpp"
 # include "loopHandler.hpp"
 # include <algorithm>    // std::count
 # include <set>
+# include <sys/wait.h>
 
 std::string get_actual_date();
 

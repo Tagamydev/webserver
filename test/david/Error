@@ -1,0 +1,17 @@
+
+
+Error: open fd and not answering
+
+POST /cgi-bin/upload.py HTTP/1.1
+Host: localhost:1234
+User-Agent: curl/7.68.0
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryXyz123
+
+------WebKitFormBoundaryXyz123
+Content-Disposition: form-data; name="file"; filename="testfile.txt"
+Content-Type: text/plain
+
+asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+------WebKitFormBoundaryXyz123--
+
+///////////////////////////////////////////////////////////////

@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "client.hpp"
+
 client::client(struct pollfd socket, int port)
 {
 	int new_socket;
@@ -29,6 +30,7 @@ client::~client()
 {
 	if (this->_request)
 		delete this->_request;
+	close(this->_pollfd_client.fd);
 }
 
 struct pollfd	client::get_pollfd()

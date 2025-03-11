@@ -1,0 +1,75 @@
+
+
+
+Basic php processor
+
+GET /examples/index.php HTTP/1.1
+Host: localhost:1234
+Cache-Control: max-age=0
+sec-ch-ua: "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Windows"
+Accept-Language: en-US,en;q=0.9
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.140 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,/;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://localhost:1234/
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+
+////////////////////////////////////////
+
+Reading query parameters:
+
+POST /cgi-bin/basic-cgi.py?user=admin&debug=true HTTP/1.1
+Host: localhost:1234
+User-Agent: curl/7.68.0
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryXyz123
+Content-Length: 184
+
+------WebKitFormBoundaryXyz123
+Content-Disposition: form-data; name="file"; filename="testfile.txt"
+Content-Type: text/plain
+
+<file contents here>
+------WebKitFormBoundaryXyz123--
+
+
+//////////////////////////////////////
+
+
+Reading body from stdin
+
+GET /examples/index.php HTTP/1.1
+Host: localhost:1234
+Cache-Control: max-age=0
+sec-ch-ua: "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Windows"
+Accept-Language: en-US,en;q=0.9
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.140 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,/;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://localhost:1234/
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+
+
+////////////////////////////
+
+Reading query parameters
+
+GET /cgi-bin/test.php?name=admin&debug=true HTTP/1.1
+Host: localhost:1234
+User-Agent: curl/7.68.0
+Content-Length: 2
+
+12

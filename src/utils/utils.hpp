@@ -41,6 +41,8 @@ class	utils
 		static void print_debug(std::string message);
 		static void print_log(std::string message);
 
+		static bool is_directory(const std::string& path);
+
 	private:
 		utils();
 

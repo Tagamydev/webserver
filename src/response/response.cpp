@@ -1,4 +1,5 @@
 #include "response.hpp"
+#include "utils.hpp"
 #include "cgi.hpp"
 #include <sstream>
 
@@ -141,6 +142,7 @@ void	response::do_cgi_response()
 		if (!tmp.empty())
 			this->_body += tmp + '\n';
 	}
+	std::cout << "\n\nResponse Body " << this->_body << std::endl;
 	this->_status_code = 200;
 }
 
@@ -326,12 +328,19 @@ void	response::get_dir(std::string &path)
 {
     std::list<std::string> entries = listDirectory(path);
 
+	if (!this->_request->_location)
+	{
+		this->_status_code = 200;
+			this->_body = make_autoindex(entries, path, this->_request->_uri_file);
+		//this->do_error_page(404);
+		return;
+	}
 	if (this->_request->_location->_index_file.empty())
 	{
 		if (this->_request->_location->_auto_index)
 		{
 			this->_status_code = 200;
-			this->_body = make_autoindex(entries, path, this->_request->_uri);
+			this->_body = make_autoindex(entries, path, this->_request->_uri_file);
 		}
 		else
 		{
@@ -382,7 +391,7 @@ void	response::do_get()
 	std::string	path;
 	struct stat pathStat;
 
-	path = this->_request->_uri;
+	path = this->_request->_uri_file;
 	if (stat(path.c_str(), &pathStat) == 0)
 	{
 		if (S_ISREG(pathStat.st_mode))
@@ -397,11 +406,12 @@ void	response::do_get()
 			this->get_dir(path);
 			char	c;
 
+			std::cout << "\n\nHERE PATH: " << path << std::endl;
 			c = path[path.length() - 1];
 			if (c == '/')
 				this->get_dir(path);
 			else
-				this->do_redirection(301, std::string(cut_spaces(this->_request->_uri) + "/"));
+				this->do_redirection(301, std::string(cut_spaces(this->_request->_uri_file) + "/"));
 		}
 		else
 		{
@@ -433,7 +443,7 @@ void	response::do_post()
 	if (!this->_request || this->_error)
 		return ;
 
-//	path = this->_request->_uri;
+	path = this->_request->_uri_file;
 
 	if (this->post_file(path))
 	{
@@ -487,7 +497,7 @@ void	response::do_delete()
 	std::string	path;
 	struct stat pathStat;
 
-	path = this->_request->_uri;
+	path = this->_request->_uri_file;
 	if (stat(path.c_str(), &pathStat) == 0)
 	{
 		if (S_ISREG(pathStat.st_mode))

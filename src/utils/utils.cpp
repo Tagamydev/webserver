@@ -109,8 +109,8 @@ std::string utils::to_string(std::size_t value)
 /// @param outputVector vector<std::string>
 void utils::map_to_vector_populate_keys(const std::map<std::string, location>& inputMap, std::vector<std::string>& outputVector)
 {
-    outputVector.clear(); // Ensure the vector is empty before populating
-    for (typename std::map<std::string, location>::const_iterator it = inputMap.begin(); it != inputMap.end(); ++it)
+    outputVector.clear(); 
+    for (std::map<std::string, location>::const_iterator it = inputMap.begin(); it != inputMap.end(); ++it)
     {
         outputVector.push_back(it->first);
     }
@@ -124,7 +124,7 @@ void utils::map_to_vector_populate_keys(const std::map<std::string, location>& i
 void utils::map_to_vector_populate_values(const std::map<std::string, std::string>& inputMap, std::vector<std::string>& outputVector)
 {
     outputVector.clear(); // Ensure the vector is empty before populating
-    for (typename std::map<std::string, std::string>::const_iterator it = inputMap.begin(); it != inputMap.end(); ++it)
+    for (std::map<std::string, std::string>::const_iterator it = inputMap.begin(); it != inputMap.end(); ++it)
     {
         outputVector.push_back(it->second);
     }
@@ -184,7 +184,7 @@ void    utils::ft_to_underscore(std::string &str)
 {
     for (size_t i = 0; i < str.length(); ++i)
         if (str[i] == '-')
-			str[i] == '_';
+			str[i] = '_';
 }		
 
 /// @brief transform a string in upper case
@@ -313,8 +313,8 @@ void	utils::print_map_content(std::map<std::string, std::string> map, std::strin
 		std::cout << "\n<<<   "<< title << "   >>>" << std::endl;
 	for (std::map<std::string, std::string>::iterator it = map.begin(); it != map.end(); it++)
 		{
-			std::cout << "--- Item " << i++ << " value: ";
-			std::cout << it->first << " " << it->second << "\n";
+			std::cout << "--- Item " << i++ << " | value: ";
+			std::cout << it->first << " | " << it->second << "\n";
 		}
 	std::cout << std::endl;
 }
@@ -365,4 +365,13 @@ void	utils::print_vector_content(std::vector<int> vector, std::string title)
 			std::cout << *it << "\n";
 		}
 	std::cout << std::endl;
+}
+
+bool utils::is_directory(const std::string& path) 
+{
+    struct stat info;
+    if (stat(path.c_str(), &info) != 0) {
+        return false; // Cannot access path (doesn't exist or no permission)
+    }
+    return (info.st_mode & S_IFDIR) != 0; // Check if it's a directory
 }

@@ -26,10 +26,10 @@ std::vector<struct pollfd> &list)
 	this->parsing();
 	this->debug();
 	this->check_config_file(_client, _webserver);
-
+	this->set_cgi_extension();
 	this->parse_body(this->_server);
 
-	if (this->check_if_cgi() && this->_is_cgi)
+	if (this->check_if_cgi())
 	{
 		this->_cgi_status = WAITING;
 		this->_cgi = new cgi(*this, _client, list, _webserver);
@@ -126,7 +126,7 @@ std::string location_from_uri(const std::string& uri)
 	return (result);
 }
 
-location	*get_location_from_uri(server *_server, std::string uri)
+location	*get_location_from_uri(server *_server, std::string url)
 {
 	std::map<std::string, location>::iterator	it;
 	std::map<std::string, location>::iterator	ie;
@@ -139,7 +139,7 @@ location	*get_location_from_uri(server *_server, std::string uri)
 	for (; it != ie ; ++it)
 	{
 		const std::string &loc_path = it->first;
-		if (uri.find(loc_path) == 0)
+		if (url.find(loc_path) == 0)
 		{
 			if (loc_path.length() > best_match_length)
 			{
@@ -176,7 +176,7 @@ void	request::get_location()
 
 	if (this->_error_code != -1)
 		return ;
-	result = get_location_from_uri(this->_server, this->_uri);
+	result = get_location_from_uri(this->_server, this->_uri_file);
 	if (!result)
 	{
 		set_error_code(404, "location not found");
@@ -204,10 +204,41 @@ void	request::check_config_file(client *_client, webserver *_webserver)
 		return ;
 	this->get_server(_client,_webserver);
 	this->get_location();
+
+
+	//check if location is cgi enabled
+	this->_location = get_location_from_uri(_server, _uri_file);
+	if (this->_location)
+	{
+		if (this->_location->_cgi_enabled)
+			this->_is_cgi = true;
+	}
+
+
+
+	if (this->_location && !this->_location->_alias.empty())
+	{
+		this->_uri_file = this->_location->_alias;
+		if (this->_uri_file[0] != '/')
+			this->_uri_file = "./" + this->_uri_file;
+		std::cout << "[Path]: " << this->_uri_file << std::endl;
+	}
+	else if (this->_location && !this->_location->_root.empty())
+	{
+		this->_uri_file = this->_location->_root + this->_uri_file;
+		if (this->_uri_file[0] != '/')
+			this->_uri_file = "./" + this->_uri_file;
+		std::cout << "[Path]: " << this->_uri_file << std::endl;
+	}
+	else
+		this->_uri_file = "." + this->_uri_file;
+
 }
 
 request::~request()
 {
+	// utils::print_debug("delete request"); //should we disconect client? Check closeRequestExample.cpp
+
 	if (this->_cgi)
 		delete this->_cgi;
 }
@@ -249,24 +280,37 @@ bool	request::check_if_cgi()
 	if (this->_error_code != -1)
 		return (false);
 	
-	size_t	dotPos = this->_uri_file.find_last_of('.');
-	std::string extension = "";
+	// size_t	dotPos = this->_uri_file.find_last_of('.');
+	// std::string extension = "";
 
-    if (dotPos != std::string::npos)
-        extension = this->_uri_file.substr(dotPos);
-	if (this->get_cgi_extension(extension))
+
+	// //Check extension. // CHECK IF NECESSARY
+    // if (dotPos != std::string::npos)
+    //     extension = this->_uri_file.substr(dotPos);
+	// if (this->get_cgi_extension(extension))
+	// {
+	// 	this->_is_cgi = true;
+	// 	// return (true);
+	// }
+	if (utils::is_directory(this->_uri_file))
 	{
-		this->_is_cgi = true;
-		// return (true);
+		this->_is_cgi = false;
+		return (false);
 	}
-	if (this->_location || this->_method == "DELETE")
-	{
-		if (this->_location->_cgi_enabled)
-		{
-			this->_is_cgi = true;
-			return (true);
-		}
-	}
+	//check if location is cgi enabled
+	// this->_location = get_location_from_uri(_server, _uri_file);
+	// if (this->_location)
+	// {
+	// 	// this->_location->print_location_content();
+	// 	// utils::print_debug();
+	// 	if (this->_location->_cgi_enabled)
+	// 	{
+	// 		this->_is_cgi = true;
+	// 		return (true);
+	// 	}
+	// }
+	if(this->_is_cgi == true)
+		return (true);
 	this->_is_cgi = false;
 	return (false);
 }
@@ -284,6 +328,7 @@ void	request::clear()
 	this->_fd = -1;
 	this->_method.clear();
 	this->_uri.clear();
+	this->_uri_file.clear();
 	this->_http_version.clear();
 	this->_headers.clear();
 	this->_body.clear();
@@ -420,8 +465,8 @@ void request::parse_headers()
 			return (set_error_code(400, "Host header not found."));
 	if (this->_headers.count("content-length"))
     {
-		if (this->_headers.count("transfer-encoding"))
-			return (set_error_code(400, "Incopatible headers: content-length & transfer-encoding."));
+		// if (this->_headers.count("transfer-encoding"))
+			// return (set_error_code(400, "Incopatible headers: content-length & transfer-encoding."));
 		this->_content_length = std::atoi(_headers["content-length"].c_str());
 		if (this->_content_length <= 0)
 			return (set_error_code(400, "Invalid Content-length header."));
@@ -458,7 +503,7 @@ void request::save_headers(std::string &line)
 		while (line[i] == ' ')
 			i++;
 		if (i >= line.size() || line.find('\n') == std::string::npos) 
-			return (set_error_code(-1, "No error, should skip headers."));
+			return ;
 		flag = std::count(line.begin() + i, line.begin() + line.find('\n'), ':');
 		if (flag > 0)
 		{
@@ -475,15 +520,13 @@ void request::save_headers(std::string &line)
 		{
 			tmp = line.substr(i, (line.find('\n') - i));
 			if(space_in_header_name(tmp))
-				return (set_error_code(400, "Found space on header name."));
+				// return (set_error_code(400, "Found space on header name."));
 			utils::ft_to_lower(tmp);
 			this->_headers[tmp] = "";
 		}
 		line.erase(0, line.find('\n') + 1);
 		i = 0;
 	}
-	/*
-	*/
 }
 
 
@@ -505,7 +548,6 @@ void    request::process_headers(std::stringstream &reqFile, std::string line)
 		}
 	}
 	utils::fix_spaces_in_line(line);
-	// check if line is empty?
 	save_headers(line);
 }
 
@@ -544,7 +586,6 @@ void request::is_valid_uri(std::string &line)
 
 	if (line.empty())
 		return (set_error_code(400, "Empty or invalid URI."));
-	// max size?
 	if (len > MAX_URI_LENGTH)
 		return (set_error_code(414, "Max. URI length reached."));
 	// Check for invalid characters
@@ -599,7 +640,7 @@ void request::check_save_request_line(std::string line)
 	if (line.find(" ") != std::string::npos)
 		key = line.substr(0, line.find(" "));
 	else
-		return (set_error_code(400, "No spaces on first line."));
+		// return (set_error_code(400, "No spaces on first line."));
 	this->is_valid_method(key);
 	this->_method = key;
 	line = line.substr((line.find(" ") + 1), line.length());
@@ -628,18 +669,12 @@ std::map<std::string, std::string>	request::get_headers()
 	return(this->_headers);
 }
 
-bool	request::get_cgi_extension(std::string ext)
-{
-	if (this->_cgi_extensions.find(ext) != this->_cgi_extensions.end() && !this->_cgi_extensions[ext].empty())
-     	return (1);
-	return (0);
-}
-
 void	request::set_cgi_extension()
 {
-    this->_cgi_extensions[".php"] = "/bin/php";
-    this->_cgi_extensions[".py"] = "/bin/python3";
-    this->_cgi_extensions[".cgi"] = "/bin/cgi";
+    this->_cgi_extensions[".php"] = "/usr/bin/php-cgi";
+    this->_cgi_extensions[".py"] = "/usr/bin/python3";
+    this->_cgi_extensions[".cgi"] = "/usr/bin/bash";
+    this->_cgi_extensions[".sh"] = "/usr/bin/bash";
 }
 
 

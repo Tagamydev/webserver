@@ -21,3 +21,5 @@
 - [ ] The CGI should be run in the correct directory for relative path file access.
 - [ ] Your server should work with one CGI (php-CGI, Python, etc.).
 
+there is one problem with the root, also i have to check the cgi
+

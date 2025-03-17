@@ -3,6 +3,17 @@
 #include "cgi.hpp"
 #include <sstream>
 
+std::string replaceToken(const std::string &token, const std::string &replacement, const std::string &buffer) {
+    std::string result = buffer;
+    std::size_t pos = 0;
+
+    while ((pos = result.find(token, pos)) != std::string::npos) {
+        result.replace(pos, token.length(), replacement);
+        pos += replacement.length(); // Move past the replaced token
+    }
+    return result;
+}
+
 response::response(request *_request, webserver *_webserver)
 {
 	this->_webserver = _webserver;
@@ -16,17 +27,43 @@ response::response(request *_request, webserver *_webserver)
 	this->_error = false;
 	this->_keep_alive = false;
 
-	std::cout << "\n\nLALALA "<< _request->_uri_file << std::endl;
 	if (this->_request->_error_code != -1)
 	{
 		if (this->_request->_error_code >= 300 && this->_request->_error_code <= 308)
 			this->do_redirection(this->_request->_error_code, this->_request->_debug_msg);
 		else
 			this->do_error_page(this->_request->_error_code);
+		this->set_length();
+		if (!this->_keep_alive)
+			this->_headers["Connection"] = "close";
+		else
+			this->_headers["Connection"] = "keep-alive";
+		return ;
 	}
 
-	//check in config file for alias and root in the same block
-	
+	if (!this->_request->_location->_alias.empty())
+	{
+		std::string locPath = this->_request->_location->_path;
+		std::string alias   = this->_request->_location->_alias;
+		std::string uri     = this->_request->_uri;
+
+		if (uri.find(locPath) == 0)
+			uri = alias + uri.substr(locPath.length());
+		if (uri.empty() || uri[0] != '/')
+			uri = "./" + uri;
+
+		this->_request->_uri = uri + "/";
+	}
+	else if (!this->_request->_location->_root.empty())
+	{
+		this->_request->_uri = this->_request->_location->_root + this->_request->_uri;
+		if (this->_request->_uri.empty() || this->_request->_uri[0] != '/')
+			this->_request->_uri = "./" + this->_request->_uri;
+	}
+	else
+		this->_request->_uri = "." + this->_request->_uri;
+
+
 	if (this->_request->_cgi_status == NONE)
 	{
 		if (this->_request->_method == "GET")
@@ -390,6 +427,16 @@ void	response::do_get()
 	}
 }
 
+bool	response::post_file(std::string path)
+{
+	std::ofstream file(path.c_str(), std::ios::out);
+	if (!file)
+		return (false);
+	file << this->_request->_body_parsed;
+	file.close();
+	return (true);
+}
+
 void	response::do_post()
 {
 	std::string	path;
@@ -398,19 +445,7 @@ void	response::do_post()
 
 	path = this->_request->_uri_file;
 
-	// this method is cgi's deppendant, so the response came from the cgi
-	// not from this, this webserver is not a cgi is a webserver cgi dependant
-	// so the only method with post allowed is when the content-type has:
-	// multipart/form-data
-
-	// check post permissions
-
-	// check if the content-type from the response has multipart/form-data
-	// if not 400
-
-	// try to upload the file!
-	// in success return this
-	if (true)
+	if (this->post_file(path))
 	{
 		this->_status_code = 201;
 		this->_headers["Location"] = path;

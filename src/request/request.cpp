@@ -6,7 +6,7 @@
 /*   By: samusanc <samusanc@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 07:52:36 by samusanc          #+#    #+#             */
-/*   Updated: 2025/01/24 21:13:16 by samusanc         ###   ########.fr       */
+/*   Updated: 2025/02/10 06:18:37 by samusanc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "request.hpp"
@@ -151,15 +151,6 @@ location	*get_location_from_uri(server *_server, std::string url)
 	if (best_match != ie)
 		return &(best_match->second);
 	return (NULL);
-	// OLD FUNCTION: this fuction dont allow herachy and dont probe / or /.git/branches as location blocks
-	/*
-	std::map<std::string, location>::iterator	i;
-
-	i = _server->_locations.find(location_from_uri(uri));
-	if (i != _server->_locations.end())
-		return (&(i->second));
-	return (NULL);
-	*/
 }
 
 void	request::get_server(client *_client, webserver *_webserver)
@@ -204,7 +195,6 @@ void	request::get_location()
 		set_error_code(405, "Method Not Allowed");
 		return ;
 	}
-
 	this->_location = result;
 }
 
@@ -366,8 +356,6 @@ void request::parse_body(server *this_server)
 	if(!this_server)
 		return ;
 
-	// this->process_chunked(); // delete, is only to check now
-
 	if (!this->_has_body)
 		return ;
 	if (atoi(this->_headers["content-length"].c_str()) >= 1)
@@ -416,7 +404,6 @@ void request::process_chunked()
 
 	//later replace to _body
 	// std::cout << "CHUNKED " << this->_body << std::endl;
-    // ss.str(this->_body);
 	tmpBody = utils::read_file_max_size("examples/request/chunked.txt", 200);
 	std::cout << "\n\nCHUNKED " << tmpBody << std::endl;
     ss.str(tmpBody);

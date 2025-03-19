@@ -503,7 +503,14 @@ void request::save_headers(std::string &line)
 		while (line[i] == ' ')
 			i++;
 		if (i >= line.size() || line.find('\n') == std::string::npos) 
+		{
+			/*
+				HOLA DAVID MIRA ESTO ES UN CHECKEO QUE LO HAGO PORQUE EL PARSING DEL BODY ESTÁ MAL, 
+				ASI QUE REVISA QUE ESTO PRIMERO ESTÉ BIEN Y SEGUNDO QUE NO ROMPA NADA MÁS.
+			*/
+			this->_body = line;
 			return ;
+		}
 		flag = std::count(line.begin() + i, line.begin() + line.find('\n'), ':');
 		if (flag > 0)
 		{

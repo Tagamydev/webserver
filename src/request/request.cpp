@@ -332,6 +332,7 @@ void	request::clear()
 	this->_http_version.clear();
 	this->_headers.clear();
 	this->_body.clear();
+	this->_body.clear();
 	this->_content_length = -1;
 	this->_has_body = -1;
 	this->_chunked_flag = false;
@@ -391,6 +392,10 @@ void request::parse_body(server *this_server)
 	else
 		this->_headers["content-length"] = utils::to_string(_body.length());
 	_content_length = atoi(this->_headers["content-length"].c_str());
+
+	std::cout << "\n\nBODYYYY " << _body << std::endl;
+	this->_body = _body_parsed;
+
 }
 
 void request::process_chunked()
@@ -681,6 +686,7 @@ void	request::set_cgi_extension()
     this->_cgi_extensions[".php"] = "/usr/bin/php-cgi";
     this->_cgi_extensions[".py"] = "/usr/bin/python3";
     this->_cgi_extensions[".cgi"] = "/usr/bin/bash";
+    this->_cgi_extensions[".js"] = "/usr/bin/node";
     this->_cgi_extensions[".sh"] = "/usr/bin/bash";
 }
 

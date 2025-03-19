@@ -52,7 +52,7 @@ class   request
 
 		// BODY
 		std::string		_body;
-		std::string		_body_parsed;
+		std::string		_body_parsed; //delete
 
 		// STATES FOR RESPONSE
 		int				_error_code;

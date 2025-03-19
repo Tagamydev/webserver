@@ -66,7 +66,6 @@ void	server_loop(webserver &server)
 		}
 		if (list[i].revents & POLLOUT)
 		{
-			std::cout << "\n\n HERE POLLOUT!! \n\n" ;
 			 if(server._loop->fd_is_cgi(list[i].fd))
 				server._loop->send_to_cgi(i, list);
 			else if(server._loop->fd_is_client(list[i].fd))

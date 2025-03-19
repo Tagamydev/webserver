@@ -441,10 +441,15 @@ void	loopHandler::send_to_cgi(int &i, std::vector<struct pollfd> &list)
 	client			*_client;
 	struct pollfd	socket;
 
+	std::cout << RED;
+	std::cout << "Send to cgi is needed?" << std::endl;
+	std::cout << RESET;
 	socket = list[i];
 	// _client = this->get_client_from_clientFd(socket.fd);
 	_client = this->get_client_from_clientFd(this->get_clientFd_from_cgiFd(socket.fd));
-	send(_client->_request->_cgi->_write_fd.fd, _client->_request->_body_parsed.c_str(), _client->_request->_body_parsed.length(), 0);
+
+	std::cout << "\n\nBODYYYY " << _client->_request->_body << std::endl;
+	send(_client->_request->_cgi->_write_fd.fd, _client->_request->_body.c_str(), _client->_request->_body.length(), 0);
 	
 	
 	std::cout << "this is a message for the cgi" << std::endl;

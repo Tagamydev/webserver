@@ -1,12 +1,14 @@
-POST /cgi-bin/basic-cgi.py?user=admin&debug=true HTTP/1.1
-Host: localhost:1234
-User-Agent: curl/7.68.0
-Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryXyz123
-Content-Length: 184
+POST /cgi-bin/print-body.py HTTP/1.1
+Host: example.com
+Transfer-Encoding: chunked
+Content-Type: application/json
 
-------WebKitFormBoundaryXyz123
-Content-Disposition: form-data; name="file"; filename="testfile.txt"
-Content-Type: text/plain
+10
+{"key1": "va
 
-<file contents here>
-------WebKitFormBoundaryXyz123--
+E
+lue1", "key2":
+A
+"value2"}
+0
+

@@ -17,10 +17,10 @@
 cgi::cgi(request &_request, client *_client,
 std::vector<struct pollfd> &list, webserver *_webserver)
 {
-	utils::print_debug("new cgi...");
-	std::cout << "\n\n HERE CGIIIII!! \n\n" ;
+	std::cout << BLUE;
+	utils::print_debug("Creating new cgi...");
+	std::cout << RESET;
 
-	// this->_env = NULL;
 	this->_request = &_request;
 	this->_request->_cgi_status = WAITING;
 
@@ -50,6 +50,7 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 			std::cerr << "[FATAL]: dup2 fail inside fork!." << std::endl; // free env? or it calls the destructor?
 			exit(-1);
 		}
+
 		close(pipeIN[1]);
 		close(pipeOUT[0]);
 
@@ -79,6 +80,7 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 	this->_write_fd = utils::pollfd_from_fd(pipeOUT[1], POLLOUT);
 	_webserver->_loop->add_cgi(_client->get_fd(), this->_write_fd);
 	std::cout << "[Debug]: " << "fd to write to cgi: "<< this->_write_fd.fd << std::endl;
+	writee(_request._body);
 
 	this->_read_fd = utils::pollfd_from_fd(pipeIN[0], POLLIN);
 	_webserver->_loop->add_cgi(_client->get_fd(), this->_read_fd);
@@ -113,21 +115,22 @@ cgi::~cgi()
 
 void cgi::read()
 {
-	utils::print_debug("reading from cgi");
+	std::cout << BLUE;
+	utils::print_debug("Reading from cgi");
+	std::cout << RESET;
 	std::string	result;
 
 	result = utils::read_file(this->_read_fd.fd);
 	this->_request->_cgi_status = DONE;
 	this->_request->_cgi_response = result;
-
-// to delete
-	utils::print_debug("\nmakeDAVID\n");
-	utils::print_debug(this->_request->_cgi_response);
 }
 
 void cgi::writee(std::string &content)
 {
-    utils::print_debug("\n\nwrite to CGI ");
+	std::cout << BLUE;
+    utils::print_debug("Write to CGI");
+	std::cout << RESET;
+
 	// this is not working because use send function that works only with sockets.
 	// utils::send_response(this->_write_fd.fd, this->_request->_body);
 
@@ -141,8 +144,9 @@ void cgi::writee(std::string &content)
 	{
         ssize_t sent_now = write(this->_write_fd.fd, this->_request->_body.c_str() + total_sent, data_length - total_sent);
 
-        if (sent_now == -1) {
-            perror("write to CGI failed");
+        if (sent_now == -1) 
+		{
+			std::cerr << "[FATAL]: failed to write to CGI." << std::endl;
             throw std::runtime_error("Error writing to CGI pipe.");
         }
 
@@ -206,13 +210,7 @@ void	cgi::init_env(std::map<std::string, std::string> _headers)
 		this->_env_tmp[name] = it->second;
 	}
 	//init manual headers
-
-	
 	this->_env_tmp["INTERPRETER"] = set_cgi_interpreter(this->_request->_uri_file, this->_request->_cgi_extensions);
-	// this->_env_tmp["INTERPRETE"] = "/usr/bin/php-cgi"; //set this with array
-	
-	// std::cout << "\n\nINTERPRETER " << 	this->_env_tmp["INTERPRETER"] << std::endl;
-
 	this->_env_tmp["REQUEST_METHOD"] = this->_request->_method;
 	this->_env_tmp["SCRIPT_NAME"] = this->_request->_uri_file; // check where to init (The path to the CGI script being executed.)
 	this->_env_tmp["SCRIPT_FILENAME"] = this->_request->_uri_file; // check where to init (The path to the CGI script being executed.)
@@ -222,19 +220,12 @@ void	cgi::init_env(std::map<std::string, std::string> _headers)
 	this->_env_tmp["SERVER_NAME"] = _headers["host"];
 	this->_env_tmp["SERVER_PROTOCOL"] = this->_request->_http_version;
 	this->_env_tmp["REDIRECT_STATUS"] = "200";
-	
-
-	
 
 	//create char** env
 	this->_env = new char*[2 + _env_tmp.size()]; // +1 for INTERPRETER
-	
-	
-	// (this->_env)[0] = new char[6 + this->_env_tmp["SCRIPT_NAME"].size() + 1];
-	// std::strcpy((this->_env)[0],(("./www" + this->_env_tmp["SCRIPT_NAME"]).c_str()));
+	// Add interpreter on pos 0
 	(this->_env)[0] = new char[this->_env_tmp["INTERPRETER"].size() + 1];
 	std::strcpy((this->_env)[0],((this->_env_tmp["INTERPRETER"]).c_str()));
-	
 	
 	int i =1;
 	for (std::map<std::string, std::string>::iterator it = _env_tmp.begin(); 
@@ -247,7 +238,7 @@ void	cgi::init_env(std::map<std::string, std::string> _headers)
 	(this->_env)[_env_tmp.size()] = NULL;
 	_env_size = i;
 
-	utils::print_map_content(this->_env_tmp, "CGI ENV");
+	// utils::print_map_content(this->_env_tmp, "CGI ENV");
 }
 
 void cgi::free_env()

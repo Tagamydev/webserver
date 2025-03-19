@@ -2,6 +2,15 @@
 #ifndef	MAIN_HPP
 # define MAIN_HPP
 
+// Color codes (add on header?)
+# define RESET   "\033[0m"
+# define BLUE "\033[34m"
+# define GREEN "\033[32m"
+# define RED "\033[31m"
+# define YELLOW "\033[0;33m"
+# define PURPLE "\033[0;35m"
+# define CYAN "\033[0;36m"
+
 # include <string>
 # include <iostream>
 # include <fstream>

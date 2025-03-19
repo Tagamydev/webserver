@@ -432,7 +432,7 @@ bool	response::post_file(std::string path)
 	std::ofstream file(path.c_str(), std::ios::out);
 	if (!file)
 		return (false);
-	file << this->_request->_body_parsed;
+	file << this->_request->_body;
 	file.close();
 	return (true);
 }

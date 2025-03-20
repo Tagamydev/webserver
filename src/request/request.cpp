@@ -127,13 +127,19 @@ std::string location_from_uri(const std::string& uri)
 }
 
 std::string extractPath(const std::string& url) {
-    if (url.empty() || url == "/")
+    // If the URL is empty or just a single slash, return an empty string.
+    if(url.empty() || url == "/")
         return "";
+    
+    // Remove the leading slash, if present.
     std::string path = (url[0] == '/') ? url.substr(1) : url;
+    
+    // Find the position of the first '/'.
     std::size_t pos = path.find('/');
-    if (pos != std::string::npos)
-        return path.substr(0, pos);
-    return path;
+    
+    // If found, return the substring before this '/'.
+    // If not found, it means there was no directory, so return empty string.
+    return (pos != std::string::npos) ? path.substr(0, pos) : "";
 }
 
 location	*get_location_from_uri(server *_server, std::string url)
@@ -147,31 +153,13 @@ location	*get_location_from_uri(server *_server, std::string url)
 	best_match = ie;
 	size_t best_match_length = 0;
 	url = extractPath(url);
-	if (url.length() == 0)
-		url = '/';
+	url = "/" + url;
+	std::cout << "}{ a}" << url << std::endl;
 	for (; it != ie ; ++it)
 	{
 		const std::string &loc_path = it->first;
-		if (url == loc_path)
-		{
-			if (loc_path.length() > best_match_length)
-			{
-				best_match = it;
-				best_match_length = loc_path.length();
-			}
-		}
-	}
-	if (best_match != ie)
-		return &(best_match->second);
-	//---------------------------------------//
-	it = _server->_locations.begin();
-	ie = _server->_locations.end();
-	best_match = ie;
-	best_match_length = 0;
-	url = '/';
-	for (; it != ie ; ++it)
-	{
-		const std::string &loc_path = it->first;
+
+		std::cout << "}{ paththha}" << loc_path << std::endl;
 		if (url == loc_path)
 		{
 			if (loc_path.length() > best_match_length)

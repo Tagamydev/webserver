@@ -223,6 +223,7 @@ void	loopHandler::send_response(int &i, std::vector<struct pollfd> &list)
 		try
 		{
 			utils::send_response(_client->get_fd(), _response.str());
+			std::cout << _response.str() << std::endl;
 		}
 		catch (std::exception &e)
 		{

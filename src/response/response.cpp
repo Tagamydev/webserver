@@ -410,8 +410,11 @@ void	response::do_get()
 			c = path[path.length() - 1];
 			if (c == '/')
 				this->get_dir(path);
+
+			/*
 			else
 				this->do_redirection(301, std::string(cut_spaces(this->_request->_uri_file) + "/"));
+				*/
 		}
 		else
 		{

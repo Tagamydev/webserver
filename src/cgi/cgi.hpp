@@ -14,6 +14,7 @@
 #ifndef	CGI_HPP
 # define CGI_HPP
 # define CGI_TIMEOUT 7
+# define MAX_FD 100
 
 class webserver;
 class loopHandler;
@@ -39,8 +40,8 @@ class	cgi
 		cgi(request &_request, client *_client, std::vector<struct pollfd> &list, webserver *webserver);
 		~cgi();
 
-		void			writee(std::string &content);
-		void			read();
+		void			write_to_cgi(std::string &content);
+		void			read_to_cgi();
 		bool			cgi_timeout();
 		struct pollfd	_read_fd;
 		struct pollfd	_write_fd;

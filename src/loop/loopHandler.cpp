@@ -352,19 +352,14 @@ int	loopHandler::get_clientFd_from_cgiFd(int fd)
 
 void	loopHandler::read_from_cgi(int &i, std::vector<struct pollfd> &list)
 {
-	std::cout << "[Debug]: Reading from cgi" << std::endl;
 	struct pollfd socket = list[i];
 	client	*_client;
 	cgi		*_cgi;
-
-	_client = this->get_client_from_clientFd(
-	this->get_clientFd_from_cgiFd(socket.fd));
+	
+	_client = this->get_client_from_clientFd(this->get_clientFd_from_cgiFd(socket.fd));
 	_cgi = _client->get_request()->_cgi;
-	_cgi->read();
-
-	// write to cgi?
-	// _cgi->writee(_client->get_request()->_cgi_response);
-
+	if (_client->get_request()->_cgi_status == WAITING)
+		_cgi->read_to_cgi();
 
 	this->delete_cgi_from_list(_cgi, i);
 	_client->close_cgi();
@@ -430,7 +425,6 @@ void	loopHandler::check_additions(int &i, std::vector<struct pollfd> &list)
 	}
 	else if (loopHandler::fd_is_cgi(socket.fd))
 	{
-
 		this->read_from_cgi(i, list);
 	}
 	else

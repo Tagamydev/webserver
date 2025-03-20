@@ -33,9 +33,17 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 		throw std::runtime_error("Pipe fail!.");
 
 	this->init_env(_request.get_headers());
+	
+	// Apply FD_CLOEXEC to prevent leaks during execve
+	// fcntl(pipeIN[0], F_SETFD, fcntl(pipeIN[0], F_GETFD) | FD_CLOEXEC);
+	// fcntl(pipeIN[1], F_SETFD, fcntl(pipeIN[1], F_GETFD) | FD_CLOEXEC);
+	// fcntl(pipeOUT[0], F_SETFD, fcntl(pipeOUT[0], F_GETFD) | FD_CLOEXEC);
+	// fcntl(pipeOUT[1], F_SETFD, fcntl(pipeOUT[1], F_GETFD) | FD_CLOEXEC);
+
+	
 
 	pid = fork();
-		if (pid < 0)
+	if (pid < 0)
 	{
 		free_env();
 		throw std::runtime_error("Fork failed on CGI execution."); // free env? or it calls the destructor?
@@ -45,58 +53,85 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 	{
 		try
 		{
-			int	error;
-			struct stat info;
+			
 			
 			close(pipeIN[0]);
 			close(pipeOUT[1]);
 			if (dup2(pipeIN[1], STDOUT_FILENO) == -1 || dup2(pipeOUT[0], STDIN_FILENO) == -1)
 			{
 				throw (std::runtime_error("[FATAL]: dup2 failed on CGI execution."));
-				// std::cerr << "[FATAL]: dup2 fail inside fork!." << std::endl; // free env? or it calls the destructor?
-				// exit(-1);
 			}
 			close(pipeIN[1]);
 			close(pipeOUT[0]);
 
-			char * argv[] = {const_cast<char*>(this->_env_tmp["INTERPRETER"].c_str()),
-							const_cast<char*>(this->_env_tmp["SCRIPT_NAME"].c_str()),	
-							NULL};
+
+			// Close all non-standard FDs
+			
+			for (int fd = 3; fd < MAX_FD; ++fd) 
+			{
+				close(fd);
+			}
+			
+			char * argv[] = {
+				const_cast<char*>(this->_env_tmp["INTERPRETER"].c_str()),
+				const_cast<char*>(this->_env_tmp["SCRIPT_NAME"].c_str()),	
+				NULL
+			};
+
+			int	error;
+			struct stat info;
 			if (stat(argv[0], &info) != 0) 
 			{
 				throw (std::runtime_error("Cannot access path (doesn't exist or no permission)."));
-				// return false; // Cannot access path (doesn't exist or no permission)
 			}
-
+			
 			error = execve(argv[0], argv, this->_env);
-			throw (std::runtime_error("[FATAL]: CGI execution failed, log[" + error));
+			std::cerr << "HERE" << std::endl;
+			std::cerr << "[FATAL]: execve fail inside fork, log[" << error << "]" << argv[0] << std::endl;
+
+			throw (std::runtime_error("[FATAL]: CGI execution failed."));
 			// std::cerr << "[FATAL]: execve fail inside fork, log[" << error << "]" << argv[0] << std::endl;
-			// std::exit(-1);
+			exit(127);
 		}
 		catch(const std::exception& e)
 		{
-			std::cerr << e.what() << "LALALALA" << '\n' << '\n';
-			// exit(5);
+			std::cerr << e.what() << std::endl;
+       		exit(EXIT_FAILURE);
 		}
 		
 		
 	}
 	this->_id = pid;
-	// waitpid(pid, &status, 0);
-	// int ret;
-	// if (WIFEXITED(status)){
-	// 	ret = WEXITSTATUS(status);
-	// 	std::cout << "\n[Log]: " << "HERE Child ended with code..." <<  ret << std::endl;
-	// }
-	// if (WIFSIGNALED(status)) //code 2
-	// {
-	// 	ret = WTERMSIG(status);
-	// 	std::cout << "\n[Log]: " << "Child ended with code..." <<  ret << std::endl;
-	// 	//Logger::log(Logger::WARN,"CGI.cpp", "WTERMSIG "+ to_string(ret));
-	// }
+	pid_t result = waitpid(pid, &status, 0);
+	if (result == -1) 
+	{
+		std::cerr << "[Error]: waitpid failed"<< std::endl;
+		// Handle CGI error (e.g., send 500 Internal Server Error)
+	} 
+	else if (WIFEXITED(status))
+	{
+		this->_exitstatus = WIFEXITED(status);
+		if (this->_exitstatus != 0) 
+		{
+			std::cerr << "[Error]: CGI process failed with exit code: " << this->_exitstatus << std::endl;
+			this->_request->_cgi_status = DONE;
+			// Handle CGI error (e.g., send 500 Internal Server Error)
+		}
+	}
+	if (WIFSIGNALED(status)) //code 2
+	{
+		std::cerr << "[Error]: CGI process killed by signal: " << WTERMSIG(status) << std::endl;
+		this->_request->_cgi_status = DONE;
+		//Logger::log(Logger::WARN,"CGI.cpp", "WTERMSIG "+ to_string(ret));
+	}
+	
 	close(pipeIN[1]);
 	close(pipeOUT[0]);
-
+	fcntl(pipeIN[0], F_SETFL, O_NONBLOCK);
+	fcntl(pipeOUT[1], F_SETFL, O_NONBLOCK);
+	// Optional: Make pipes non-blocking
+	// fcntl(pipeIN[0], F_SETFL, fcntl(pipeIN[0], F_GETFL) | O_NONBLOCK);
+	// fcntl(pipeOUT[1], F_SETFL, fcntl(pipeOUT[1], F_GETFL) | O_NONBLOCK);
 
 	std::cout << "[Log]: " << "starting fds addition to vector list..." << std::endl;
 
@@ -104,8 +139,13 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 	// can send first the info to the cgi and then read the cgi response
 	this->_write_fd = utils::pollfd_from_fd(pipeOUT[1], POLLOUT);
 	_webserver->_loop->add_cgi(_client->get_fd(), this->_write_fd);
-	std::cout << "[Debug]: " << "fd to write to cgi: "<< this->_write_fd.fd << std::endl;
-	writee(_request._body);
+	if (this->_request->_cgi_status == WAITING)
+	{
+		std::cout << "[Debug]: " << "fd to write to cgi: "<< this->_write_fd.fd << std::endl;
+		write_to_cgi(_request._body);
+
+	}
+
 
 	this->_read_fd = utils::pollfd_from_fd(pipeIN[0], POLLIN);
 	_webserver->_loop->add_cgi(_client->get_fd(), this->_read_fd);
@@ -138,7 +178,7 @@ cgi::~cgi()
 	// kill(this->_id, SIGKILL);
 }
 
-void cgi::read()
+void cgi::read_to_cgi()
 {
 	std::cout << BLUE;
 	utils::print_debug("Reading from cgi");
@@ -150,7 +190,7 @@ void cgi::read()
 	this->_request->_cgi_response = result;
 }
 
-void cgi::writee(std::string &content)
+void cgi::write_to_cgi(std::string &content)
 {
 	std::cout << BLUE;
     utils::print_debug("Write to CGI");

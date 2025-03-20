@@ -1,14 +1,12 @@
 POST /cgi-bin/print-body.py HTTP/1.1
-Host: example.com
-Transfer-Encoding: chunked
-Content-Type: application/json
+Host: localhost:1234
+User-Agent: curl/7.68.0
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryXyz123
+Content-Length: 184
 
-10
-{"key1": "va
+------WebKitFormBoundaryXyz123
+Content-Disposition: form-data; name="file"; filename="testfile.txt"
+Content-Type: text/plain
 
-E
-lue1", "key2":
-A
-"value2"}
-0
-
+<file contents here>
+------WebKitFormBoundaryXyz123--

@@ -126,6 +126,16 @@ std::string location_from_uri(const std::string& uri)
 	return (result);
 }
 
+std::string extractPath(const std::string& url) {
+    if (url.empty() || url == "/")
+        return "";
+    std::string path = (url[0] == '/') ? url.substr(1) : url;
+    std::size_t pos = path.find('/');
+    if (pos != std::string::npos)
+        return path.substr(0, pos);
+    return path;
+}
+
 location	*get_location_from_uri(server *_server, std::string url)
 {
 	std::map<std::string, location>::iterator	it;
@@ -136,10 +146,33 @@ location	*get_location_from_uri(server *_server, std::string url)
 	ie = _server->_locations.end();
 	best_match = ie;
 	size_t best_match_length = 0;
+	url = extractPath(url);
+	if (url.length() == 0)
+		url = '/';
 	for (; it != ie ; ++it)
 	{
 		const std::string &loc_path = it->first;
-		if (url.find(loc_path) == 0)
+		if (url == loc_path)
+		{
+			if (loc_path.length() > best_match_length)
+			{
+				best_match = it;
+				best_match_length = loc_path.length();
+			}
+		}
+	}
+	if (best_match != ie)
+		return &(best_match->second);
+	//---------------------------------------//
+	it = _server->_locations.begin();
+	ie = _server->_locations.end();
+	best_match = ie;
+	best_match_length = 0;
+	url = '/';
+	for (; it != ie ; ++it)
+	{
+		const std::string &loc_path = it->first;
+		if (url == loc_path)
 		{
 			if (loc_path.length() > best_match_length)
 			{

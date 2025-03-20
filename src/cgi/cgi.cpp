@@ -35,10 +35,10 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 	this->init_env(_request.get_headers());
 	
 	// Apply FD_CLOEXEC to prevent leaks during execve
-	// fcntl(pipeIN[0], F_SETFD, fcntl(pipeIN[0], F_GETFD) | FD_CLOEXEC);
-	// fcntl(pipeIN[1], F_SETFD, fcntl(pipeIN[1], F_GETFD) | FD_CLOEXEC);
-	// fcntl(pipeOUT[0], F_SETFD, fcntl(pipeOUT[0], F_GETFD) | FD_CLOEXEC);
-	// fcntl(pipeOUT[1], F_SETFD, fcntl(pipeOUT[1], F_GETFD) | FD_CLOEXEC);
+	fcntl(pipeIN[0], F_SETFD, fcntl(pipeIN[0], F_GETFD) | FD_CLOEXEC);
+	fcntl(pipeIN[1], F_SETFD, fcntl(pipeIN[1], F_GETFD) | FD_CLOEXEC);
+	fcntl(pipeOUT[0], F_SETFD, fcntl(pipeOUT[0], F_GETFD) | FD_CLOEXEC);
+	fcntl(pipeOUT[1], F_SETFD, fcntl(pipeOUT[1], F_GETFD) | FD_CLOEXEC);
 
 	
 

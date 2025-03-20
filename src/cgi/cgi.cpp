@@ -24,6 +24,7 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 	this->_request = &_request;
 	this->_request->_cgi_status = WAITING;
 
+	int status;
 	int pid;
 	int	pipeIN[2];
 	int	pipeOUT[2];
@@ -37,38 +38,62 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 		if (pid < 0)
 	{
 		free_env();
-		throw std::runtime_error("Fork fail!."); // free env? or it calls the destructor?
+		throw std::runtime_error("Fork failed on CGI execution."); // free env? or it calls the destructor?
 	}
 
 	if (pid == 0)
 	{
-		int	error;
-		close(pipeIN[0]);
-		close(pipeOUT[1]);
-		if (dup2(pipeIN[1], STDOUT_FILENO) == -1 || dup2(pipeOUT[0], STDIN_FILENO) == -1)
+		try
 		{
-			std::cerr << "[FATAL]: dup2 fail inside fork!." << std::endl; // free env? or it calls the destructor?
-			exit(-1);
+			int	error;
+			struct stat info;
+			
+			close(pipeIN[0]);
+			close(pipeOUT[1]);
+			if (dup2(pipeIN[1], STDOUT_FILENO) == -1 || dup2(pipeOUT[0], STDIN_FILENO) == -1)
+			{
+				throw (std::runtime_error("[FATAL]: dup2 failed on CGI execution."));
+				// std::cerr << "[FATAL]: dup2 fail inside fork!." << std::endl; // free env? or it calls the destructor?
+				// exit(-1);
+			}
+			close(pipeIN[1]);
+			close(pipeOUT[0]);
+
+			char * argv[] = {const_cast<char*>(this->_env_tmp["INTERPRETER"].c_str()),
+							const_cast<char*>(this->_env_tmp["SCRIPT_NAME"].c_str()),	
+							NULL};
+			if (stat(argv[0], &info) != 0) 
+			{
+				throw (std::runtime_error("Cannot access path (doesn't exist or no permission)."));
+				// return false; // Cannot access path (doesn't exist or no permission)
+			}
+
+			error = execve(argv[0], argv, this->_env);
+			throw (std::runtime_error("[FATAL]: CGI execution failed, log[" + error));
+			// std::cerr << "[FATAL]: execve fail inside fork, log[" << error << "]" << argv[0] << std::endl;
+			// std::exit(-1);
 		}
-
-		close(pipeIN[1]);
-		close(pipeOUT[0]);
-
-		//test first with access before execve
+		catch(const std::exception& e)
+		{
+			std::cerr << e.what() << "LALALALA" << '\n' << '\n';
+			// exit(5);
+		}
 		
-		//Create _argv for execve
-		char * argv[] = {const_cast<char*>(this->_env_tmp["INTERPRETER"].c_str()),
-						const_cast<char*>(this->_env_tmp["SCRIPT_NAME"].c_str()),	
-						NULL};
-		error = execve(argv[0], argv, this->_env);
-		// std::cout << "\n\n PIPE IN " << pipeIN[1] <<  " PIPE OUT " << pipeOUT[0] << std::endl;
-
-		std::cerr << "[FATAL]: execve fail inside fork, log[" << error << "]" << argv[0] << std::endl;
-		free_env();
-		exit(-1);
+		
 	}
 	this->_id = pid;
-
+	// waitpid(pid, &status, 0);
+	// int ret;
+	// if (WIFEXITED(status)){
+	// 	ret = WEXITSTATUS(status);
+	// 	std::cout << "\n[Log]: " << "HERE Child ended with code..." <<  ret << std::endl;
+	// }
+	// if (WIFSIGNALED(status)) //code 2
+	// {
+	// 	ret = WTERMSIG(status);
+	// 	std::cout << "\n[Log]: " << "Child ended with code..." <<  ret << std::endl;
+	// 	//Logger::log(Logger::WARN,"CGI.cpp", "WTERMSIG "+ to_string(ret));
+	// }
 	close(pipeIN[1]);
 	close(pipeOUT[0]);
 

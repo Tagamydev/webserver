@@ -63,13 +63,24 @@ cgi_status	client::_cgi_status()
 
 bool	client::check_cgi_timeout()
 {
-	return (this->_request->_cgi->cgi_timeout());
+	if (this->_request->_cgi->cgi_timeout()) {
+        this->cgi_timeout(); // Handle timeout
+        return true;
+    }
+    return false;
+	// return (this->_request->_cgi->cgi_timeout());
 }
 
 void	client::cgi_timeout()
 {
-	this->close_cgi();
-	(this->get_request())->_error_code = 408;
+	std::cerr << "[Timeout]: CGI execution exceeded time limit!" << std::endl;
+
+    // Close CGI resources and mark as timed out
+    this->_request->_cgi->terminate_cgi();
+    this->close_cgi();
+
+    // Send a 408 Request Timeout response
+    this->get_request()->_error_code = 408;
 }
 
 void	client::close_cgi()

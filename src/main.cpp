@@ -26,7 +26,7 @@ std::string get_actual_date()
 	if (lock)
 		result = std::string(ctime(lock));
 	else
-		result = std::string("error in getting time!!!");
+		result = std::string("Error  getting time!!!");
 	size_t pos = result.find('\n');
 	if (pos != std::string::npos)
 		result.erase(pos, 1); // Elimina el carácter '\n'

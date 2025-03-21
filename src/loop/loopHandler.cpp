@@ -75,6 +75,7 @@ void loopHandler::new_server(int port)
 {
 	serverFd server_fd(port);
 
+	// fcntl(server_fd._fd, F_SETFL, O_NONBLOCK);
 	this->_port_serverFd[port] = utils::pollfd_from_fd(server_fd._fd, POLLIN);
 }
 
@@ -250,7 +251,7 @@ void	loopHandler::handle_client(int &i, std::vector<struct pollfd> &list)
 	if (_client->_cgi_status() == WAITING)
 	{
 		if (_client->check_cgi_timeout())
-			_client->cgi_timeout();
+			std::cerr << "[Log]: CGI timed out." << std::endl;
 		else
 			return ;
 	}
@@ -358,8 +359,8 @@ void	loopHandler::read_from_cgi(int &i, std::vector<struct pollfd> &list)
 	
 	_client = this->get_client_from_clientFd(this->get_clientFd_from_cgiFd(socket.fd));
 	_cgi = _client->get_request()->_cgi;
-	if (_client->get_request()->_cgi_status == WAITING)
-		_cgi->read_to_cgi();
+	// if (_client->get_request()->_cgi_status == WAITING)
+	_cgi->read_to_cgi();
 
 	this->delete_cgi_from_list(_cgi, i);
 	_client->close_cgi();

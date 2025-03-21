@@ -35,6 +35,11 @@ class request;
 
 class	cgi
 {
+	private:
+		time_t _start_time;   // When CGI started
+		int _timeout_seconds;
+		pid_t _pid;           // CGI process ID
+
 	public:
 
 		cgi(request &_request, client *_client, std::vector<struct pollfd> &list, webserver *webserver);
@@ -42,7 +47,9 @@ class	cgi
 
 		void			write_to_cgi(std::string &content);
 		void			read_to_cgi();
-		bool			cgi_timeout();
+		bool			cgi_timeout(); //useless
+		void			terminate_cgi();
+		
 		struct pollfd	_read_fd;
 		struct pollfd	_write_fd;
 		int				_env_size;

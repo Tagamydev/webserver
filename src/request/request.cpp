@@ -281,7 +281,7 @@ void	request::check_config_file(client *_client, webserver *_webserver)
 request::~request()
 {
 	// utils::print_debug("delete request"); //should we disconect client? Check closeRequestExample.cpp
-
+	// check memory set on _cgi_response
 	if (this->_cgi)
 		delete this->_cgi;
 }

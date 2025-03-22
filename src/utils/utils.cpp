@@ -40,9 +40,9 @@ void utils::send_response(int socket_fd, const std::string &response_str)
 		return ;
 }
 
-std::string	utils::read_file(int fd)
+std::string	utils::read_file(int fd) //CHECK FOR MEMORY LEAKS ON ERROR!
 {
-	std::cout << "[Log]: " << "reading from fd: " << fd << std::endl;
+	std::cout << "[Log]: " << "Utils::read_file reading from fd: " << fd << std::endl;
     const std::size_t bufferSize = MAX_BUFFER_LENGTH;
     char buffer[bufferSize];
     std::string result;

@@ -391,7 +391,9 @@ void	response::do_get()
 	std::string	path;
 	struct stat pathStat;
 
+
 	path = this->_request->_uri_file;
+	std::cout << "{{{}}}" << path << std::endl;
 	if (stat(path.c_str(), &pathStat) == 0)
 	{
 		if (S_ISREG(pathStat.st_mode))

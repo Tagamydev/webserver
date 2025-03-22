@@ -241,6 +241,14 @@ void	request::get_location()
 	this->_location = result;
 }
 
+std::string replaceStr(const std::string &token, const std::string &input, const std::string &replacement) {
+    std::size_t pos = input.find(token);
+    if (pos != std::string::npos) {
+        return input.substr(0, pos) + replacement + input.substr(pos + token.length());
+    }
+    return input;
+}
+
 void	request::check_config_file(client *_client, webserver *_webserver)
 {
 	if (this->_error_code != -1)
@@ -261,7 +269,9 @@ void	request::check_config_file(client *_client, webserver *_webserver)
 
 	if (this->_location && !this->_location->_alias.empty())
 	{
-		this->_uri_file = this->_location->_alias;
+		this->_uri_file = replaceStr(this->_location->_path, this->_uri_file, this->_location->_alias);
+
+		//this->_uri_file = this->_location->_alias;
 		if (this->_uri_file[0] != '/')
 			this->_uri_file = "./" + this->_uri_file;
 		std::cout << "[Path]: " << this->_uri_file << std::endl;

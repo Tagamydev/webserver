@@ -1,26 +1,5 @@
 
 
-
-Basic php processor
-
-GET /examples/index.php HTTP/1.1
-Host: localhost:1234
-Cache-Control: max-age=0
-sec-ch-ua: "Chromium";v="131", "Not_A Brand";v="24"
-sec-ch-ua-mobile: ?0
-sec-ch-ua-platform: "Windows"
-Accept-Language: en-US,en;q=0.9
-Upgrade-Insecure-Requests: 1
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.140 Safari/537.36
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,/;q=0.8,application/signed-exchange;v=b3;q=0.7
-Sec-Fetch-Site: same-origin
-Sec-Fetch-Mode: navigate
-Sec-Fetch-User: ?1
-Sec-Fetch-Dest: document
-Referer: http://localhost:1234/
-Accept-Encoding: gzip, deflate, br
-Connection: keep-alive
-
 ////////////////////////////////////////
 
 Reading query parameters:
@@ -44,23 +23,22 @@ Content-Type: text/plain
 
 Reading body from stdin
 
-GET /examples/index.php HTTP/1.1
-Host: localhost:1234
-Cache-Control: max-age=0
-sec-ch-ua: "Chromium";v="131", "Not_A Brand";v="24"
-sec-ch-ua-mobile: ?0
-sec-ch-ua-platform: "Windows"
-Accept-Language: en-US,en;q=0.9
-Upgrade-Insecure-Requests: 1
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.140 Safari/537.36
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,/;q=0.8,application/signed-exchange;v=b3;q=0.7
-Sec-Fetch-Site: same-origin
-Sec-Fetch-Mode: navigate
-Sec-Fetch-User: ?1
-Sec-Fetch-Dest: document
-Referer: http://localhost:1234/
-Accept-Encoding: gzip, deflate, br
-Connection: keep-alive
+curl -X POST http://localhost:1234/cgi-bin/print-body.py -d "BODY name=John&age=30"
+
+POST /cgi-bin/print-body.py HTTP/1.1
+Host: localhost:1234 
+User-Agent: curl/7.81.0 
+Accept: */* 
+Content-Length: 13 
+Content-Type: application/x-www-form-urlencoded 
+
+Hola que tal?
+
+
+////////////////////////////
+CGI timeout
+
+curl -X POST http://localhost:1234/cgi-bin/errorfile.py -d "name=John&age=30"
 
 
 ////////////////////////////
@@ -70,6 +48,35 @@ Reading query parameters
 GET /cgi-bin/test.php?name=admin&debug=true HTTP/1.1
 Host: localhost:1234
 User-Agent: curl/7.68.0
-Content-Length: 2
 
-12
+
+///////////////////////
+ 
+ Chunked body
+
+ POST /cgi-bin/print-body.py HTTP/1.1
+Host: example.com
+Transfer-Encoding: chunked
+Content-Type: application/json
+
+10
+{"key1": "va
+
+E
+lue1", "key2":
+A
+"value2"}
+0
+
+With trimmed content
+
+POST /cgi-bin/print-body.py HTTP/1.1
+Host: example.com
+Transfer-Encoding: chunked
+Content-Type: application/json
+
+20
+This is the first chunk of the binary data...
+1F
+Here comes the next chunk of binary data...
+0

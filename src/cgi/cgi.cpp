@@ -181,8 +181,6 @@ void cgi::write_to_cgi(std::string &content)
     utils::print_debug("Write to CGI");
 	std::cout << RESET;
 
-    // utils::print_debug("Writing request body to CGI script...");
-
     size_t total_sent = 0;
     size_t data_length = this->_request->_body.size();
 
@@ -262,8 +260,8 @@ void	cgi::init_env(std::map<std::string, std::string> _headers)
 	//init manual headers
 	this->_env_tmp["INTERPRETER"] = set_cgi_interpreter(this->_request->_uri_file, this->_request->_cgi_extensions);
 	this->_env_tmp["REQUEST_METHOD"] = this->_request->_method;
-	this->_env_tmp["SCRIPT_NAME"] = this->_request->_uri_file; // check where to init (The path to the CGI script being executed.)
-	this->_env_tmp["SCRIPT_FILENAME"] = this->_request->_uri_file; // check where to init (The path to the CGI script being executed.)
+	this->_env_tmp["SCRIPT_NAME"] = this->_request->_uri_file;
+	this->_env_tmp["SCRIPT_FILENAME"] = this->_request->_uri_file;
 	this->_env_tmp["REQUEST_URI"] = this->_request->_uri;
 	if(!this->_request->_uri_params.empty())
 		this->_env_tmp["QUERY_STRING"] = this->_request->_uri_params;

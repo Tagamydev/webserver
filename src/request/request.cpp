@@ -20,7 +20,7 @@
 request::request(client *_client, webserver *_webserver, 
 std::vector<struct pollfd> &list)
 {
-	utils::print_debug("new request");
+	utils::print_debug("New request");
 	this->clear();
 	this->_fd = _client->get_fd();
 	this->parsing();
@@ -225,7 +225,7 @@ void	request::get_location()
 		set_error_code(404, "location not found");
 		return ;
 	}
-	result->print_location_content();
+	// result->print_location_content();
 
 	if (result->_return)
 	{
@@ -445,26 +445,19 @@ void request::parse_body(server *this_server)
 	else
 		this->_headers["content-length"] = utils::to_string(_body.length());
 	_content_length = atoi(this->_headers["content-length"].c_str());
-
-	std::cout << "\n\nBODYYYY " << _body << std::endl;
-	this->_body = _body_parsed;
-
+	this->_body_parsed = this->_body;
 }
 
 void request::process_chunked()
 {
 	size_t	chunkSize = 0;
-	std::string tmpBody;
 	std::string newBody;
 	std::stringstream ss;
 	std::string line;
-	// bool	flag = 1;
 
-	//later replace to _body
-	// std::cout << "CHUNKED " << this->_body << std::endl;
-	tmpBody = utils::read_file_max_size("examples/request/chunked.txt", 200);
-	std::cout << "\n\nCHUNKED " << tmpBody << std::endl;
-    ss.str(tmpBody);
+	// std::cout << "Before CHUNKED " << this->_body << std::endl;
+
+    ss.str(this->_body);
 	while (getline(ss, line))
 	{
 		utils::trim_space_newline(line);
@@ -487,7 +480,7 @@ void request::process_chunked()
 	if (utils::hexToDecimal(line) != 0)
 		newBody += line;
 	_body = newBody;
-	std::cout << "\n\nNew Body " << _body << std::endl;
+	// std::cout << "\n\nAfter CHUNKED " << this->_body  << std::endl;
 }
 
 void request::process_body(std::stringstream &reqFile, std::string line)

@@ -24,7 +24,7 @@ std::vector<struct pollfd> &list)
 	this->clear();
 	this->_fd = _client->get_fd();
 	this->parsing();
-	// this->debug();
+	this->debug();
 	this->check_config_file(_client, _webserver);
 	this->set_cgi_extension();
 	this->parse_body(this->_server);

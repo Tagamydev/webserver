@@ -15,12 +15,15 @@
 #include "utils.hpp"
 #include <algorithm>
 
+webserver *ptr = NULL;
 
 void	sigint_handler(int signum)
 {
 	if (signum == SIGINT)
 	{
-		std::cout << "SIGINT"<< std::endl;
+		delete ptr;
+		std::cout << "\n<< EXIT >>"<< std::endl;
+		// std::cout << "SIGINT"<< std::endl;
 		exit(1);
 	}
 	if (signum == SIGQUIT)
@@ -29,6 +32,7 @@ void	sigint_handler(int signum)
 		std::cout << "SIGKILL"<< std::endl;
 }
 
+// Use Propper exit
 std::string get_actual_date()
 {
 	time_t now;
@@ -40,7 +44,7 @@ std::string get_actual_date()
 	if (lock)
 		result = std::string(ctime(lock));
 	else
-		result = std::string("Error  getting time!!!");
+		result = std::string("Error  getting time");
 	size_t pos = result.find('\n');
 	if (pos != std::string::npos)
 		result.erase(pos, 1); // Elimina el carácter '\n'
@@ -88,6 +92,8 @@ void	server_loop(webserver &server)
 			// 	server._loop->send_to_cgi(i, list);
 		}
 	}
+	// utils::print_info("Ready");
+
 }
 
 int main_loop(webserver &server)
@@ -119,9 +125,11 @@ int main(int argc, char **argv)
 	try
 	{
 		std::string	config_file = path_config_file(argc, argv);
-		webserver	server(config_file);	
-		
-		main_loop(server);
+		webserver	*server = new webserver(config_file);
+		if (!server)
+			exit(-1);
+		ptr = server;
+		main_loop(*server);
 	}
 	catch (const std::exception &e)
 	{

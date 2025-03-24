@@ -68,7 +68,6 @@ loopHandler::~loopHandler()
 	clear_server_cgi_Fd(this->_port_serverFd);
 	clear_clientFd(this->_client_clientFd);
 	clear_server_cgi_Fd(this->_clientFd_cgiFd);
-
 }
 
 void loopHandler::new_server(int port)
@@ -224,7 +223,7 @@ void	loopHandler::send_response(int &i, std::vector<struct pollfd> &list)
 		try
 		{
 			utils::send_response(_client->get_fd(), _response.str());
-			std::cout << YELLOW << "Response: \n" << std::endl;
+			std::cout << "Response: \n" << YELLOW << std::endl;
 			std::cout << _response.str() << std::endl;
 			std::cout << RESET << std::endl;
 		}

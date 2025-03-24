@@ -20,8 +20,9 @@ response::response(request *_request, webserver *_webserver)
 	this->_request = _request;
 
 	this->_http_version = "1.1";
-	this->_headers["Server"] = "42 Samusanc/Daviles simple webserver";
+	this->_headers["Server"] = "42 Samusanc / Daviles- >> Webserver";
 	this->_headers["Date"] = get_actual_date();
+
 	this->_body = "";
 
 	this->_error = false;
@@ -37,7 +38,7 @@ response::response(request *_request, webserver *_webserver)
 		if (!this->_keep_alive)
 			this->_headers["Connection"] = "close";
 		else
-			this->_headers["Connection"] = "keep-alive";
+			this->_headers["Connection"] = "keep-alive"; // Check connection keep-alive
 		return ;
 	}
 

@@ -80,3 +80,14 @@ This is the first chunk of the binary data...
 1F
 Here comes the next chunk of binary data...
 0
+
+
+//////////////////////////////////////
+
+
+ File upload
+
+
+curl -X POST http://localhost:1234/hello.txt \
+     -H "Content-Length:15" \
+     -d 'heloooooo spaaaaaaaaaaaaaaaaaaaaaaain'

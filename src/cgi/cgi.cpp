@@ -29,7 +29,7 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 	int	pipeIN[2];
 	int	pipeOUT[2];
 	this->_start_time = time(NULL);
-	this->_timeout_seconds = CGI_TIMEOUT; // Set timeout on cgi.hpp(e.g., 10 seconds)
+	this->_timeout_seconds = CGI_TIMEOUT; // Set timeout on cgi.hpp
         	
 	if (pipe(pipeIN) == -1 || pipe(pipeOUT) == -1)
 		throw std::runtime_error("Pipe fail!.");
@@ -53,55 +53,10 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 
 	if (this->_id == 0)
 	{
-		// try
-		// {
+		try
+		{
 			
 			
-		// 	close(pipeIN[0]);
-		// 	close(pipeOUT[1]);
-		// 	if (dup2(pipeIN[1], STDOUT_FILENO) == -1 || dup2(pipeOUT[0], STDIN_FILENO) == -1)
-		// 	{
-		// 		throw (std::runtime_error("[FATAL]: dup2 failed on CGI execution."));
-		// 	}
-		// 	close(pipeIN[1]);
-		// 	close(pipeOUT[0]);
-
-
-		// 	// Close all non-standard FDs
-			
-		// 	// for (int fd = 3; fd < MAX_FD; ++fd) 
-		// 	// {
-		// 	// 	close(fd);
-		// 	// }
-			
-		// 	char * argv[] = {
-		// 		const_cast<char*>(this->_env_tmp["INTERPRETER"].c_str()),
-		// 		const_cast<char*>(this->_env_tmp["SCRIPT_NAME"].c_str()),	
-		// 		NULL
-		// 	};
-
-		// 	int	error;
-		// 	struct stat info;
-		// 	if (stat(argv[0], &info) != 0)  // check if necessary
-		// 	{
-		// 		throw (std::runtime_error("Cannot access path (doesn't exist or no permission)."));
-		// 	}
-			
-		// 	error = execve(argv[0], argv, this->_env);
-		// 	std::cerr << "HERE" << std::endl;
-		// 	std::cerr << "[FATAL]: execve fail inside fork, log[" << error << "]" << argv[0] << std::endl;
-
-		// 	throw (std::runtime_error("[FATAL]: CGI execution failed."));
-		// 	// std::cerr << "[FATAL]: execve fail inside fork, log[" << error << "]" << argv[0] << std::endl;
-		// 	exit(127);
-		// }
-		// catch(const std::exception& e)
-		// {
-		// 	// std::cerr << e.what() << std::endl;
-       	// 	exit(EXIT_FAILURE);
-		// }
-		
-	
 			close(pipeIN[0]);
 			close(pipeOUT[1]);
 			if (dup2(pipeIN[1], STDOUT_FILENO) == -1 || dup2(pipeOUT[0], STDIN_FILENO) == -1)
@@ -133,23 +88,21 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 			}
 			
 			error = execve(argv[0], argv, this->_env);
-			std::cerr << "HERE" << std::endl;
-			std::cerr << "[FATAL]: execve fail inside fork, log[" << error << "]" << argv[0] << std::endl;
-
 			throw (std::runtime_error("[FATAL]: CGI execution failed."));
-			// std::cerr << "[FATAL]: execve fail inside fork, log[" << error << "]" << argv[0] << std::endl;
 			exit(127);
-		
-		
+		}
+		catch(const std::exception& e)
+		{
+			// std::cerr << e.what() << std::endl;
+       		exit(EXIT_FAILURE);
+		}
 	}
-	else {
-
-
-	
+	else 
+	{
 	close(pipeIN[1]);
 	close(pipeOUT[0]);
 	fcntl(pipeIN[0], F_SETFL, O_NONBLOCK);
-	// fcntl(pipeOUT[1], F_SETFL, O_NONBLOCK);
+	fcntl(pipeOUT[1], F_SETFL, O_NONBLOCK);
 	// Optional: Make pipes non-blocking
 	// fcntl(pipeIN[0], F_SETFL, fcntl(pipeIN[0], F_GETFL) | O_NONBLOCK);
 	// fcntl(pipeOUT[1], F_SETFL, fcntl(pipeOUT[1], F_GETFL) | O_NONBLOCK);
@@ -169,7 +122,6 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 
 	this->_read_fd = utils::pollfd_from_fd(pipeIN[0], POLLIN);
 	pid_t result = waitpid(this->_id, &status, 0);
-	std::cerr << "HERE2" << std::endl;
 	if (result == -1) 
 	{
 		std::cerr << "[Error]: waitpid failed"<< std::endl;
@@ -180,15 +132,15 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 		this->_exitstatus = WIFEXITED(status);
 		if (this->_exitstatus != 0) 
 		{
-			std::cerr << "[Error]: CGI process failed with exit code: " << this->_exitstatus << std::endl;
+			std::cerr << "[Log]: CGI process failed with exit code: " << this->_exitstatus << std::endl;
 			// this->_request->_cgi_status = DONE;
 			// Handle CGI error (e.g., send 500 Internal Server Error)
 		}
 	}
 	if (WIFSIGNALED(status)) //code 2
 	{
-		std::cerr << "[Error]: CGI process killed by signal: " << WTERMSIG(status) << std::endl;
-		this->_request->_cgi_status = DONE;
+		std::cerr << "[Log]: CGI process killed by signal: " << WTERMSIG(status) << std::endl;
+		// this->_request->_cgi_status = DONE;
 		//Logger::log(Logger::WARN,"CGI.cpp", "WTERMSIG "+ to_string(ret));
 	}
 	
@@ -200,26 +152,15 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 
 cgi::~cgi()
 {
-	// working on this, check on andres webserver
 	if (_id != 0)
 	{
 		kill(_id, SIGKILL);
 		waitpid(_id,&_exitstatus, 0);
-		// close(_pip[0]);
-		// close(_pipOut[1]);
 		close(this->_read_fd.fd);
 		close(this->_write_fd.fd);
 		free_env();
 		_id = 0;
 	}
-
-
-
-	// close(this->_read_fd.fd);
-	// close(this->_write_fd.fd);
-	// free_env();
-	// // i need to close the cgi???
-	// kill(this->_id, SIGKILL);
 }
 
 void cgi::read_to_cgi()
@@ -240,10 +181,7 @@ void cgi::write_to_cgi(std::string &content)
     utils::print_debug("Write to CGI");
 	std::cout << RESET;
 
-	// this is not working because use send function that works only with sockets.
-	// utils::send_response(this->_write_fd.fd, this->_request->_body);
-
-    utils::print_debug("Writing request body to CGI script...");
+    // utils::print_debug("Writing request body to CGI script...");
 
     size_t total_sent = 0;
     size_t data_length = this->_request->_body.size();
@@ -261,14 +199,11 @@ void cgi::write_to_cgi(std::string &content)
 
         total_sent += sent_now;
     }
-
-    // Important: Close the write pipe so the CGI knows the input is complete
     close(this->_write_fd.fd);
 
     std::ostringstream debug_message;
     debug_message << "Successfully wrote " << total_sent << " bytes to CGI.";
     utils::print_debug(debug_message.str());
-
 }
 
 bool cgi::cgi_timeout()
@@ -358,10 +293,10 @@ void	cgi::init_env(std::map<std::string, std::string> _headers)
 
 void cgi::free_env()
 {
-	utils::print_debug("freeing env");
+	utils::print_debug("Freeing CGI environment");
 	for(unsigned int i = 0; i < this->_env_size ; i++){
 		delete[] this->_env[i];
 	}
 	delete[] this->_env;
-	utils::print_debug("freeing env done");
+	// utils::print_debug("freeing env done");
 }

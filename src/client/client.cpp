@@ -18,7 +18,7 @@ client::client(struct pollfd socket, int port)
 	this->_request = NULL;
 
 	if ((new_socket = accept(socket.fd, NULL, NULL)) == -1)
-		throw (std::runtime_error("Accept fail."));
+		throw (std::runtime_error("Accept failed."));
 
 	this->_pollfd_client = utils::pollfd_from_fd(new_socket, POLLIN | POLLOUT);
 	this->_pollfd_server = socket;
@@ -73,7 +73,7 @@ bool	client::check_cgi_timeout()
 
 void	client::cgi_timeout()
 {
-	std::cerr << "[Timeout]: CGI execution exceeded time limit!" << std::endl;
+	std::cerr << "[Timeout]: CGI execution exceeded time limit." << std::endl;
 
     // Close CGI resources and mark as timed out
     this->_request->_cgi->terminate_cgi();
@@ -81,6 +81,7 @@ void	client::cgi_timeout()
 
     // Send a 408 Request Timeout response
     this->get_request()->_error_code = 408;
+    this->get_request()->_debug_msg = "CGI timeout reached";
 }
 
 void	client::close_cgi()

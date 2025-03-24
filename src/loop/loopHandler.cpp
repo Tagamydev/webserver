@@ -274,27 +274,6 @@ bool	loopHandler::is_server(int fd)
 	return (false);
 }
 
-bool	loopHandler::is_for_cgi(int fd)
-{
-	//server server = webserver._port_servers_list[];
-	// server server();
-
-	// if (server->_locations.find(req.getLocation()) == this->_locations.end())
-	//   return false;
-	// if (this->_locations[req.getLocation()].getCGI()== "on" && 
-	// 	!access(resourcePath.c_str(),X_OK))
-	// 		return true;
-
-
-
-// 	for (; i != ie ; i++)
-// 	{
-// 		if (i->second.fd == fd)
-// 			return (true);
-// 	}
-	return (false);
-}
-
 bool	loopHandler::fd_is_cgi(int fd)
 {
 	std::map<int, struct pollfd>::iterator	i;
@@ -331,7 +310,7 @@ void	loopHandler::delete_fd_from_cgi_list(int fd, int &_it)
 
 void	loopHandler::delete_cgi_from_list(cgi *_cgi, int &i)
 {
-	utils::print_debug("deleting cgi from list");
+	// utils::print_debug("deleting cgi from list");
 	this->delete_fd_from_cgi_list(_cgi->_read_fd.fd, i);
 	this->delete_fd_from_cgi_list(_cgi->_write_fd.fd, i);
 	//exit(-1);
@@ -360,7 +339,6 @@ void	loopHandler::read_from_cgi(int &i, std::vector<struct pollfd> &list)
 	
 	_client = this->get_client_from_clientFd(this->get_clientFd_from_cgiFd(socket.fd));
 	_cgi = _client->get_request()->_cgi;
-	// if (_client->get_request()->_cgi_status == WAITING)
 	_cgi->read_to_cgi();
 
 	this->delete_cgi_from_list(_cgi, i);
@@ -385,7 +363,7 @@ int	loopHandler::get_port_from_fd(int fd)
 
 void	loopHandler::new_client(struct pollfd socket)
 {
-	utils::print_debug("new client");
+	// utils::print_debug("new client");
 	client	*_client;
 
 	_client = new client(socket, this->get_port_from_fd(socket.fd));
@@ -401,7 +379,7 @@ void	loopHandler::new_request(int fd, std::vector<struct pollfd> &list, int &i)
 	_client = this->get_client_from_clientFd(fd);
 	try
 	{
-		utils::print_debug("assigning new request to client");
+		utils::print_debug("Assigning new request to client");
 		_client->_request = new request(_client, this->_webserver, list);
 	}
 	catch (std::exception &e)
@@ -432,23 +410,21 @@ void	loopHandler::check_additions(int &i, std::vector<struct pollfd> &list)
 	else
 		this->new_request(socket.fd, list, i);
 }
-void	loopHandler::send_to_cgi(int &i, std::vector<struct pollfd> &list)
+void	loopHandler::send_to_cgi(int &i, std::vector<struct pollfd> &list) // Check if is needed
 {
 	client			*_client;
 	struct pollfd	socket;
 
 	std::cout << RED;
-	std::cout << "Send to cgi is needed?" << std::endl;
+	std::cout << "\nSend to cgi is needed?" << std::endl;
 	std::cout << RESET;
 	socket = list[i];
 	// _client = this->get_client_from_clientFd(socket.fd);
 	_client = this->get_client_from_clientFd(this->get_clientFd_from_cgiFd(socket.fd));
 
-	std::cout << "\n\nBODYYYY " << _client->_request->_body << std::endl;
 	send(_client->_request->_cgi->_write_fd.fd, _client->_request->_body.c_str(), _client->_request->_body.length(), 0);
 	
 	
-	std::cout << "this is a message for the cgi" << std::endl;
 	this->delete_fd_from_cgi_list(_client->get_request()->_cgi->_write_fd.fd, i);
 	this->make_fd_list(list);
 }

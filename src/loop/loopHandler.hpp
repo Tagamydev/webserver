@@ -57,7 +57,6 @@ struct loopHandler{
 		void	send_response(int &i, std::vector<struct pollfd> &list);
 
 		bool	is_server(int fd);
-		bool	is_for_cgi(int fd);
 
 		void	delete_fd_from_cgi_list(int fd, int &i);
 		void	delete_cgi_from_list(cgi *_cgi, int &i);

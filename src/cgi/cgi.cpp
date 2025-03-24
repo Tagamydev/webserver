@@ -48,15 +48,13 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 	if (this->_id < 0)
 	{
 		free_env();
-		throw std::runtime_error("Fork failed on CGI execution."); // free env? or it calls the destructor?
+		throw std::runtime_error("Fork failed on CGI execution.");
 	}
 
 	if (this->_id == 0)
 	{
 		try
 		{
-			
-			
 			close(pipeIN[0]);
 			close(pipeOUT[1]);
 			if (dup2(pipeIN[1], STDOUT_FILENO) == -1 || dup2(pipeOUT[0], STDIN_FILENO) == -1)
@@ -65,14 +63,6 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 			}
 			close(pipeIN[1]);
 			close(pipeOUT[0]);
-
-
-			// Close all non-standard FDs
-			
-			// for (int fd = 3; fd < MAX_FD; ++fd) 
-			// {
-			// 	close(fd);
-			// }
 			
 			char * argv[] = {
 				const_cast<char*>(this->_env_tmp["INTERPRETER"].c_str()),
@@ -81,11 +71,11 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 			};
 
 			int	error;
-			struct stat info;
-			if (stat(argv[0], &info) != 0)  // check if necessary
-			{
-				throw (std::runtime_error("Cannot access path (doesn't exist or no permission)."));
-			}
+			// struct stat info;
+			// if (stat(argv[0], &info) != 0)  // check if necessary
+			// {
+			// 	throw (std::runtime_error("Cannot access path (doesn't exist or no permission)."));
+			// }
 			
 			error = execve(argv[0], argv, this->_env);
 			throw (std::runtime_error("[FATAL]: CGI execution failed."));
@@ -103,9 +93,6 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 	close(pipeOUT[0]);
 	fcntl(pipeIN[0], F_SETFL, O_NONBLOCK);
 	fcntl(pipeOUT[1], F_SETFL, O_NONBLOCK);
-	// Optional: Make pipes non-blocking
-	// fcntl(pipeIN[0], F_SETFL, fcntl(pipeIN[0], F_GETFL) | O_NONBLOCK);
-	// fcntl(pipeOUT[1], F_SETFL, fcntl(pipeOUT[1], F_GETFL) | O_NONBLOCK);
 	
 	std::cout << "[Log]: " << "starting fds addition to vector list..." << std::endl;
 	

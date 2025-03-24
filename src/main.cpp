@@ -19,7 +19,10 @@
 void	sigint_handler(int signum)
 {
 	if (signum == SIGINT)
+	{
 		std::cout << "SIGINT"<< std::endl;
+		exit(1);
+	}
 	if (signum == SIGQUIT)
 		std::cout << "SIGQUIT"<< std::endl;
 	if (signum == SIGKILL)

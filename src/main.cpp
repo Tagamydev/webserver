@@ -15,6 +15,17 @@
 #include "utils.hpp"
 #include <algorithm>
 
+
+void	sigint_handler(int signum)
+{
+	if (signum == SIGINT)
+		std::cout << "SIGINT"<< std::endl;
+	if (signum == SIGQUIT)
+		std::cout << "SIGQUIT"<< std::endl;
+	if (signum == SIGKILL)
+		std::cout << "SIGKILL"<< std::endl;
+}
+
 std::string get_actual_date()
 {
 	time_t now;
@@ -86,8 +97,8 @@ std::string	path_config_file(int argc, char **argv)
 {
 	std::string	config_file = "./conf.d/webserver.conf";
 	if (argc != 2)
-		std::cout << "[Info]: configuration file not found," <<
-		"starting server with the default configuration file from: " 
+		std::cout << BLUE << "[Info]: configuration file not found. \n" <<
+		"Starting server with the default configuration file from: " << RESET
 		<< config_file << std::endl;
 	else
 		config_file = "./" + std::string(argv[1]);
@@ -96,6 +107,12 @@ std::string	path_config_file(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
+	struct sigaction	sa;
+	sa.sa_handler = sigint_handler;
+	sa.sa_flags = (sigemptyset(&sa.sa_mask), 0);
+	(sigaction(SIGINT, &sa, NULL), sigaction(SIGQUIT, &sa, NULL));
+	sigaction(SIGKILL, &sa, NULL);
+	
 	try
 	{
 		std::string	config_file = path_config_file(argc, argv);

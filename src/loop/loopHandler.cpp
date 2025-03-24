@@ -29,7 +29,7 @@ void	loopHandler::open_ports()
 	ie = this->_webserver->_port_servers_list.end();
 	for (; i != ie ; i++)
 	{
-		std::cout << "[Debug]: " << i->first;
+		std::cout << "[Info]: opening port: " << i->first << std::endl;
 		this->new_server(i->first);
 	}
 }
@@ -224,7 +224,9 @@ void	loopHandler::send_response(int &i, std::vector<struct pollfd> &list)
 		try
 		{
 			utils::send_response(_client->get_fd(), _response.str());
+			std::cout << YELLOW << "Response: \n" << std::endl;
 			std::cout << _response.str() << std::endl;
+			std::cout << RESET << std::endl;
 		}
 		catch (std::exception &e)
 		{

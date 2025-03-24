@@ -20,11 +20,11 @@
 request::request(client *_client, webserver *_webserver, 
 std::vector<struct pollfd> &list)
 {
-	utils::print_debug("New request");
+	utils::print_log("New request accepted");
 	this->clear();
 	this->_fd = _client->get_fd();
 	this->parsing();
-	this->debug();
+	// this->debug();
 	this->check_config_file(_client, _webserver);
 	this->set_cgi_extension();
 	this->parse_body(this->_server);
@@ -153,12 +153,12 @@ location	*get_location_from_uri(server *_server, std::string url)
 	size_t best_match_length = 0;
 	url = extractPath(url);
 	url = "/" + url;
-	std::cout << "}{ a}" << url << std::endl;
+	// std::cout << "}{ a}" << url << std::endl;
 	for (; it != ie ; ++it)
 	{
 		const std::string &loc_path = it->first;
 
-		std::cout << "}{ paththha}" << loc_path << std::endl;
+		// std::cout << "}{ paththha}" << loc_path << std::endl;
 		if (url == loc_path)
 		{
 			if (loc_path.length() > best_match_length)
@@ -176,12 +176,12 @@ location	*get_location_from_uri(server *_server, std::string url)
 	best_match = ie;
 	best_match_length = 0;
 	url = "/";
-	std::cout << "}{ a}" << url << std::endl;
+	// std::cout << "}{ a}" << url << std::endl;
 	for (; it != ie ; ++it)
 	{
 		const std::string &loc_path = it->first;
 
-		std::cout << "}{ paththha}" << loc_path << std::endl;
+		// std::cout << "}{ paththha}" << loc_path << std::endl;
 		if (url == loc_path)
 		{
 			if (loc_path.length() > best_match_length)
@@ -274,14 +274,14 @@ void	request::check_config_file(client *_client, webserver *_webserver)
 		//this->_uri_file = this->_location->_alias;
 		if (this->_uri_file[0] != '/')
 			this->_uri_file = "./" + this->_uri_file;
-		std::cout << "[Path]: " << this->_uri_file << std::endl;
+		// std::cout << "[Path]: " << this->_uri_file << std::endl;
 	}
 	else if (this->_location && !this->_location->_root.empty())
 	{
 		this->_uri_file = this->_location->_root + this->_uri_file;
 		if (this->_uri_file[0] != '/')
 			this->_uri_file = "./" + this->_uri_file;
-		std::cout << "[Path]: " << this->_uri_file << std::endl;
+		// std::cout << "[Path]: " << this->_uri_file << std::endl;
 	}
 	else
 		this->_uri_file = "." + this->_uri_file;

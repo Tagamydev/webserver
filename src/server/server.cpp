@@ -108,7 +108,7 @@ void	server::process_parameters(std::stringstream &contentStream, std::string li
 			throw std::runtime_error("Error reading config file. Wrong value in listen directive.");
 		if (!is_valid_port(value))
 			throw std::runtime_error("Error reading config file. Invalid port, out of range.");
-		std::cout << value << "vs." << atoi(value.c_str()) << std::endl;
+		// std::cout << value << "vs." << atoi(value.c_str()) << std::endl;
 		this->_ports.push_back(atoi(value.c_str()));
 	}
 	else if (key == "server_name")

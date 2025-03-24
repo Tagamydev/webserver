@@ -23,7 +23,7 @@ client::client(struct pollfd socket, int port)
 	this->_pollfd_client = utils::pollfd_from_fd(new_socket, POLLIN | POLLOUT);
 	this->_pollfd_server = socket;
 	this->port = port;
-	std::cout << "[Info]: New client in port: " << port << std::endl;
+	std::cout << "[Info]: New client assigned to port: " << port << std::endl;
 }
 
 client::~client()

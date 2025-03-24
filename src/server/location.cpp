@@ -127,6 +127,6 @@ location::location(std::string content) : _path(""), _index_file(DEFAULT_INDEX),
 		set_priv_attribute(line);	
 	}
 	// print_location_content();
-	if (this->is_allowed_method("GET"))
-		std::cout << "GET" << std::endl;
+	// if (this->is_allowed_method("GET"))
+	// 	std::cout << "GET" << std::endl;
 }

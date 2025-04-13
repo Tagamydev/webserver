@@ -1,0 +1,3 @@
+Send vars on URI
+
+curl -X POST  http://localhost:1234/cgi-bin/print-body.py -d "name=John&age=30"

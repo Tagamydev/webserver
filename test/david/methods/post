@@ -1,0 +1,5 @@
+POST /tmp/holaaaaa HTTP/1.1
+Host: localhost:1234
+User-Agent: curl/7.68.0
+
+<file contents here>

@@ -1,0 +1,5 @@
+Limit body with header
+
+curl -X POST -H "Content-length: 2" http://localhost:1234/cgi-bin/print-body.py -d "name=John&age=30"
+
+curl -X POST -H "Content-length: 200" http://localhost:1234/cgi-bin/print-body.py -d "name=John&age=30"

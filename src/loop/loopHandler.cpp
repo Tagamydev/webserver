@@ -416,15 +416,24 @@ void	loopHandler::send_to_cgi(int &i, std::vector<struct pollfd> &list) // Check
 	client			*_client;
 	struct pollfd	socket;
 
-	std::cout << RED;
-	std::cout << "\nSend to cgi is needed?" << std::endl;
-	std::cout << RESET;
+
 	socket = list[i];
 	// _client = this->get_client_from_clientFd(socket.fd);
 	_client = this->get_client_from_clientFd(this->get_clientFd_from_cgiFd(socket.fd));
 
-	send(_client->_request->_cgi->_write_fd.fd, _client->_request->_body.c_str(), _client->_request->_body.length(), 0);
-	
+	int result = send(_client->_request->_cgi->_write_fd.fd, _client->_request->_body.c_str(), _client->_request->_body.length(), 0);
+
+	if (result == -1)
+	{
+		std::cerr << "[FATAL]: failed to send to CGI." << std::endl;
+		throw std::runtime_error("Error sending to CGI pipe.");
+	}
+	if (result == 0)
+	{
+			std::cout << YELLOW;
+			std::cout << "\nWarning, 0kb sended to cgi." << std::endl;
+			std::cout << RESET;
+	}
 	
 	this->delete_fd_from_cgi_list(_client->get_request()->_cgi->_write_fd.fd, i);
 	this->make_fd_list(list);

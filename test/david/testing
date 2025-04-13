@@ -1,10 +1,5 @@
-POST /cgi-bin/print-body.py HTTP/1.1
-Host: example.com
-Transfer-Encoding: chunked
-Content-Type: application/json
+POST /tmp/holaaaaa HTTP/1.1
+Host: localhost:1234
+User-Agent: curl/7.68.0
 
-20
-This is the first chunk of the binary data...
-1F
-Here comes the next chunk of binary data...
-0
+<file contents here>

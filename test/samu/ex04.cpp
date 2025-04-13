@@ -115,7 +115,11 @@ int main() {
                     } else {
                         // Responder con página por defecto
                         std::cout << "Solicitud recibida:\n" << buffer << "\n";
-                        write(fds[i].fd, RESPONSE, strlen(RESPONSE));
+                        if (write(fds[i].fd, RESPONSE, strlen(RESPONSE)))
+						{
+							std::cerr << "[FATAL]: failed to write to CGI." << std::endl;
+							throw std::runtime_error("Error writing to CGI pipe.");
+						}
                         close(fds[i].fd);
                         fds[i] = fds[--client_count];
                     }

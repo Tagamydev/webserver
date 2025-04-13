@@ -57,8 +57,11 @@ int main() {
     }
 
     // Enviar respuesta al cliente
-    write(new_socket, RESPONSE, strlen(RESPONSE));
-
+	if (write(new_socket, RESPONSE, strlen(RESPONSE))) 
+	{
+		std::cerr << "[FATAL]: failed to write to CGI." << std::endl;
+		throw std::runtime_error("Error writing to CGI pipe.");
+	}
     // Cerrar la conexión
     close(new_socket);
     close(server_fd);

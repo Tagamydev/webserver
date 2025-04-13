@@ -1,0 +1,5 @@
+POST /cgi-bin/intra/tester HTTP/1.1
+Host: localhost:1234
+User-Agent: curl/7.68.0
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryXyz123
+Content-Length: 186

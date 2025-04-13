@@ -1,4 +1,4 @@
-GET /index.html HTTP/1.1
+GET /cgi-bin/print-body.py HTTP/1.1
 Host: localhost
 User-Agent: TestClient/1.0
 Content-Type:

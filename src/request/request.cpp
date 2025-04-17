@@ -53,7 +53,8 @@ server	*find_wildcard_name(std::list<server*> list, std::string hostname)
 	std::list<server*>::iterator i = list.begin();
 	std::list<server*>::iterator ie = list.end();
 	std::vector<std::string>	names_list;
-
+	
+	(void)hostname;
 	for (; i != ie ; i++)
 	{
 		names_list = (*i)->_names;
@@ -129,7 +130,7 @@ std::string location_from_uri(const std::string& uri)
 std::string extractPath(const std::string& url) {
     if(url.empty() || url == "/")
         return "";
-    bool endsWithSlash = (url[url.size()-1] == '/');
+    // bool endsWithSlash = (url[url.size()-1] == '/');
     std::string path = (url[0] == '/') ? url.substr(1) : url;
     std::size_t pos = path.find('/');
     std::string token;
@@ -415,7 +416,7 @@ void request::parse_body(server *this_server)
 	if (atoi(this->_headers["content-length"].c_str()) >= 1)
 	{
 		// line = utils::read_file_max_size("examples/request/chunked.txt", atoi(this->_headers["content-length"].c_str()));
-		if (_body.length() >= atoi(this->_headers["content-length"].c_str()))
+		if (_body.length() >= static_cast<size_t>(atoi(this->_headers["content-length"].c_str())))
 			_body = _body.substr(0, atoi(this->_headers["content-length"].c_str()));
 		else
 			this->_headers["content-length"] = utils::to_string(_body.length());
@@ -435,12 +436,12 @@ void request::parse_body(server *this_server)
             this->_boundary = this->_headers["content-type"].substr(pos + 9, this->_headers["content-type"].size());
         this->_multiform_flag = true;
 	}
-	if (this->_body.length() > this_server->_max_body_size)
+	if (this->_body.length() > static_cast<size_t>(this_server->_max_body_size))
 	{
 		this->_error_code = 413;
 		return ; 
 	}
-	if (this->_body.length() > this->_content_length)
+	if (this->_body.length() > static_cast<size_t>(this->_content_length))
 		this->_body = this->_body.substr(0, this->_content_length);
 	else
 		this->_headers["content-length"] = utils::to_string(_body.length());
@@ -545,7 +546,7 @@ bool request::space_in_header_name(std::string line)
 */
 void request::save_headers(std::string &line)
 {
-	int	i = 0;
+	size_t	i = 0;
 	int	flag = 0;
 	std::string	tmp;
 

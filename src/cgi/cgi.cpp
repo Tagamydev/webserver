@@ -25,7 +25,6 @@ std::vector<struct pollfd> &list, webserver *_webserver)
 	this->_request->_cgi_status = WAITING;
 
 	int status;
-	int pid;
 	int	pipeIN[2];
 	int	pipeOUT[2];
 	this->_start_time = time(NULL);
@@ -171,7 +170,7 @@ void cgi::write_to_cgi(std::string &content)
     size_t total_sent = 0;
     size_t data_length = this->_request->_body.size();
 
-
+	(void)content;
     while (total_sent < data_length) 
 	{
         ssize_t sent_now = write(this->_write_fd.fd, this->_request->_body.c_str() + total_sent, data_length - total_sent);
@@ -208,10 +207,13 @@ std::string cgi::set_cgi_interpreter(std::string filename, std::map<std::string,
 	std::string extension = "";
 
     if (dotPos != std::string::npos)
+	{
+
         extension = filename.substr(dotPos);
+	}
+	
 	if (extension.empty())
 		return ("/usr/bin/bash");
-	
 	std::map<std::string, std::string>::iterator it = _cgi_extensions.find(extension);
 	if (it != _cgi_extensions.end() && !it->second.empty())
 	{
@@ -279,7 +281,7 @@ void	cgi::init_env(std::map<std::string, std::string> _headers)
 void cgi::free_env()
 {
 	utils::print_debug("Freeing CGI environment");
-	for(unsigned int i = 0; i < this->_env_size ; i++){
+	for( int i = 0; i < this->_env_size ; i++){
 		delete[] this->_env[i];
 	}
 	delete[] this->_env;

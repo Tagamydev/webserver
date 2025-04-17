@@ -88,8 +88,8 @@ const std::string &location::get_path() const { return this->_path; }
 
 
 
-location::location() : _path(""), _index_file(DEFAULT_INDEX), _save_file(""), _cgi_path(DEFAULT_CGI),
-       _alias(""), _auto_index(false), _cgi_enabled(false), _return_path(""), _return(false), _return_code("")
+location::location() :  _index_file(DEFAULT_INDEX), _auto_index(false),  _cgi_enabled(false),  _return(false), _return_code(""), _return_path(""),_path(""), _alias(""), _save_file(""), _cgi_path(DEFAULT_CGI)
+       
 {
 
 }
@@ -97,8 +97,7 @@ location::location() : _path(""), _index_file(DEFAULT_INDEX), _save_file(""), _c
 location::~location()
 {}
 
-location::location(std::string content) : _path(""), _index_file(DEFAULT_INDEX), _save_file(""), _cgi_path(DEFAULT_CGI),
-       _alias(""), _auto_index(false), _cgi_enabled(false), _return_path(""), _return(false), _return_code("") 
+location::location(std::string content) : _index_file(DEFAULT_INDEX), _auto_index(false),  _cgi_enabled(false),  _return(false), _return_code(""), _return_path(""),_path(""), _alias(""), _save_file(""), _cgi_path(DEFAULT_CGI)
 {
 	std::stringstream contentStream;
 	std::string	line;

@@ -17,7 +17,7 @@
 # define MAX_FD 100
 
 class webserver;
-class loopHandler;
+struct loopHandler;
 class client;
 
 enum	cgi_status

@@ -19,7 +19,7 @@
 
 class server;
 class cgi;
-class loopHandler;
+struct loopHandler;
 
 class webserver
 {

@@ -72,7 +72,7 @@ void	server_loop(webserver &server)
 
 	server._loop->make_fd_list(list);
 	make_poll(list);
-	for (; i < length_list(list); i++)
+	for (; i < static_cast<int>(length_list(list)); i++)
 	{
 		if (list[i].revents & POLLIN)
 		{

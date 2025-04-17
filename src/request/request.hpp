@@ -22,11 +22,11 @@
 # define MAX_BUFFER_LENGTH 2048
 
 class webserver;
-class loopHandler;
 class cgi;
 class client;
 class server;
 class location;
+struct loopHandler;
 
 class   request
 {

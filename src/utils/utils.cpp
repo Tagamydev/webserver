@@ -69,15 +69,15 @@ std::string	utils::read_file_max_size(std::string fileName, long max_size)
 	while (getline(file, tmp))
 	{
 		result += tmp + "\n";
-		if (result.length() >= max_size)
+		if (result.length() >= static_cast<size_t>(max_size))
 		{
 			result = result.substr(0, max_size);
 			break;
 		}	
 	}
-	if (result.length() < max_size)
+	if (result.length() < static_cast<size_t>(max_size))
 		result += tmp;
-	if (result.length() >= max_size)
+	if (result.length() >= static_cast<size_t>(max_size))
 		result = result.substr(0, max_size);
 
 	// std::cout << "\n\nmax size " << max_size << std::endl;
@@ -203,12 +203,12 @@ void    utils::ft_to_lower(std::string &str)
 
 void	utils::trim_curly_brackets(std::string &line)
 {
-	int i = 0;
-	int j = line.length() - 1;
+	size_t i = 0;
+	size_t j = line.length() - 1;
 
 	while (line[i] != '\0' && line[i] == '{')
 		i++;
-	while (line[j] != '\0' && line[j] == '}' || line[i] == '{')
+	while (line[j] != '\0' && (line[j] == '}' || line[i] == '{'))
 		j--;
 	if (i >= j || i == line.length())
 		line = "";
@@ -239,14 +239,14 @@ void utils::trim_space_newline(std::string &line)
 
 	if (line.empty() || j <= 1)
 		return;
-	while (line[i] != '\0' && line[i] == ' ' || line[i] == '\t' || line[i] == '\r' || line[i] == '\f' || line[i] == '\n')
+	while (line[i] != '\0' && (line[i] == ' ' || line[i] == '\t' || line[i] == '\r' || line[i] == '\f' || line[i] == '\n'))
 		i++;
 	
 	// in some cases j gives -1 idkw
 	if (j < 0)
 		j = 0;
 
-	while (line[j] != '\0' && line[j] == ' ' || line[j] == '\t' || line[j] == '\r' || line[j] == '\f' || line[j] == '\n')
+	while (line[j] != '\0' && (line[j] == ' ' || line[j] == '\t' || line[j] == '\r' || line[j] == '\f' || line[j] == '\n'))
 		j--;
 	if (i >= j)
 		return;
@@ -258,11 +258,11 @@ void utils::trim_space_newline(std::string &line)
 /// @return true if it is empty
 int utils::is_empty(std::string &line)
 {
-	int	i = 0;
+	size_t	i = 0;
 
 	if (line.empty())
 		return (1);
-	while (line[i] != '\0' && line[i] == ' ' || line[i] == '\n' || line[i] == '\t')
+	while (line[i] != '\0' && (line[i] == ' ' || line[i] == '\n' || line[i] == '\t'))
 		i++;
 	if (line.length() == i)
 		return (1);
@@ -274,7 +274,7 @@ int utils::is_empty(std::string &line)
 void utils::fix_spaces_in_line(std::string &line)
 {
 	std::string parsedLine;
-	int i = 0;
+	size_t i = 0;
 
 	if (line[0] == ' ' || line[0] == '\t' || line[0] == '\r' || line[0] == '\f' || line[0] == '\n')
 		while (line[i] == ' ' || line[i] == '\t' || line[i] == '\r' || line[i] == '\f' || line[i] == '\n')
